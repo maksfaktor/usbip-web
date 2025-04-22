@@ -1,133 +1,234 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Локальные USB-устройства - OrangeUSB{% endblock %}
+{% block title %}OrangeUSB - Локальные устройства{% endblock %}
 
 {% block content %}
-<!-- Карточка с локальными устройствами -->
-<div class="card mb-4">
-    <div class="card-header bg-primary">
-        <div class="d-flex justify-content-between align-items-center">
-            <h4 class="mb-0"><i class="fas fa-hdd me-2"></i>Локальные USB-устройства</h4>
-            <button id="refreshLocalBtn" class="btn btn-sm btn-light">
-                <i class="fas fa-sync-alt"></i> Обновить
-            </button>
+<div class="row">
+    <!-- Колонка с локальными устройствами -->
+    <div class="col-lg-7 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-hdd me-2"></i>Локальные USB устройства</h4>
+                <button class="btn btn-sm btn-outline-primary refresh-devices-btn">
+                    <i class="fas fa-sync-alt me-1"></i>Обновить
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="local-devices-container">
+                    {% if local_devices %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>BUSID</th>
+                                        <th>Устройство</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for device in local_devices %}
+                                    <tr>
+                                        <td>{{ device.busid }}</td>
+                                        <td>
+                                            <div>{{ device.device_name }}</div>
+                                            <small class="text-muted">{{ device.vendor_id }}:{{ device.product_id }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-primary bind-device-btn" data-busid="{{ device.busid }}">
+                                                    <i class="fas fa-share me-1"></i>Опубликовать
+                                                </button>
+                                                <button class="btn btn-outline-info set-alias-btn" 
+                                                        data-busid="{{ device.busid }}" 
+                                                        data-device="{{ device.device_name }}">
+                                                    <i class="fas fa-tag me-1"></i>Задать имя
+                                                </button>
+                                                <button class="btn btn-outline-secondary search-info-btn" 
+                                                        data-vendor="{{ device.vendor_id }}" 
+                                                        data-product="{{ device.product_id }}">
+                                                    <i class="fas fa-search me-1"></i>Поиск
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info m-3">
+                            <i class="fas fa-info-circle me-2"></i>Локальные устройства не найдены или usbip не установлен
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
-    <div class="card-body">
-        <div id="localDevicesContainer">
-            {% if local_devices %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>BusID</th>
-                                <th>Информация</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for device in local_devices %}
-                            <tr>
-                                <td>{{ device.busid }}</td>
-                                <td>
-                                    <strong>{{ device.info }}</strong>
-                                    {% if device.details %}
-                                        <ul class="mb-0 small">
-                                            {% for detail in device.details %}
-                                                <li>{{ detail }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-success bind-btn" data-busid="{{ device.busid }}">
-                                        <i class="fas fa-share-alt"></i> Опубликовать
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    
+    <!-- Колонка с подключенными устройствами -->
+    <div class="col-lg-5">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>Подключенные устройства</h4>
+            </div>
+            <div class="card-body p-0">
+                <div class="attached-devices-container">
+                    {% if attached_devices %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Порт</th>
+                                        <th>Устройство</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for device in attached_devices %}
+                                    <tr>
+                                        <td>{{ device.port }}</td>
+                                        <td>
+                                            <div>{{ device.device_name }}</div>
+                                            <small class="text-muted">{{ device.remote_busid }} ({{ device.remote_host }})</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-danger detach-device-btn" data-port="{{ device.port }}">
+                                                    <i class="fas fa-unlink me-1"></i>Отключить
+                                                </button>
+                                                <button class="btn btn-outline-info set-port-name-btn" 
+                                                        data-port="{{ device.port }}">
+                                                    <i class="fas fa-tag me-1"></i>Имя порта
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info m-3">
+                            <i class="fas fa-info-circle me-2"></i>Нет подключенных удаленных устройств
+                        </div>
+                    {% endif %}
                 </div>
-            {% else %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>Локальные USB-устройства не найдены
+            </div>
+        </div>
+        
+        <!-- Блок поиска информации -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-search me-2"></i>Поиск информации</h4>
+            </div>
+            <div class="card-body">
+                <form id="device-search-form">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="device_id" 
+                               placeholder="Введите VID:PID (например 1d6b:0002)" 
+                               aria-label="ID устройства">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search me-1"></i>Найти
+                        </button>
+                    </div>
+                </form>
+                <div id="device-info-result">
+                    <!-- Результаты поиска будут здесь -->
                 </div>
-            {% endif %}
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Карточка с подключенными устройствами -->
-<div class="card">
-    <div class="card-header bg-success">
-        <div class="d-flex justify-content-between align-items-center">
-            <h4 class="mb-0"><i class="fas fa-plug me-2"></i>Подключенные удаленные устройства</h4>
-            <button id="refreshAttachedBtn" class="btn btn-sm btn-light">
-                <i class="fas fa-sync-alt"></i> Обновить
-            </button>
-        </div>
-    </div>
-    <div class="card-body">
-        <div id="attachedDevicesContainer">
-            {% if attached_devices %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Порт</th>
-                                <th>Сервер</th>
-                                <th>BusID</th>
-                                <th>Статус</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for device in attached_devices %}
-                            <tr>
-                                <td>{{ device.port }}</td>
-                                <td>{{ device.remote_host if device.remote_host else 'Н/Д' }}</td>
-                                <td>{{ device.remote_busid if device.remote_busid else 'Н/Д' }}</td>
-                                <td>
-                                    {% if 'Status: Online' in device.details|join(' ') %}
-                                        <span class="badge bg-success">Online</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">Offline</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger detach-btn" data-port="{{ device.port }}">
-                                        <i class="fas fa-unlink"></i> Отключить
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>Нет подключенных удаленных устройств
-                </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно для сообщений -->
-<div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+<!-- Модальное окно для установки алиаса устройства -->
+<div class="modal fade" id="setAliasModal" tabindex="-1" aria-labelledby="setAliasModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="messageModalTitle">Сообщение</h5>
+                <h5 class="modal-title" id="setAliasModalLabel">Задать имя устройству</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="messageModalBody">
-                Сообщение...
+            <form method="POST" action="{{ url_for('device_alias') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="busid" class="form-label">BUSID устройства</label>
+                        <input type="text" class="form-control" id="alias_busid" name="busid" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="alias" class="form-label">Название устройства</label>
+                        <input type="text" class="form-control" id="alias_name" name="alias" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="device_info" class="form-label">Дополнительная информация (необязательно)</label>
+                        <textarea class="form-control" id="device_info" name="device_info" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для сохранения информации об устройстве -->
+<div class="modal fade" id="saveDeviceInfoModal" tabindex="-1" aria-labelledby="saveDeviceInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="saveDeviceInfoModalLabel">Сохранить информацию об устройстве</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            <form method="POST" action="{{ url_for('device_alias') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="save_busid" class="form-label">Идентификатор устройства</label>
+                        <input type="text" class="form-control" id="save_busid" name="busid" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="alias" class="form-label">Название устройства</label>
+                        <input type="text" class="form-control" id="save_alias" name="alias" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="save_device_info" class="form-label">Информация об устройстве</label>
+                        <textarea class="form-control" id="save_device_info" name="device_info" rows="6"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для установки имени порта -->
+<div class="modal fade" id="setPortNameModal" tabindex="-1" aria-labelledby="setPortNameModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="setPortNameModalLabel">Задать имя порту</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <form method="POST" action="{{ url_for('port_name') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="port_number" class="form-label">Номер порта</label>
+                        <input type="text" class="form-control" id="port_number_field" name="port_number" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="custom_name" class="form-label">Название порта</label>
+                        <input type="text" class="form-control" id="port_custom_name" name="custom_name" required>
+                        <div class="form-text">Например: Принтер, Сканер, Веб-камера и т.д.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -135,135 +236,158 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Модальное окно
-        const messageModal = new bootstrap.Modal(document.getElementById('messageModal'));
-        const messageModalTitle = document.getElementById('messageModalTitle');
-        const messageModalBody = document.getElementById('messageModalBody');
-        
-        // Показать сообщение в модальном окне
-        function showMessage(title, message, isError = false) {
-            messageModalTitle.innerText = title;
-            messageModalBody.innerText = message;
-            messageModalTitle.classList.toggle('text-danger', isError);
-            messageModal.show();
+// Обработчик для кнопки публикации устройства
+document.querySelectorAll('.bind-device-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const busid = this.getAttribute('data-busid');
+        if (!busid) {
+            showNotification('BUSID устройства не указан', 'danger');
+            return;
         }
         
-        // Загрузка локальных устройств
-        function loadLocalDevices() {
-            fetch('/')
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const localDevicesContainer = doc.getElementById('localDevicesContainer');
-                    
-                    if (localDevicesContainer) {
-                        document.getElementById('localDevicesContainer').innerHTML = localDevicesContainer.innerHTML;
-                        attachEventListeners();
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка при обновлении локальных устройств:', error);
-                    showMessage('Ошибка', 'Не удалось загрузить список локальных устройств', true);
-                });
-        }
+        // Меняем состояние кнопки
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Публикация...';
+        this.disabled = true;
         
-        // Загрузка подключенных устройств
-        function loadAttachedDevices() {
-            fetch('/')
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const attachedDevicesContainer = doc.getElementById('attachedDevicesContainer');
-                    
-                    if (attachedDevicesContainer) {
-                        document.getElementById('attachedDevicesContainer').innerHTML = attachedDevicesContainer.innerHTML;
-                        attachEventListeners();
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка при обновлении подключенных устройств:', error);
-                    showMessage('Ошибка', 'Не удалось загрузить список подключенных устройств', true);
-                });
-        }
-        
-        // Публикация устройства
-        function bindDevice(busid) {
-            const formData = new FormData();
-            formData.append('busid', busid);
-            
-            fetch('/bind_device', {
-                method: 'POST',
-                body: formData
+        // Отправляем запрос на публикацию
+        fetch('/bind_device', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'busid': busid
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showMessage('Успех', data.message);
-                    } else {
-                        showMessage('Ошибка', data.message, true);
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка при публикации устройства:', error);
-                    showMessage('Ошибка', 'Не удалось опубликовать устройство', true);
-                });
-        }
-        
-        // Отключение устройства
-        function detachDevice(port) {
-            const formData = new FormData();
-            formData.append('port', port);
-            
-            fetch('/detach_device', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showMessage('Успех', data.message);
-                        // Обновление списка подключенных устройств
-                        loadAttachedDevices();
-                    } else {
-                        showMessage('Ошибка', data.message, true);
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка при отключении устройства:', error);
-                    showMessage('Ошибка', 'Не удалось отключить устройство', true);
-                });
-        }
-        
-        // Присоединение обработчиков событий
-        function attachEventListeners() {
-            // Публикация устройства
-            document.querySelectorAll('.bind-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const busid = this.getAttribute('data-busid');
-                    bindDevice(busid);
-                });
-            });
-            
-            // Отключение устройства
-            document.querySelectorAll('.detach-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const port = this.getAttribute('data-port');
-                    detachDevice(port);
-                });
-            });
-        }
-        
-        // Обновление списка локальных устройств
-        document.getElementById('refreshLocalBtn').addEventListener('click', loadLocalDevices);
-        
-        // Обновление списка подключенных устройств
-        document.getElementById('refreshAttachedBtn').addEventListener('click', loadAttachedDevices);
-        
-        // Первоначальное присоединение обработчиков событий
-        attachEventListeners();
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`Устройство ${busid} успешно опубликовано`, 'success');
+            } else {
+                showNotification(`Ошибка: ${data.message}`, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification(`Ошибка: ${error}`, 'danger');
+        })
+        .finally(() => {
+            // Восстанавливаем состояние кнопки
+            this.innerHTML = originalText;
+            this.disabled = false;
+        });
     });
+});
+
+// Обработчик для кнопки отключения устройства
+document.querySelectorAll('.detach-device-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const port = this.getAttribute('data-port');
+        if (!port) {
+            showNotification('Порт устройства не указан', 'danger');
+            return;
+        }
+        
+        if (!confirm(`Вы уверены, что хотите отключить устройство на порту ${port}?`)) {
+            return;
+        }
+        
+        // Меняем состояние кнопки
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Отключение...';
+        this.disabled = true;
+        
+        // Отправляем запрос на отключение
+        fetch('/detach_device', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'port': port
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`Устройство на порту ${port} успешно отключено`, 'success');
+                // Удаляем строку из таблицы
+                this.closest('tr').remove();
+                // Если таблица пуста, показываем сообщение
+                if (document.querySelectorAll('.attached-devices-container tbody tr').length === 0) {
+                    document.querySelector('.attached-devices-container').innerHTML = `
+                        <div class="alert alert-info m-3">
+                            <i class="fas fa-info-circle me-2"></i>Нет подключенных удаленных устройств
+                        </div>
+                    `;
+                }
+            } else {
+                showNotification(`Ошибка: ${data.message}`, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification(`Ошибка: ${error}`, 'danger');
+        })
+        .finally(() => {
+            // Восстанавливаем состояние кнопки
+            this.innerHTML = originalText;
+            this.disabled = false;
+        });
+    });
+});
+
+// Обработчик для кнопки обновления списка устройств
+document.querySelector('.refresh-devices-btn')?.addEventListener('click', function() {
+    window.location.reload();
+});
+
+// Обработчик для кнопки установки алиаса
+document.querySelectorAll('.set-alias-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const busid = this.getAttribute('data-busid');
+        const device = this.getAttribute('data-device');
+        
+        const modal = new bootstrap.Modal(document.getElementById('setAliasModal'));
+        document.getElementById('alias_busid').value = busid;
+        document.getElementById('alias_name').value = device;
+        
+        modal.show();
+    });
+});
+
+// Обработчик для кнопки установки имени порта
+document.querySelectorAll('.set-port-name-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const port = this.getAttribute('data-port');
+        
+        const modal = new bootstrap.Modal(document.getElementById('setPortNameModal'));
+        document.getElementById('port_number_field').value = port;
+        
+        modal.show();
+    });
+});
+
+// Обработчик для кнопки поиска информации
+document.querySelectorAll('.search-info-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const vendor = this.getAttribute('data-vendor');
+        const product = this.getAttribute('data-product');
+        const deviceId = `${vendor}:${product}`;
+        
+        document.getElementById('device_id').value = deviceId;
+        
+        // Прокручиваем к форме поиска
+        document.getElementById('device-search-form').scrollIntoView({
+            behavior: 'smooth'
+        });
+        
+        // Подсвечиваем поле поиска
+        const searchField = document.getElementById('device_id');
+        searchField.classList.add('border-primary');
+        setTimeout(() => {
+            searchField.classList.remove('border-primary');
+        }, 2000);
+    });
+});
 </script>
 {% endblock %}

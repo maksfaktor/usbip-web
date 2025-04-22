@@ -295,8 +295,32 @@ def get_remote_devices_route():
         return jsonify({'success': False, 'message': 'IP-адрес не указан'}), 400
     
     devices, error = get_remote_usb_devices(ip)
+    
+    # Запись в лог
     if error:
+        log_entry = LogEntry(
+            level='ERROR', 
+            message=f'Ошибка при получении списка устройств с {ip}: {error}', 
+            source='usbip'
+        )
+        db.session.add(log_entry)
+        db.session.commit()
         return jsonify({'success': False, 'message': error})
+    else:
+        log_entry = LogEntry(
+            level='INFO', 
+            message=f'Получен список устройств с сервера {ip} ({len(devices)} устройств)', 
+            source='usbip'
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+    
+    # Добавляем алиасы к устройствам, если они есть
+    for device in devices:
+        if 'busid' in device:
+            alias = DeviceAlias.query.filter_by(busid=device['busid']).first()
+            if alias:
+                device['alias'] = alias.alias
     
     return jsonify({'success': True, 'devices': devices})
 
@@ -309,6 +333,17 @@ def attach_device_route():
         return jsonify({'success': False, 'message': 'Не указан IP или busid устройства'}), 400
     
     success, message = attach_device(ip, busid)
+    
+    # Запись в лог
+    level = 'INFO' if success else 'ERROR'
+    log_entry = LogEntry(
+        level=level, 
+        message=f'Подключение устройства {busid} с сервера {ip}: {message}', 
+        source='usbip'
+    )
+    db.session.add(log_entry)
+    db.session.commit()
+    
     return jsonify({'success': success, 'message': message})
 
 @app.route('/detach_device', methods=['POST'])
@@ -319,6 +354,17 @@ def detach_device_route():
         return jsonify({'success': False, 'message': 'Не указан порт устройства'}), 400
     
     success, message = detach_device(port)
+    
+    # Запись в лог
+    level = 'INFO' if success else 'ERROR'
+    log_entry = LogEntry(
+        level=level, 
+        message=f'Отключение устройства с порта {port}: {message}', 
+        source='usbip'
+    )
+    db.session.add(log_entry)
+    db.session.commit()
+    
     return jsonify({'success': success, 'message': message})
 
 if __name__ == '__main__':

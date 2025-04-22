@@ -22,6 +22,90 @@ document.addEventListener('DOMContentLoaded', function() {
             bsAlert.close();
         }, 5000);
     });
+    
+    // Обработчик поиска информации об устройстве
+    const deviceSearchForm = document.getElementById('device-search-form');
+    if (deviceSearchForm) {
+        deviceSearchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const deviceId = document.getElementById('device_id').value.trim();
+            
+            if (!deviceId) {
+                showNotification('Введите идентификатор устройства', 'warning');
+                return;
+            }
+            
+            // Показываем индикатор загрузки
+            const resultContainer = document.getElementById('device-info-result');
+            resultContainer.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span></div><p class="mt-2">Поиск информации...</p></div>';
+            
+            // Отправляем запрос на сервер
+            fetch('/search_device_info', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'device_id': deviceId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultContainer.innerHTML = `
+                        <div class="alert alert-success mb-3" role="alert">
+                            <h5 class="alert-heading">Информация найдена</h5>
+                            <hr>
+                            <div class="device-info-text">
+                                ${data.data.replace(/\n/g, '<br>')}
+                            </div>
+                            <hr>
+                            <button class="btn btn-sm btn-outline-success copy-device-info">
+                                <i class="fas fa-copy me-1"></i>Копировать
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary save-device-info" data-device-id="${deviceId}">
+                                <i class="fas fa-save me-1"></i>Сохранить
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Добавляем обработчик копирования
+                    document.querySelector('.copy-device-info').addEventListener('click', function() {
+                        const textToCopy = data.data;
+                        navigator.clipboard.writeText(textToCopy).then(() => {
+                            showNotification('Информация скопирована в буфер обмена', 'success');
+                        }).catch(err => {
+                            showNotification('Не удалось скопировать текст: ' + err, 'danger');
+                        });
+                    });
+                    
+                    // Добавляем обработчик сохранения
+                    document.querySelector('.save-device-info').addEventListener('click', function() {
+                        const busid = this.getAttribute('data-device-id');
+                        const modal = new bootstrap.Modal(document.getElementById('saveDeviceInfoModal'));
+                        document.getElementById('save_busid').value = busid;
+                        document.getElementById('save_device_info').value = data.data;
+                        modal.show();
+                    });
+                } else {
+                    resultContainer.innerHTML = `
+                        <div class="alert alert-warning" role="alert">
+                            <h5 class="alert-heading">Информация не найдена</h5>
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                resultContainer.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <h5 class="alert-heading">Ошибка</h5>
+                        <p>Произошла ошибка при выполнении запроса: ${error}</p>
+                    </div>
+                `;
+            });
+        });
+    }
 });
 
 /**

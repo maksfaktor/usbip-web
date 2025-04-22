@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}Администрирование - OrangeUSB{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Левая колонка - Смена пароля -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-key me-2"></i>Смена пароля</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin') }}">
+                    <input type="hidden" name="change_password" value="1">
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Текущий пароль</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">Новый пароль</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" 
+                               required minlength="6">
+                        <div class="form-text">Минимум 6 символов</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Подтверждение нового пароля</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                               required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Сохранить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Правая колонка - Управление устройствами -->
+    <div class="col-lg-6">
+        <!-- Названия USB портов -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plug me-2"></i>Настройка USB портов</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Номер порта</th>
+                                <th>Название</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if usb_ports %}
+                                {% for port in usb_ports %}
+                                <tr>
+                                    <td>{{ port.port_number }}</td>
+                                    <td>{{ port.custom_name }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary edit-port-btn" 
+                                                data-port="{{ port.port_number }}" 
+                                                data-name="{{ port.custom_name }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-3">
+                                        <span class="text-muted">Нет настроенных портов</span>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPortModal">
+                    <i class="fas fa-plus me-1"></i>Добавить порт
+                </button>
+            </div>
+        </div>
+        
+        <!-- Алиасы устройств -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Алиасы устройств</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>BUSID</th>
+                                <th>Название</th>
+                                <th>Информация</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if device_aliases %}
+                                {% for alias in device_aliases %}
+                                <tr>
+                                    <td>{{ alias.busid }}</td>
+                                    <td>{{ alias.alias }}</td>
+                                    <td>
+                                        {% if alias.device_info %}
+                                            <span class="d-inline-block text-truncate" style="max-width: 150px;">
+                                                {{ alias.device_info }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">Нет информации</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary edit-alias-btn" 
+                                                data-busid="{{ alias.busid }}" 
+                                                data-alias="{{ alias.alias }}"
+                                                data-info="{{ alias.device_info }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-3">
+                                        <span class="text-muted">Нет настроенных алиасов</span>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления/редактирования порта -->
+<div class="modal fade" id="addPortModal" tabindex="-1" aria-labelledby="addPortModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPortModalLabel">Добавить порт</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('port_name') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="port_number" class="form-label">Номер порта</label>
+                        <input type="text" class="form-control" id="port_number" name="port_number" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="custom_name" class="form-label">Название порта</label>
+                        <input type="text" class="form-control" id="custom_name" name="custom_name" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования алиаса -->
+<div class="modal fade" id="editAliasModal" tabindex="-1" aria-labelledby="editAliasModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAliasModalLabel">Редактировать алиас</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('device_alias') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="busid" class="form-label">BUSID устройства</label>
+                        <input type="text" class="form-control" id="edit_busid" name="busid" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="alias" class="form-label">Название устройства</label>
+                        <input type="text" class="form-control" id="edit_alias" name="alias" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="device_info" class="form-label">Информация об устройстве</label>
+                        <textarea class="form-control" id="edit_device_info" name="device_info" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Обработчики для редактирования портов
+document.querySelectorAll('.edit-port-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const portNumber = this.getAttribute('data-port');
+        const portName = this.getAttribute('data-name');
+        
+        const modal = new bootstrap.Modal(document.getElementById('addPortModal'));
+        document.getElementById('port_number').value = portNumber;
+        document.getElementById('custom_name').value = portName;
+        document.getElementById('addPortModalLabel').textContent = 'Редактировать порт';
+        
+        modal.show();
+    });
+});
+
+// Обработчики для редактирования алиасов
+document.querySelectorAll('.edit-alias-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const busid = this.getAttribute('data-busid');
+        const alias = this.getAttribute('data-alias');
+        const info = this.getAttribute('data-info');
+        
+        const modal = new bootstrap.Modal(document.getElementById('editAliasModal'));
+        document.getElementById('edit_busid').value = busid;
+        document.getElementById('edit_alias').value = alias;
+        document.getElementById('edit_device_info').value = info;
+        
+        modal.show();
+    });
+});
+
+// Сброс модального окна порта при открытии для добавления
+document.getElementById('addPortModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('port_number').value = '';
+    document.getElementById('port_number').readOnly = false;
+    document.getElementById('custom_name').value = '';
+    document.getElementById('addPortModalLabel').textContent = 'Добавить порт';
+});
+</script>
+{% endblock %}
