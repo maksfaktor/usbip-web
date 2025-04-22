@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+
+{% block title %}Виртуальные USB устройства - OrangeUSB{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Колонка виртуальных устройств -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-microchip me-2"></i>Виртуальные устройства</h4>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createDeviceModal">
+                    <i class="fas fa-plus me-1"></i>Создать устройство
+                </button>
+            </div>
+            <div class="card-body p-0">
+                {% if virtual_devices %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Имя</th>
+                                <th>Тип</th>
+                                <th>VID:PID</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for device in virtual_devices %}
+                            <tr>
+                                <td>{{ device.name }}</td>
+                                <td>
+                                    {% if device.device_type == 'hid' %}
+                                        <span class="badge bg-primary">HID устройство</span>
+                                    {% elif device.device_type == 'storage' %}
+                                        <span class="badge bg-info">Хранилище</span>
+                                    {% elif device.device_type == 'serial' %}
+                                        <span class="badge bg-secondary">COM порт</span>
+                                    {% elif device.device_type == 'ethernet' %}
+                                        <span class="badge bg-dark">Сетевой</span>
+                                    {% elif device.device_type == 'audio' %}
+                                        <span class="badge bg-success">Аудио</span>
+                                    {% elif device.device_type == 'printer' %}
+                                        <span class="badge bg-danger">Принтер</span>
+                                    {% elif device.device_type == 'camera' %}
+                                        <span class="badge bg-warning">Камера</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">{{ device.device_type }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><code>{{ device.vendor_id }}:{{ device.product_id }}</code></td>
+                                <td>
+                                    {% if device.is_active %}
+                                        <span class="badge bg-success">Активно</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Не активно</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#connectDeviceModal"
+                                                data-device-id="{{ device.id }}"
+                                                data-device-name="{{ device.name }}">
+                                            <i class="fas fa-plug me-1"></i>Подключить
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-device-btn"
+                                                data-device-id="{{ device.id }}"
+                                                data-device-name="{{ device.name }}">
+                                            <i class="fas fa-trash me-1"></i>Удалить
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info m-3">
+                    <i class="fas fa-info-circle me-2"></i>Нет виртуальных устройств. Создайте новое устройство, нажав на кнопку выше.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Колонка виртуальных портов -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>Виртуальные порты</h4>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createPortModal">
+                    <i class="fas fa-plus me-1"></i>Создать порт
+                </button>
+            </div>
+            <div class="card-body p-0">
+                {% if virtual_ports %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Имя</th>
+                                <th>Номер</th>
+                                <th>Устройство</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for port in virtual_ports %}
+                            <tr>
+                                <td>{{ port.name }}</td>
+                                <td><code>{{ port.port_number }}</code></td>
+                                <td>
+                                    {% if port.device %}
+                                        {{ port.device.name }}
+                                    {% else %}
+                                        <span class="text-muted">Не подключено</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if port.is_connected %}
+                                        <span class="badge bg-success">Подключено</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Отключено</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        {% if port.is_connected %}
+                                            <form method="POST" action="{{ url_for('disconnect_virtual_device') }}" class="d-inline">
+                                                <input type="hidden" name="port_id" value="{{ port.id }}">
+                                                <button type="submit" class="btn btn-outline-warning">
+                                                    <i class="fas fa-unlink me-1"></i>Отключить
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <button class="btn btn-outline-primary"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#connectDeviceModal"
+                                                    data-port-id="{{ port.id }}"
+                                                    data-port-name="{{ port.name }}">
+                                                <i class="fas fa-link me-1"></i>Подключить
+                                            </button>
+                                        {% endif %}
+                                        <button class="btn btn-outline-danger delete-port-btn"
+                                                data-port-id="{{ port.id }}"
+                                                data-port-name="{{ port.name }}">
+                                            <i class="fas fa-trash me-1"></i>Удалить
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info m-3">
+                    <i class="fas fa-info-circle me-2"></i>Нет виртуальных портов. Создайте новый порт, нажав на кнопку выше.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно создания виртуального устройства -->
+<div class="modal fade" id="createDeviceModal" tabindex="-1" aria-labelledby="createDeviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createDeviceModalLabel">Создать виртуальное устройство</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('create_virtual_device') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Название устройства</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="device_type" class="form-label">Тип устройства</label>
+                        <select class="form-select" id="device_type" name="device_type" required>
+                            {% for type in device_types %}
+                                <option value="{{ type.id }}">{{ type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="vendor_id" class="form-label">Vendor ID</label>
+                            <input type="text" class="form-control" id="vendor_id" name="vendor_id" 
+                                   placeholder="1a2b" pattern="[0-9a-fA-F]{4}" maxlength="4">
+                            <div class="form-text">4 символа в hex формате</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="product_id" class="form-label">Product ID</label>
+                            <input type="text" class="form-control" id="product_id" name="product_id"
+                                   placeholder="3c4d" pattern="[0-9a-fA-F]{4}" maxlength="4">
+                            <div class="form-text">4 символа в hex формате</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="serial_number" class="form-label">Серийный номер (необязательно)</label>
+                        <input type="text" class="form-control" id="serial_number" name="serial_number">
+                    </div>
+                    <div class="mb-3">
+                        <label for="config_json" class="form-label">Конфигурация (JSON, необязательно)</label>
+                        <textarea class="form-control" id="config_json" name="config_json" rows="3"></textarea>
+                        <div class="form-text">JSON с дополнительными параметрами устройства</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно создания виртуального порта -->
+<div class="modal fade" id="createPortModal" tabindex="-1" aria-labelledby="createPortModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPortModalLabel">Создать виртуальный порт</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('create_virtual_port') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="port_name" class="form-label">Название порта</label>
+                        <input type="text" class="form-control" id="port_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="port_number" class="form-label">Номер порта (необязательно)</label>
+                        <input type="text" class="form-control" id="port_number" name="port_number" 
+                               placeholder="Будет сгенерирован автоматически">
+                        <div class="form-text">Если не указан, будет сгенерирован автоматически</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подключения устройства к порту -->
+<div class="modal fade" id="connectDeviceModal" tabindex="-1" aria-labelledby="connectDeviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="connectDeviceModalLabel">Подключить устройство к порту</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('connect_virtual_device') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="connect_port_id" class="form-label">Выберите порт</label>
+                        <select class="form-select" id="connect_port_id" name="port_id" required>
+                            <option value="" selected disabled>Выберите порт...</option>
+                            {% for port in virtual_ports %}
+                                {% if not port.is_connected %}
+                                    <option value="{{ port.id }}">{{ port.name }} ({{ port.port_number }})</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="connect_device_id" class="form-label">Выберите устройство</label>
+                        <select class="form-select" id="connect_device_id" name="device_id" required>
+                            <option value="" selected disabled>Выберите устройство...</option>
+                            {% for device in virtual_devices %}
+                                <option value="{{ device.id }}">{{ device.name }} ({{ device.vendor_id }}:{{ device.product_id }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Подключить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Скрытые формы для действий -->
+<form id="deleteDeviceForm" method="POST" action="{{ url_for('delete_virtual_device') }}" style="display: none;">
+    <input type="hidden" name="device_id" id="delete_device_id" value="">
+</form>
+
+<form id="deletePortForm" method="POST" action="{{ url_for('delete_virtual_port') }}" style="display: none;">
+    <input type="hidden" name="port_id" id="delete_port_id" value="">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработчики для удаления устройств
+    document.querySelectorAll('.delete-device-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const deviceId = this.getAttribute('data-device-id');
+            const deviceName = this.getAttribute('data-device-name');
+            
+            if (confirm(`Вы уверены, что хотите удалить устройство "${deviceName}"?`)) {
+                document.getElementById('delete_device_id').value = deviceId;
+                document.getElementById('deleteDeviceForm').submit();
+            }
+        });
+    });
+    
+    // Обработчики для удаления портов
+    document.querySelectorAll('.delete-port-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const portId = this.getAttribute('data-port-id');
+            const portName = this.getAttribute('data-port-name');
+            
+            if (confirm(`Вы уверены, что хотите удалить порт "${portName}"?`)) {
+                document.getElementById('delete_port_id').value = portId;
+                document.getElementById('deletePortForm').submit();
+            }
+        });
+    });
+    
+    // Предзаполнение модального окна подключения
+    const connectModal = document.getElementById('connectDeviceModal');
+    if (connectModal) {
+        connectModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            
+            // Проверяем, есть ли атрибуты порта или устройства
+            if (button.hasAttribute('data-port-id')) {
+                const portId = button.getAttribute('data-port-id');
+                const selectElement = document.getElementById('connect_port_id');
+                if (selectElement) {
+                    selectElement.value = portId;
+                }
+            }
+            
+            if (button.hasAttribute('data-device-id')) {
+                const deviceId = button.getAttribute('data-device-id');
+                const selectElement = document.getElementById('connect_device_id');
+                if (selectElement) {
+                    selectElement.value = deviceId;
+                }
+            }
+        });
+    }
+    
+    // Генерация случайных VID/PID при создании устройства
+    document.getElementById('createDeviceModal')?.addEventListener('show.bs.modal', function () {
+        // Генерируем случайные VID/PID, если поля пустые
+        if (!document.getElementById('vendor_id').value) {
+            const randomVid = Math.floor(Math.random() * 65535).toString(16).padStart(4, '0');
+            document.getElementById('vendor_id').value = randomVid;
+        }
+        
+        if (!document.getElementById('product_id').value) {
+            const randomPid = Math.floor(Math.random() * 65535).toString(16).padStart(4, '0');
+            document.getElementById('product_id').value = randomPid;
+        }
+    });
+});
+</script>
+{% endblock %}

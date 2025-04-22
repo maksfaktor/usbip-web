@@ -55,3 +55,35 @@ class LogEntry(db.Model):
     
     def __repr__(self):
         return f'<LogEntry {self.timestamp} {self.level}: {self.message[:30]}>'
+
+class VirtualUsbDevice(db.Model):
+    __tablename__ = 'virtual_usb_devices'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), nullable=False)
+    device_type = db.Column(db.String(32), nullable=False)  # hid, storage, serial, etc.
+    vendor_id = db.Column(db.String(6), nullable=False)  # формат: 1d6b
+    product_id = db.Column(db.String(6), nullable=False)  # формат: 0002
+    serial_number = db.Column(db.String(32))
+    is_active = db.Column(db.Boolean, default=False)
+    config_json = db.Column(db.Text)  # JSON с конфигурацией устройства
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<VirtualUsbDevice {self.name} ({self.vendor_id}:{self.product_id})>'
+
+class VirtualUsbPort(db.Model):
+    __tablename__ = 'virtual_usb_ports'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), nullable=False)
+    port_number = db.Column(db.String(16))  # Виртуальный номер порта
+    device_id = db.Column(db.Integer, db.ForeignKey('virtual_usb_devices.id'))
+    is_connected = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Связь с виртуальным устройством
+    device = db.relationship('VirtualUsbDevice', backref=db.backref('ports', lazy=True))
+    
+    def __repr__(self):
+        return f'<VirtualUsbPort {self.name} ({self.port_number})>'

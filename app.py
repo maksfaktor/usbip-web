@@ -1,4 +1,7 @@
 import os
+import re
+import json
+import random
 import logging
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -42,7 +45,7 @@ login_manager.login_view = "login"
 from usbip_utils import get_local_usb_devices, bind_device, get_remote_usb_devices, attach_device, detach_device, get_attached_devices
 
 # Импортирование моделей (после настройки db)
-from models import User, DeviceAlias, UsbPort, LogEntry
+from models import User, DeviceAlias, UsbPort, LogEntry, VirtualUsbDevice, VirtualUsbPort
 
 # Инициализация базы данных
 with app.app_context():
@@ -366,6 +369,231 @@ def detach_device_route():
     db.session.commit()
     
     return jsonify({'success': success, 'message': message})
+
+@app.route('/virtual_devices')
+@login_required
+def virtual_devices():
+    virtual_devices = VirtualUsbDevice.query.all()
+    virtual_ports = VirtualUsbPort.query.all()
+    
+    # Форматируем для шаблона
+    device_types = [
+        {'id': 'hid', 'name': 'HID (мышь, клавиатура)'},
+        {'id': 'storage', 'name': 'Устройство хранения (флешка)'},
+        {'id': 'serial', 'name': 'Последовательный порт'},
+        {'id': 'ethernet', 'name': 'Сетевой адаптер'},
+        {'id': 'audio', 'name': 'Аудио устройство'},
+        {'id': 'printer', 'name': 'Принтер'},
+        {'id': 'camera', 'name': 'Веб-камера'},
+        {'id': 'custom', 'name': 'Другое (своя конфигурация)'}
+    ]
+    
+    return render_template('virtual_devices.html', 
+                          virtual_devices=virtual_devices,
+                          virtual_ports=virtual_ports,
+                          device_types=device_types)
+
+@app.route('/create_virtual_device', methods=['POST'])
+@login_required
+def create_virtual_device():
+    name = request.form.get('name')
+    device_type = request.form.get('device_type')
+    vendor_id = request.form.get('vendor_id', '1a2b').lower()
+    product_id = request.form.get('product_id', '3c4d').lower()
+    serial_number = request.form.get('serial_number', '')
+    config_json = request.form.get('config_json', '{}')
+    
+    # Базовая валидация
+    if not name or not device_type:
+        flash('Имя и тип устройства обязательны', 'danger')
+        return redirect(url_for('virtual_devices'))
+    
+    # Проверка формата VID/PID
+    vid_pattern = re.compile(r'^[0-9a-f]{4}$')
+    if not vid_pattern.match(vendor_id) or not vid_pattern.match(product_id):
+        flash('Vendor ID и Product ID должны быть в формате 4 символа (0-9, a-f)', 'danger')
+        return redirect(url_for('virtual_devices'))
+    
+    # Создаем виртуальное устройство
+    device = VirtualUsbDevice(
+        name=name,
+        device_type=device_type,
+        vendor_id=vendor_id,
+        product_id=product_id,
+        serial_number=serial_number,
+        config_json=config_json
+    )
+    db.session.add(device)
+    
+    # Запись в лог
+    log_entry = LogEntry(
+        level='INFO',
+        message=f'Создано виртуальное устройство: {name} ({vendor_id}:{product_id})',
+        source='virtual'
+    )
+    db.session.add(log_entry)
+    db.session.commit()
+    
+    flash(f'Виртуальное устройство "{name}" создано', 'success')
+    return redirect(url_for('virtual_devices'))
+
+@app.route('/create_virtual_port', methods=['POST'])
+@login_required
+def create_virtual_port():
+    name = request.form.get('name')
+    port_number = request.form.get('port_number', f'vp{random.randint(0, 9999):04d}')
+    device_id = request.form.get('device_id')
+    
+    # Базовая валидация
+    if not name:
+        flash('Имя порта обязательно', 'danger')
+        return redirect(url_for('virtual_devices'))
+    
+    # Создаем виртуальный порт
+    port = VirtualUsbPort(
+        name=name,
+        port_number=port_number,
+        device_id=device_id if device_id else None
+    )
+    db.session.add(port)
+    
+    # Запись в лог
+    log_entry = LogEntry(
+        level='INFO',
+        message=f'Создан виртуальный порт: {name} ({port_number})',
+        source='virtual'
+    )
+    db.session.add(log_entry)
+    db.session.commit()
+    
+    flash(f'Виртуальный порт "{name}" создан', 'success')
+    return redirect(url_for('virtual_devices'))
+
+@app.route('/connect_virtual_device', methods=['POST'])
+@login_required
+def connect_virtual_device():
+    port_id = request.form.get('port_id')
+    device_id = request.form.get('device_id')
+    
+    # Проверка наличия порта и устройства
+    port = VirtualUsbPort.query.get(port_id)
+    device = VirtualUsbDevice.query.get(device_id)
+    
+    if not port or not device:
+        flash('Порт или устройство не найдены', 'danger')
+        return redirect(url_for('virtual_devices'))
+    
+    # Подключаем устройство к порту
+    port.device_id = device.id
+    port.is_connected = True
+    device.is_active = True
+    
+    # Запись в лог
+    log_entry = LogEntry(
+        level='INFO',
+        message=f'Устройство {device.name} подключено к порту {port.name}',
+        source='virtual'
+    )
+    db.session.add(log_entry)
+    db.session.commit()
+    
+    flash(f'Устройство {device.name} успешно подключено к порту {port.name}', 'success')
+    return redirect(url_for('virtual_devices'))
+
+@app.route('/disconnect_virtual_device', methods=['POST'])
+@login_required
+def disconnect_virtual_device():
+    port_id = request.form.get('port_id')
+    
+    # Проверка наличия порта
+    port = VirtualUsbPort.query.get(port_id)
+    
+    if not port:
+        flash('Порт не найден', 'danger')
+        return redirect(url_for('virtual_devices'))
+    
+    # Сохраняем имя устройства для лога
+    device_name = "Нет устройства"
+    if port.device:
+        device_name = port.device.name
+        port.device.is_active = False
+    
+    # Отключаем устройство от порта
+    port.device_id = None
+    port.is_connected = False
+    
+    # Запись в лог
+    log_entry = LogEntry(
+        level='INFO',
+        message=f'Устройство {device_name} отключено от порта {port.name}',
+        source='virtual'
+    )
+    db.session.add(log_entry)
+    db.session.commit()
+    
+    flash(f'Устройство отключено от порта {port.name}', 'success')
+    return redirect(url_for('virtual_devices'))
+
+@app.route('/delete_virtual_device', methods=['POST'])
+@login_required
+def delete_virtual_device():
+    device_id = request.form.get('device_id')
+    
+    # Проверка наличия устройства
+    device = VirtualUsbDevice.query.get(device_id)
+    
+    if not device:
+        flash('Устройство не найдено', 'danger')
+        return redirect(url_for('virtual_devices'))
+    
+    # Сначала отключаем устройство от всех портов
+    for port in VirtualUsbPort.query.filter_by(device_id=device.id).all():
+        port.device_id = None
+        port.is_connected = False
+    
+    # Удаляем устройство
+    device_name = device.name
+    db.session.delete(device)
+    
+    # Запись в лог
+    log_entry = LogEntry(
+        level='INFO',
+        message=f'Виртуальное устройство {device_name} удалено',
+        source='virtual'
+    )
+    db.session.add(log_entry)
+    db.session.commit()
+    
+    flash(f'Виртуальное устройство "{device_name}" удалено', 'success')
+    return redirect(url_for('virtual_devices'))
+
+@app.route('/delete_virtual_port', methods=['POST'])
+@login_required
+def delete_virtual_port():
+    port_id = request.form.get('port_id')
+    
+    # Проверка наличия порта
+    port = VirtualUsbPort.query.get(port_id)
+    
+    if not port:
+        flash('Порт не найден', 'danger')
+        return redirect(url_for('virtual_devices'))
+    
+    # Удаляем порт
+    port_name = port.name
+    db.session.delete(port)
+    
+    # Запись в лог
+    log_entry = LogEntry(
+        level='INFO',
+        message=f'Виртуальный порт {port_name} удален',
+        source='virtual'
+    )
+    db.session.add(log_entry)
+    db.session.commit()
+    
+    flash(f'Виртуальный порт "{port_name}" удален', 'success')
+    return redirect(url_for('virtual_devices'))
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
