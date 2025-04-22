@@ -97,21 +97,34 @@
                                 </thead>
                                 <tbody>
                                     {% for device in attached_devices %}
-                                    <tr>
+                                    <tr {% if device.is_virtual %}class="table-info"{% endif %}>
                                         <td>{{ device.port }}</td>
                                         <td>
                                             <div>{{ device.device_name }}</div>
-                                            <small class="text-muted">{{ device.remote_busid }} ({{ device.remote_host }})</small>
+                                            <small class="text-muted">{{ device.remote_busid }} 
+                                                {% if device.is_virtual %}
+                                                    (виртуальное)
+                                                {% else %}
+                                                    ({{ device.remote_host }})
+                                                {% endif %}
+                                            </small>
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-danger detach-device-btn" data-port="{{ device.port }}">
+                                                <button class="btn btn-danger detach-device-btn" 
+                                                        data-port="{{ device.port }}"
+                                                        {% if device.is_virtual %}
+                                                        data-is-virtual="true" 
+                                                        data-virtual-port-id="{{ device.virtual_port_id }}"
+                                                        {% endif %}>
                                                     <i class="fas fa-unlink me-1"></i>Отключить
                                                 </button>
+                                                {% if not device.is_virtual %}
                                                 <button class="btn btn-outline-info set-port-name-btn" 
                                                         data-port="{{ device.port }}">
                                                     <i class="fas fa-tag me-1"></i>Имя порта
                                                 </button>
+                                                {% endif %}
                                             </div>
                                         </td>
                                     </tr>
