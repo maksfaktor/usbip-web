@@ -27,22 +27,34 @@
                                 </thead>
                                 <tbody>
                                     {% for device in local_devices %}
-                                    <tr>
-                                        <td>{{ device.busid }}</td>
+                                    <tr {% if device.is_virtual %}class="table-primary"{% endif %}>
+                                        <td>
+                                            {{ device.busid }}
+                                            {% if device.is_virtual %}
+                                            <span class="badge bg-primary">Виртуальное</span>
+                                            {% endif %}
+                                        </td>
                                         <td>
                                             <div>{{ device.device_name }}</div>
                                             <small class="text-muted">{{ device.vendor_id }}:{{ device.product_id }}</small>
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-primary bind-device-btn" data-busid="{{ device.busid }}">
+                                                <button class="btn btn-primary bind-device-btn" 
+                                                        data-busid="{{ device.busid }}"
+                                                        {% if device.is_virtual %}
+                                                        data-is-virtual="true" 
+                                                        data-virtual-id="{{ device.virtual_id }}"
+                                                        {% endif %}>
                                                     <i class="fas fa-share me-1"></i>Опубликовать
                                                 </button>
+                                                {% if not device.is_virtual %}
                                                 <button class="btn btn-outline-info set-alias-btn" 
                                                         data-busid="{{ device.busid }}" 
                                                         data-device="{{ device.device_name }}">
                                                     <i class="fas fa-tag me-1"></i>Задать имя
                                                 </button>
+                                                {% endif %}
                                                 <button class="btn btn-outline-secondary search-info-btn" 
                                                         data-vendor="{{ device.vendor_id }}" 
                                                         data-product="{{ device.product_id }}">
@@ -232,6 +244,40 @@
         </div>
     </div>
 </div>
+
+<!-- Модальное окно для подключения виртуального устройства -->
+<div class="modal fade" id="connectVirtualDeviceModal" tabindex="-1" aria-labelledby="connectVirtualDeviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="connectVirtualDeviceModalLabel">Подключить виртуальное устройство</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('connect_virtual_device') }}">
+                <div class="modal-body">
+                    <input type="hidden" id="virtual_device_id" name="device_id">
+                    
+                    <div class="mb-3">
+                        <label for="connect_virtual_port_id" class="form-label">Выберите виртуальный порт</label>
+                        <select class="form-select" id="connect_virtual_port_id" name="port_id" required>
+                            <option value="" selected disabled>Выберите порт...</option>
+                            {% for port in available_virtual_ports %}
+                                <option value="{{ port.id }}">{{ port.name }} ({{ port.port_number or 'Без номера' }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            Если нет доступных портов, вам нужно сначала создать виртуальный порт на странице "Виртуальные устройства"
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Подключить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -244,6 +290,20 @@ document.querySelectorAll('.bind-device-btn').forEach(button => {
             showNotification('BUSID устройства не указан', 'danger');
             return;
         }
+        
+        // Проверяем, является ли устройство виртуальным
+        const isVirtual = this.hasAttribute('data-is-virtual');
+        const virtualId = this.getAttribute('data-virtual-id');
+        
+        if (isVirtual && virtualId) {
+            // Для виртуальных устройств открываем модальное окно подключения
+            const modal = new bootstrap.Modal(document.getElementById('connectVirtualDeviceModal'));
+            document.getElementById('virtual_device_id').value = virtualId;
+            modal.show();
+            return;
+        }
+        
+        // Для реальных устройств отправляем запрос через USBIP
         
         // Меняем состояние кнопки
         const originalText = this.innerHTML;
@@ -288,6 +348,54 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
             return;
         }
         
+        // Проверяем, является ли порт виртуальным
+        const isVirtual = this.hasAttribute('data-is-virtual');
+        const virtualPortId = this.getAttribute('data-virtual-port-id');
+        
+        if (isVirtual && virtualPortId) {
+            // Для виртуальных портов отправляем запрос на отключение виртуального устройства
+            if (!confirm(`Вы уверены, что хотите отключить виртуальное устройство от порта?`)) {
+                return;
+            }
+            
+            // Меняем состояние кнопки
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Отключение...';
+            this.disabled = true;
+            
+            // Отправляем форму на отключение виртуального устройства
+            fetch('/disconnect_virtual_device', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'port_id': virtualPortId
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    showNotification('Виртуальное устройство успешно отключено', 'success');
+                    // Перезагружаем страницу для обновления списка
+                    window.location.reload();
+                } else {
+                    showNotification('Ошибка при отключении виртуального устройства', 'danger');
+                    // Восстанавливаем состояние кнопки
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }
+            })
+            .catch(error => {
+                showNotification(`Ошибка: ${error}`, 'danger');
+                // Восстанавливаем состояние кнопки
+                this.innerHTML = originalText;
+                this.disabled = false;
+            });
+            
+            return;
+        }
+        
+        // Для реальных устройств выполняем обычное отключение через USBIP
         if (!confirm(`Вы уверены, что хотите отключить устройство на порту ${port}?`)) {
             return;
         }

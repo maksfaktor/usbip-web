@@ -107,9 +107,43 @@ def logout():
 @app.route('/')
 @login_required
 def index():
+    # Получаем реальные USB устройства через usbip
     local_devices = get_local_usb_devices()
     attached_devices = get_attached_devices()
-    return render_template('index.html', local_devices=local_devices, attached_devices=attached_devices)
+    
+    # Добавляем виртуальные устройства в список локальных устройств
+    virtual_devices = VirtualUsbDevice.query.filter_by(is_active=False).all()
+    for device in virtual_devices:
+        local_devices.append({
+            'busid': f'v-{device.id}',  # Добавляем префикс, чтобы отличать от реальных устройств
+            'device_name': f'{device.name} (Виртуальное)',
+            'vendor_id': device.vendor_id,
+            'product_id': device.product_id,
+            'is_virtual': True,
+            'virtual_id': device.id
+        })
+    
+    # Добавляем подключенные виртуальные устройства в список подключенных устройств
+    connected_virtual_ports = VirtualUsbPort.query.filter_by(is_connected=True).all()
+    for port in connected_virtual_ports:
+        if port.device:
+            attached_devices.append({
+                'port': f'v-{port.port_number}',
+                'device_name': f'{port.device.name} (Виртуальное)',
+                'remote_busid': f'{port.device.vendor_id}:{port.device.product_id}',
+                'remote_host': 'local-virtual',
+                'is_virtual': True,
+                'virtual_port_id': port.id,
+                'virtual_device_id': port.device.id
+            })
+    
+    # Получаем свободные виртуальные порты для модального окна подключения
+    available_virtual_ports = VirtualUsbPort.query.filter_by(is_connected=False).all()
+    
+    return render_template('index.html', 
+                          local_devices=local_devices, 
+                          attached_devices=attached_devices,
+                          available_virtual_ports=available_virtual_ports)
 
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
