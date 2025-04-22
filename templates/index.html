@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Локальные USB-устройства - OrangeUSB{% endblock %}
+
+{% block content %}
+<!-- Карточка с локальными устройствами -->
+<div class="card mb-4">
+    <div class="card-header bg-primary">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fas fa-hdd me-2"></i>Локальные USB-устройства</h4>
+            <button id="refreshLocalBtn" class="btn btn-sm btn-light">
+                <i class="fas fa-sync-alt"></i> Обновить
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div id="localDevicesContainer">
+            {% if local_devices %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>BusID</th>
+                                <th>Информация</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for device in local_devices %}
+                            <tr>
+                                <td>{{ device.busid }}</td>
+                                <td>
+                                    <strong>{{ device.info }}</strong>
+                                    {% if device.details %}
+                                        <ul class="mb-0 small">
+                                            {% for detail in device.details %}
+                                                <li>{{ detail }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-success bind-btn" data-busid="{{ device.busid }}">
+                                        <i class="fas fa-share-alt"></i> Опубликовать
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>Локальные USB-устройства не найдены
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Карточка с подключенными устройствами -->
+<div class="card">
+    <div class="card-header bg-success">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fas fa-plug me-2"></i>Подключенные удаленные устройства</h4>
+            <button id="refreshAttachedBtn" class="btn btn-sm btn-light">
+                <i class="fas fa-sync-alt"></i> Обновить
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div id="attachedDevicesContainer">
+            {% if attached_devices %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Порт</th>
+                                <th>Сервер</th>
+                                <th>BusID</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for device in attached_devices %}
+                            <tr>
+                                <td>{{ device.port }}</td>
+                                <td>{{ device.remote_host if device.remote_host else 'Н/Д' }}</td>
+                                <td>{{ device.remote_busid if device.remote_busid else 'Н/Д' }}</td>
+                                <td>
+                                    {% if 'Status: Online' in device.details|join(' ') %}
+                                        <span class="badge bg-success">Online</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Offline</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger detach-btn" data-port="{{ device.port }}">
+                                        <i class="fas fa-unlink"></i> Отключить
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>Нет подключенных удаленных устройств
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для сообщений -->
+<div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="messageModalTitle">Сообщение</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="messageModalBody">
+                Сообщение...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Модальное окно
+        const messageModal = new bootstrap.Modal(document.getElementById('messageModal'));
+        const messageModalTitle = document.getElementById('messageModalTitle');
+        const messageModalBody = document.getElementById('messageModalBody');
+        
+        // Показать сообщение в модальном окне
+        function showMessage(title, message, isError = false) {
+            messageModalTitle.innerText = title;
+            messageModalBody.innerText = message;
+            messageModalTitle.classList.toggle('text-danger', isError);
+            messageModal.show();
+        }
+        
+        // Загрузка локальных устройств
+        function loadLocalDevices() {
+            fetch('/')
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const localDevicesContainer = doc.getElementById('localDevicesContainer');
+                    
+                    if (localDevicesContainer) {
+                        document.getElementById('localDevicesContainer').innerHTML = localDevicesContainer.innerHTML;
+                        attachEventListeners();
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при обновлении локальных устройств:', error);
+                    showMessage('Ошибка', 'Не удалось загрузить список локальных устройств', true);
+                });
+        }
+        
+        // Загрузка подключенных устройств
+        function loadAttachedDevices() {
+            fetch('/')
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const attachedDevicesContainer = doc.getElementById('attachedDevicesContainer');
+                    
+                    if (attachedDevicesContainer) {
+                        document.getElementById('attachedDevicesContainer').innerHTML = attachedDevicesContainer.innerHTML;
+                        attachEventListeners();
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при обновлении подключенных устройств:', error);
+                    showMessage('Ошибка', 'Не удалось загрузить список подключенных устройств', true);
+                });
+        }
+        
+        // Публикация устройства
+        function bindDevice(busid) {
+            const formData = new FormData();
+            formData.append('busid', busid);
+            
+            fetch('/bind_device', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('Успех', data.message);
+                    } else {
+                        showMessage('Ошибка', data.message, true);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при публикации устройства:', error);
+                    showMessage('Ошибка', 'Не удалось опубликовать устройство', true);
+                });
+        }
+        
+        // Отключение устройства
+        function detachDevice(port) {
+            const formData = new FormData();
+            formData.append('port', port);
+            
+            fetch('/detach_device', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('Успех', data.message);
+                        // Обновление списка подключенных устройств
+                        loadAttachedDevices();
+                    } else {
+                        showMessage('Ошибка', data.message, true);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при отключении устройства:', error);
+                    showMessage('Ошибка', 'Не удалось отключить устройство', true);
+                });
+        }
+        
+        // Присоединение обработчиков событий
+        function attachEventListeners() {
+            // Публикация устройства
+            document.querySelectorAll('.bind-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const busid = this.getAttribute('data-busid');
+                    bindDevice(busid);
+                });
+            });
+            
+            // Отключение устройства
+            document.querySelectorAll('.detach-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const port = this.getAttribute('data-port');
+                    detachDevice(port);
+                });
+            });
+        }
+        
+        // Обновление списка локальных устройств
+        document.getElementById('refreshLocalBtn').addEventListener('click', loadLocalDevices);
+        
+        // Обновление списка подключенных устройств
+        document.getElementById('refreshAttachedBtn').addEventListener('click', loadAttachedDevices);
+        
+        // Первоначальное присоединение обработчиков событий
+        attachEventListeners();
+    });
+</script>
+{% endblock %}

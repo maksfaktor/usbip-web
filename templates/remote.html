@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Удаленное подключение - OrangeUSB{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header bg-primary">
+        <h4 class="mb-0"><i class="fas fa-network-wired me-2"></i>Подключение к удаленному серверу</h4>
+    </div>
+    <div class="card-body">
+        <form id="remoteForm" class="mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-8">
+                    <label for="remoteIp" class="form-label">IP-адрес удаленного сервера</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-server"></i></span>
+                        <input type="text" class="form-control" id="remoteIp" name="ip" placeholder="192.168.1.100" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Найти устройства
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        <div id="remoteLoadingSpinner" class="text-center my-5 d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+            <p class="mt-2">Получение списка удаленных устройств...</p>
+        </div>
+        
+        <div id="remoteDevicesContainer" class="d-none">
+            <h5 class="mb-3"><i class="fas fa-usb me-2"></i>Доступные устройства на удаленном сервере</h5>
+            <div id="remoteDevicesList">
+                <!-- Сюда будут добавлены устройства -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для сообщений -->
+<div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="messageModalTitle">Сообщение</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="messageModalBody">
+                Сообщение...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const remoteForm = document.getElementById('remoteForm');
+        const remoteIpInput = document.getElementById('remoteIp');
+        const remoteLoadingSpinner = document.getElementById('remoteLoadingSpinner');
+        const remoteDevicesContainer = document.getElementById('remoteDevicesContainer');
+        const remoteDevicesList = document.getElementById('remoteDevicesList');
+        
+        // Модальное окно
+        const messageModal = new bootstrap.Modal(document.getElementById('messageModal'));
+        const messageModalTitle = document.getElementById('messageModalTitle');
+        const messageModalBody = document.getElementById('messageModalBody');
+        
+        // Показать сообщение в модальном окне
+        function showMessage(title, message, isError = false) {
+            messageModalTitle.innerText = title;
+            messageModalBody.innerText = message;
+            messageModalTitle.classList.toggle('text-danger', isError);
+            messageModal.show();
+        }
+        
+        // Получение удаленных устройств
+        remoteForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const ip = remoteIpInput.value.trim();
+            if (!ip) return;
+            
+            // Показываем индикатор загрузки
+            remoteDevicesContainer.classList.add('d-none');
+            remoteLoadingSpinner.classList.remove('d-none');
+            
+            const formData = new FormData();
+            formData.append('ip', ip);
+            
+            fetch('/get_remote_devices', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Скрываем индикатор загрузки
+                    remoteLoadingSpinner.classList.add('d-none');
+                    
+                    if (data.success) {
+                        displayRemoteDevices(data.devices, ip);
+                    } else {
+                        showMessage('Ошибка', data.message, true);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при получении удаленных устройств:', error);
+                    remoteLoadingSpinner.classList.add('d-none');
+                    showMessage('Ошибка', 'Не удалось получить список удаленных устройств', true);
+                });
+        });
+        
+        // Отображение удаленных устройств
+        function displayRemoteDevices(devices, ip) {
+            remoteDevicesContainer.classList.remove('d-none');
+            
+            if (devices.length === 0) {
+                remoteDevicesList.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>Устройства на сервере ${ip} не найдены
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>BusID</th>
+                                <th>Информация</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            devices.forEach(device => {
+                html += `
+                    <tr>
+                        <td>${device.busid}</td>
+                        <td>
+                            <strong>${device.info}</strong>
+                            ${device.details && device.details.length ? 
+                                '<ul class="mb-0 small">' + 
+                                    device.details.map(detail => `<li>${detail}</li>`).join('') + 
+                                '</ul>' : 
+                                ''}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-success attach-btn" data-ip="${ip}" data-busid="${device.busid}">
+                                <i class="fas fa-link"></i> Подключить
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            remoteDevicesList.innerHTML = html;
+            
+            // Присоединение обработчиков событий
+            document.querySelectorAll('.attach-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const busid = this.getAttribute('data-busid');
+                    const ip = this.getAttribute('data-ip');
+                    attachDevice(ip, busid);
+                });
+            });
+        }
+        
+        // Подключение устройства
+        function attachDevice(ip, busid) {
+            const formData = new FormData();
+            formData.append('ip', ip);
+            formData.append('busid', busid);
+            
+            // Блокируем кнопку
+            const btn = document.querySelector(`.attach-btn[data-ip="${ip}"][data-busid="${busid}"]`);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Подключение...';
+            }
+            
+            fetch('/attach_device', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('Успех', data.message);
+                    } else {
+                        showMessage('Ошибка', data.message, true);
+                    }
+                    
+                    // Разблокируем кнопку
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-link"></i> Подключить';
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при подключении устройства:', error);
+                    showMessage('Ошибка', 'Не удалось подключить устройство', true);
+                    
+                    // Разблокируем кнопку
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-link"></i> Подключить';
+                    }
+                });
+        }
+    });
+</script>
+{% endblock %}

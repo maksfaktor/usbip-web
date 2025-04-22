@@ -1,0 +1,82 @@
+/* OrangeUSB - Дополнительные стили */
+
+/* Переопределение цветов для соответствия Orange Pi */
+:root {
+    --orange-pi-color: #ff6600;
+    --orange-pi-secondary: #e65c00;
+}
+
+.btn-primary {
+    background-color: var(--orange-pi-color);
+    border-color: var(--orange-pi-secondary);
+}
+
+.btn-primary:hover, 
+.btn-primary:focus, 
+.btn-primary:active {
+    background-color: var(--orange-pi-secondary);
+    border-color: var(--orange-pi-secondary);
+}
+
+.bg-primary {
+    background-color: var(--orange-pi-color) !important;
+}
+
+/* Улучшения для панелей устройств */
+.device-card {
+    transition: all 0.3s ease;
+}
+
+.device-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Анимации */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Улучшения для хедера */
+.navbar-brand {
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+/* Стилизация кнопок */
+.btn {
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+/* Таблицы */
+.table th {
+    font-weight: 600;
+    border-top: none;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(255, 102, 0, 0.1);
+}
+
+/* Панель статуса для уведомлений */
+#notification-container {
+    z-index: 9999;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .card-header button {
+        margin-top: 10px;
+    }
+}
