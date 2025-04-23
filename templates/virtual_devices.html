@@ -23,6 +23,7 @@
                                 <th>Тип</th>
                                 <th>VID:PID</th>
                                 <th>Статус</th>
+                                <th>Информация</th>
                                 <th>Действия</th>
                             </tr>
                         </thead>
@@ -35,6 +36,11 @@
                                         <span class="badge bg-primary">HID устройство</span>
                                     {% elif device.device_type == 'storage' %}
                                         <span class="badge bg-info">Хранилище</span>
+                                        {% if device.is_system_path %}
+                                            <span class="badge bg-warning">Системная папка</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Виртуальное</span>
+                                        {% endif %}
                                     {% elif device.device_type == 'serial' %}
                                         <span class="badge bg-secondary">COM порт</span>
                                     {% elif device.device_type == 'ethernet' %}
@@ -411,6 +417,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!document.getElementById('vendor_id').value) {
             const randomVid = Math.floor(Math.random() * 65535).toString(16).padStart(4, '0');
             document.getElementById('vendor_id').value = randomVid;
+        }
+        
+        // Обработчик переключения между виртуальной и системной папкой
+        const useSystemFolderCheckbox = document.getElementById('use_system_folder');
+        const virtualStorageOptions = document.getElementById('virtual_storage_options');
+        const systemFolderOptions = document.getElementById('system_folder_options');
+        
+        if (useSystemFolderCheckbox && virtualStorageOptions && systemFolderOptions) {
+            useSystemFolderCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    virtualStorageOptions.style.display = 'none';
+                    systemFolderOptions.style.display = 'block';
+                } else {
+                    virtualStorageOptions.style.display = 'block';
+                    systemFolderOptions.style.display = 'none';
+                }
+            });
         }
         
         if (!document.getElementById('product_id').value) {

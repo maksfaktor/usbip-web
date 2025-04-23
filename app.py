@@ -534,13 +534,52 @@ def create_virtual_device():
     
     # Если это устройство хранения, создаем хранилище
     if device_type == 'storage':
-        create_device_storage(device, storage_size)
+        # Проверяем, используется ли системная папка
+        use_system_folder = 'use_system_folder' in request.form
+        
+        if use_system_folder:
+            # Получаем путь к системной папке
+            system_path = request.form.get('system_path', '').strip()
+            
+            # Получаем размер из формы для системной папки
+            try:
+                system_storage_size = int(request.form.get('system_storage_size', 1024))
+                if system_storage_size < 1 or system_storage_size > 16384:
+                    system_storage_size = 1024
+            except ValueError:
+                system_storage_size = 1024
+                
+            # Проверяем, указан ли путь
+            if not system_path:
+                flash('Необходимо указать путь к системной папке', 'danger')
+                db.session.delete(device)
+                db.session.commit()
+                return redirect(url_for('virtual_devices'))
+                
+            # Создаем хранилище с системной папкой
+            if not create_device_storage(device, system_storage_size, system_path):
+                flash('Не удалось создать хранилище с указанной системной папкой', 'danger')
+                db.session.delete(device)
+                db.session.commit()
+                return redirect(url_for('virtual_devices'))
+        else:
+            # Создаем обычное виртуальное хранилище
+            create_device_storage(device, storage_size)
     
     # Запись в лог
+    log_message = f'Создано виртуальное устройство: {name} ({vendor_id}:{product_id})'
+    
+    if device_type == 'storage':
+        if 'use_system_folder' in request.form:
+            system_path = request.form.get('system_path', '').strip()
+            system_storage_size = int(request.form.get('system_storage_size', 1024))
+            log_message += f' с системной папкой {system_path} ({system_storage_size} МБ)'
+        else:
+            log_message += f' с виртуальным хранилищем {storage_size} МБ'
+    
     log_entry = LogEntry(
         level='INFO',
-        message=f'Создано виртуальное устройство: {name} ({vendor_id}:{product_id})'
-                + (f' с хранилищем {storage_size} МБ' if device_type == 'storage' else ''),
+        message=log_message,
         source='virtual'
     )
     db.session.add(log_entry)
