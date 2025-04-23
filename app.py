@@ -3,6 +3,8 @@ import re
 import json
 import random
 import logging
+import socket
+import netifaces
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -15,6 +17,51 @@ import trafilatura
 # Настройка логгирования
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+# Функция для получения информации о сетевых интерфейсах
+def get_network_interfaces():
+    """
+    Получает информацию о сетевых интерфейсах (Ethernet и WiFi) и их IP-адресах.
+    Возвращает словарь с интерфейсами и их адресами.
+    """
+    interfaces = {}
+    try:
+        # Получаем список всех интерфейсов
+        all_interfaces = netifaces.interfaces()
+        
+        for iface in all_interfaces:
+            # Пропускаем loopback и виртуальные интерфейсы
+            if iface == 'lo' or 'docker' in iface or 'veth' in iface or 'br-' in iface:
+                continue
+                
+            addrs = netifaces.ifaddresses(iface)
+            # Проверяем наличие IPv4 адресов
+            if netifaces.AF_INET in addrs:
+                for addr in addrs[netifaces.AF_INET]:
+                    ip = addr['addr']
+                    # Пропускаем localhost
+                    if ip.startswith('127.'):
+                        continue
+                    
+                    # Определяем тип интерфейса (Ethernet или WiFi)
+                    iface_type = 'Ethernet'
+                    if iface.startswith('wl') or 'wlan' in iface or 'wifi' in iface.lower():
+                        iface_type = 'WiFi'
+                    
+                    # Добавляем в словарь
+                    if iface_type not in interfaces:
+                        interfaces[iface_type] = []
+                    interfaces[iface_type].append({
+                        'name': iface,
+                        'ip': ip,
+                        'url': f'http://{ip}:5000'
+                    })
+        
+        logger.debug(f"Найденные сетевые интерфейсы: {interfaces}")
+    except Exception as e:
+        logger.error(f"Ошибка при получении информации о сетевых интерфейсах: {str(e)}")
+    
+    return interfaces
 
 # Создание базового класса для SQLAlchemy
 class Base(DeclarativeBase):
@@ -100,7 +147,9 @@ def login():
                 
             flash('Неверное имя пользователя или пароль', 'danger')
     
-    return render_template('login.html')
+    # Получаем информацию о сетевых интерфейсах
+    network_interfaces = get_network_interfaces()
+    return render_template('login.html', network_interfaces=network_interfaces)
 
 @app.route('/logout')
 @login_required
@@ -152,10 +201,14 @@ def index():
     # Получаем свободные виртуальные порты для модального окна подключения
     available_virtual_ports = VirtualUsbPort.query.filter_by(is_connected=False).all()
     
+    # Получаем информацию о сетевых интерфейсах
+    network_interfaces = get_network_interfaces()
+    
     return render_template('index.html', 
                           local_devices=local_devices, 
                           attached_devices=attached_devices,
-                          available_virtual_ports=available_virtual_ports)
+                          available_virtual_ports=available_virtual_ports,
+                          network_interfaces=network_interfaces)
 
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
