@@ -18,7 +18,7 @@
 - Python 3
 - Flask
 - SQLAlchemy
-- PostgreSQL
+- SQLite (по умолчанию) или PostgreSQL (опционально)
 - USB/IP (Linux)
 - Bootstrap 5
 
@@ -26,7 +26,6 @@
 
 - Linux с установленной утилитой USB/IP
 - Python 3.7+
-- PostgreSQL
 
 ### Установка USB/IP в Linux
 
@@ -49,9 +48,13 @@ sudo dnf install usbip
 sudo pacman -S usbip
 ```
 
-### Настройка PostgreSQL
+### О базе данных
 
-Установите PostgreSQL и создайте базу данных:
+По умолчанию приложение использует SQLite, что не требует дополнительной настройки. База данных будет автоматически создана при первом запуске приложения.
+
+#### Использование PostgreSQL (опционально)
+
+Если вам необходимо использовать PostgreSQL вместо SQLite, вы можете установить его и настроить:
 
 ```
 # Установка PostgreSQL
@@ -65,6 +68,9 @@ sudo systemctl enable postgresql
 sudo -u postgres psql -c "CREATE USER usbip_user WITH PASSWORD 'your_password';"
 sudo -u postgres psql -c "CREATE DATABASE usbip_db OWNER usbip_user;"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE usbip_db TO usbip_user;"
+
+# Установка переменной окружения для использования PostgreSQL
+export DATABASE_URL="postgresql://usbip_user:your_password@localhost/usbip_db"
 ```
 
 ## Установка
@@ -117,14 +123,14 @@ sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE usbip_db TO usbip_use
    source venv/bin/activate
    ```
 
-4. Настройте переменные окружения:
-   ```
-   export DATABASE_URL=postgresql://user:password@localhost/usbip_db
-   ```
-
-5. Запустите приложение:
+4. Запустите приложение:
    ```
    gunicorn --bind 0.0.0.0:5000 main:app
+   ```
+   
+   По умолчанию будет использоваться SQLite. Если вы хотите использовать PostgreSQL, настройте переменную окружения:
+   ```
+   export DATABASE_URL=postgresql://user:password@localhost/usbip_db
    ```
 
 > **Примечание**: В Ubuntu 24.04 и других современных дистрибутивах рекомендуется использовать виртуальное окружение для установки пакетов Python (согласно PEP 668).
@@ -247,8 +253,9 @@ YOUR_USERNAME ALL=(ALL) NOPASSWD: /usr/lib/linux-tools/*/usbip
 
 1. Установите USB/IP
 2. Установите зависимости
-3. Установите и настройте PostgreSQL
-4. Клонируйте и настройте приложение
+3. Клонируйте и настройте приложение
+
+SQLite будет использоваться по умолчанию, без необходимости дополнительной настройки.
 
 #### Шаг 3: Запуск демона USB/IP
 
@@ -265,8 +272,13 @@ sudo systemctl enable usbipd
 
 ```
 source venv/bin/activate
-export DATABASE_URL=postgresql://usbip_user:your_password@localhost/usbip_db
 gunicorn --bind 0.0.0.0:5000 main:app
+```
+
+Приложение будет использовать SQLite по умолчанию. Если нужен PostgreSQL, перед запуском добавьте:
+
+```
+export DATABASE_URL=postgresql://usbip_user:your_password@localhost/usbip_db
 ```
 
 #### Шаг 5: Тестирование функциональности
