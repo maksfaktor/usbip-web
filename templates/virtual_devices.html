@@ -756,9 +756,28 @@ document.addEventListener('DOMContentLoaded', function() {
             // Устанавливаем выбранный путь
             document.getElementById('system_path').value = currentPath;
             
-            // Закрываем модальное окно
+            // Закрываем модальное окно без скрытия основного модального окна
             const modal = bootstrap.Modal.getInstance(folderBrowserModal);
             modal.hide();
+            
+            // Убедимся, что основное модальное окно остается видимым
+            setTimeout(function() {
+                // Сфокусируемся на основном модальном окне и предотвратим его закрытие
+                const mainModal = document.getElementById('createDeviceModal');
+                if (mainModal) {
+                    mainModal.classList.add('show');
+                    mainModal.style.display = 'block';
+                    document.body.classList.add('modal-open');
+                    
+                    // Если был затемняющий фон, восстановим его
+                    let backdrop = document.querySelector('.modal-backdrop');
+                    if (!backdrop) {
+                        backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        document.body.appendChild(backdrop);
+                    }
+                }
+            }, 100);
         });
     }
 });
