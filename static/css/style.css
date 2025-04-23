@@ -1,82 +1,190 @@
-/* OrangeUSB - Дополнительные стили */
-
-/* Переопределение цветов для соответствия Orange Pi */
-:root {
-    --orange-pi-color: #ff6600;
-    --orange-pi-secondary: #e65c00;
+/* Основные стили */
+body {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
 }
 
-.btn-primary {
-    background-color: var(--orange-pi-color);
-    border-color: var(--orange-pi-secondary);
+.navbar {
+    background-color: #343a40 !important;
+    margin-bottom: 20px;
 }
 
-.btn-primary:hover, 
-.btn-primary:focus, 
-.btn-primary:active {
-    background-color: var(--orange-pi-secondary);
-    border-color: var(--orange-pi-secondary);
+.card {
+    background-color: #2c2c2c;
+    border: 1px solid #444;
+    margin-bottom: 15px;
 }
 
-.bg-primary {
-    background-color: var(--orange-pi-color) !important;
+.card-header {
+    background-color: #383838;
+    border-bottom: 1px solid #444;
 }
 
-/* Улучшения для панелей устройств */
-.device-card {
-    transition: all 0.3s ease;
-}
-
-.device-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Анимации */
-.fade-in {
-    animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* Улучшения для хедера */
-.navbar-brand {
-    font-weight: bold;
-    letter-spacing: 0.5px;
-}
-
-/* Стилизация кнопок */
-.btn {
-    border-radius: 4px;
-    letter-spacing: 0.5px;
-}
-
-/* Таблицы */
-.table th {
-    font-weight: 600;
-    border-top: none;
+.table {
+    color: #e0e0e0;
 }
 
 .table-hover tbody tr:hover {
-    background-color: rgba(255, 102, 0, 0.1);
+    background-color: rgba(200, 200, 200, 0.1);
 }
 
-/* Панель статуса для уведомлений */
-#notification-container {
-    z-index: 9999;
+.form-control, .form-select {
+    background-color: #383838;
+    border: 1px solid #555;
+    color: #e0e0e0;
 }
 
-/* Адаптивность для мобильных устройств */
-@media (max-width: 768px) {
-    .card-header {
-        flex-direction: column;
-        align-items: flex-start !important;
+.form-control:focus, .form-select:focus {
+    background-color: #404040;
+    color: #ffffff;
+    border-color: #6c757d;
+    box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25);
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+/* Специфичные стили для приложения */
+.device-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.device-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.virtual-badge {
+    background-color: #6f42c1;
+    color: white;
+}
+
+.connected-badge {
+    background-color: #198754;
+    color: white;
+}
+
+.disconnected-badge {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Стили для уведомлений */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+
+.toast {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
+}
+
+.toast-header {
+    background-color: #383838;
+    border-bottom: 1px solid #444;
+    color: #e0e0e0;
+}
+
+/* Стили для страницы логов */
+.log-info {
+    color: #0dcaf0;
+}
+
+.log-warning {
+    color: #ffc107;
+}
+
+.log-error {
+    color: #dc3545;
+}
+
+.log-debug {
+    color: #6c757d;
+}
+
+/* Стили для админ-панели */
+.admin-section {
+    margin-bottom: 2rem;
+}
+
+/* Стили для формы входа */
+.login-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.login-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-logo img {
+    width: 100px;
+    height: 100px;
+}
+
+/* Стили для страницы виртуальных устройств */
+.virtual-device-card {
+    margin-bottom: 1.5rem;
+}
+
+.port-item {
+    border-left: 3px solid #6f42c1;
+    padding-left: 0.75rem;
+    margin: 0.5rem 0;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.port-connected {
+    border-color: #198754;
+}
+
+.port-disconnected {
+    border-color: #dc3545;
+}
+
+/* Адаптивные стили */
+@media (max-width: 767px) {
+    .card-title {
+        font-size: 1.25rem;
     }
     
-    .card-header button {
-        margin-top: 10px;
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.375rem 0.5rem;
+    }
+    
+    .device-info {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .login-form {
+        padding: 1rem;
     }
 }
