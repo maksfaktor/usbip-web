@@ -66,6 +66,7 @@ def manage_storage(device_id, path=None):
     # Определяем родительскую директорию для навигации "назад"
     parent_path = os.path.dirname(path.rstrip('/'))
     if not parent_path:
+        # Если мы в корне, то вернем путь к странице виртуальных устройств
         parent_path = '/'
     
     return render_template(

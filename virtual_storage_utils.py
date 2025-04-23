@@ -177,7 +177,12 @@ def list_device_files(device: VirtualUsbDevice, directory: str = "/") -> List[Di
     for file_entry in VirtualUsbFile.query.filter_by(device_id=device.id).all():
         # Получаем только файлы в текущей директории
         file_dir = os.path.dirname(file_entry.file_path)
-        if file_dir == directory.rstrip("/") or (not file_dir and not directory.rstrip("/")):
+        
+        # Нормализуем пути для сравнения
+        dir_path_norm = directory.strip("/")
+        file_dir_norm = file_dir.strip("/")
+        
+        if file_dir_norm == dir_path_norm:
             result.append({
                 "name": os.path.basename(file_entry.filename),
                 "type": "file",
