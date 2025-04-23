@@ -190,61 +190,7 @@ function detachDevice(port) {
     });
 }
 
-/**
- * Обработчик для поиска информации об устройстве
- */
-function searchDeviceInfo() {
-    const vendorId = document.getElementById('vendor_id').value;
-    const productId = document.getElementById('product_id').value;
-    
-    if (!vendorId || !productId) {
-        showNotification('Пожалуйста, введите Vendor ID и Product ID', 'warning');
-        return;
-    }
-    
-    document.getElementById('device-info-spinner').classList.remove('d-none');
-    document.getElementById('device-info-result').innerHTML = '';
-    
-    fetch('/search-device-info', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-            vendor_id: vendorId,
-            product_id: productId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('device-info-spinner').classList.add('d-none');
-        
-        if (data.success && data.device_info) {
-            document.getElementById('device-info-result').innerHTML = `
-                <div class="alert alert-success">
-                    <h5>Информация об устройстве</h5>
-                    <p><strong>Vendor:</strong> ${data.device_info.vendor_name || 'Неизвестно'}</p>
-                    <p><strong>Product:</strong> ${data.device_info.product_name || 'Неизвестно'}</p>
-                    <p><strong>Description:</strong> ${data.device_info.description || 'Нет описания'}</p>
-                </div>
-            `;
-        } else {
-            document.getElementById('device-info-result').innerHTML = `
-                <div class="alert alert-warning">
-                    Информация об устройстве не найдена
-                </div>
-            `;
-        }
-    })
-    .catch(error => {
-        document.getElementById('device-info-spinner').classList.add('d-none');
-        document.getElementById('device-info-result').innerHTML = `
-            <div class="alert alert-danger">
-                Ошибка поиска информации: ${error}
-            </div>
-        `;
-    });
-}
+
 
 /**
  * Обработчик для установки алиаса устройства

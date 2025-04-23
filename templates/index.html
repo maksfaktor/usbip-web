@@ -434,27 +434,6 @@ document.querySelectorAll('.set-port-name-btn').forEach(button => {
     });
 });
 
-// Обработчик для кнопки поиска информации
-document.querySelectorAll('.search-info-btn').forEach(button => {
-    button.addEventListener('click', function() {
-        const vendor = this.getAttribute('data-vendor');
-        const product = this.getAttribute('data-product');
-        const deviceId = `${vendor}:${product}`;
-        
-        document.getElementById('device_id').value = deviceId;
-        
-        // Прокручиваем к форме поиска
-        document.getElementById('device-search-form').scrollIntoView({
-            behavior: 'smooth'
-        });
-        
-        // Подсвечиваем поле поиска
-        const searchField = document.getElementById('device_id');
-        searchField.classList.add('border-primary');
-        setTimeout(() => {
-            searchField.classList.remove('border-primary');
-        }, 2000);
-    });
-});
+
 </script>
 {% endblock %}
