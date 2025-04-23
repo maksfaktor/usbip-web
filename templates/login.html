@@ -38,7 +38,7 @@
                 </div>
                 <div class="keyboard-layout-info">
                     <span class="badge bg-secondary">
-                        <i class="bi bi-keyboard"></i> <span id="keyboard-layout">{{ 'English' if session.get('language', 'en') == 'en' else 'Русская' }}</span>
+                        <i class="bi bi-keyboard"></i> <span id="keyboard-layout">{{ t('english') if session.get('language', 'en') == 'en' else t('russian') }}</span>
                     </span>
                 </div>
             </div>
@@ -116,9 +116,11 @@
                 if (passwordInput.type === 'password') {
                     passwordInput.type = 'text';
                     togglePassword.innerHTML = '<i class="bi bi-eye-slash"></i>';
+                    togglePassword.title = "{{ t('hide_password') }}";
                 } else {
                     passwordInput.type = 'password';
                     togglePassword.innerHTML = '<i class="bi bi-eye"></i>';
+                    togglePassword.title = "{{ t('show_password') }}";
                 }
             });
             
@@ -133,13 +135,13 @@
                 
                 // Проверка на русскую раскладку (кириллические символы)
                 if (/[а-яА-ЯёЁ]/.test(key)) {
-                    keyboardLayoutElement.textContent = 'Русская';
+                    keyboardLayoutElement.textContent = '{{ t('russian') }}';
                     keyboardLayoutElement.parentElement.classList.remove('bg-primary');
                     keyboardLayoutElement.parentElement.classList.add('bg-success');
                 } 
                 // Проверка на английскую раскладку
                 else if (/[a-zA-Z]/.test(key)) {
-                    keyboardLayoutElement.textContent = 'English';
+                    keyboardLayoutElement.textContent = '{{ t('english') }}';
                     keyboardLayoutElement.parentElement.classList.remove('bg-success');
                     keyboardLayoutElement.parentElement.classList.add('bg-primary');
                 }
