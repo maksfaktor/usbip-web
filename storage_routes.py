@@ -389,6 +389,11 @@ def delete_storage_item(device_id):
             import time
             time.sleep(0.5)
             
+            # Если мы находимся в корневой директории, всегда перенаправляем туда же после удаления
+            if current_path == '/':
+                logger.debug(f"Удаление в корневой директории, остаемся в корне")
+                return redirect(url_for('storage.manage_storage', device_id=device_id))
+            
             # Особая обработка при удалении директории
             if is_dir:
                 # Проверяем текущую директорию - если она удалена, нужно перейти наверх
