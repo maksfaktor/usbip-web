@@ -95,12 +95,12 @@ def resize_storage(device_id):
         new_size = int(request.form.get('storage_size', 1024))
     except ValueError:
         flash('Некорректный размер хранилища', 'danger')
-        return redirect(url_for('manage_storage', device_id=device_id))
+        return redirect(url_for('storage.manage_storage', device_id=device_id))
     
     # Проверяем диапазон размера
     if new_size < 1 or new_size > 16384:
         flash('Размер хранилища должен быть от 1 МБ до 16 ГБ', 'warning')
-        return redirect(url_for('manage_storage', device_id=device_id))
+        return redirect(url_for('storage.manage_storage', device_id=device_id))
     
     # Изменяем размер хранилища
     success = resize_device_storage(device, new_size)
@@ -119,7 +119,7 @@ def resize_storage(device_id):
     else:
         flash('Не удалось изменить размер хранилища', 'danger')
     
-    return redirect(url_for('manage_storage', device_id=device_id))
+    return redirect(url_for('storage.manage_storage', device_id=device_id))
 
 @storage_bp.route('/storage/<int:device_id>/create_directory', methods=['POST'])
 @login_required
@@ -135,12 +135,12 @@ def create_storage_directory(device_id):
     
     if not directory_name:
         flash('Необходимо указать имя директории', 'warning')
-        return redirect(url_for('manage_storage', device_id=device_id, path=current_path))
+        return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
     
     # Проверяем, что имя директории безопасно
     if '/' in directory_name or '\\' in directory_name or '..' in directory_name:
         flash('Имя директории содержит недопустимые символы', 'danger')
-        return redirect(url_for('manage_storage', device_id=device_id, path=current_path))
+        return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
     
     # Формируем полный путь к новой директории
     if current_path == '/':
@@ -165,7 +165,7 @@ def create_storage_directory(device_id):
     else:
         flash('Не удалось создать директорию', 'danger')
     
-    return redirect(url_for('manage_storage', device_id=device_id, path=current_path))
+    return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
 
 @storage_bp.route('/storage/<int:device_id>/upload', methods=['POST'])
 @login_required
@@ -181,14 +181,14 @@ def upload_storage_file(device_id):
     # Проверяем, есть ли файл в запросе
     if 'file' not in request.files:
         flash('Не выбран файл для загрузки', 'warning')
-        return redirect(url_for('manage_storage', device_id=device_id, path=current_path))
+        return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
     
     file = request.files['file']
     
     # Если пользователь не выбрал файл
     if file.filename == '':
         flash('Не выбран файл для загрузки', 'warning')
-        return redirect(url_for('manage_storage', device_id=device_id, path=current_path))
+        return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
     
     # Загружаем файл
     file_entry = upload_file(device, file, current_path)
@@ -207,7 +207,7 @@ def upload_storage_file(device_id):
     else:
         flash('Не удалось загрузить файл', 'danger')
     
-    return redirect(url_for('manage_storage', device_id=device_id, path=current_path))
+    return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
 
 @storage_bp.route('/storage/<int:device_id>/delete_item', methods=['POST'])
 @login_required
@@ -223,7 +223,7 @@ def delete_storage_item(device_id):
     
     if not item_path:
         flash('Не указан путь к файлу или директории', 'warning')
-        return redirect(url_for('manage_storage', device_id=device_id, path=current_path))
+        return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
     
     # Удаляем элемент
     success = delete_item(device, item_path)
@@ -246,7 +246,7 @@ def delete_storage_item(device_id):
     else:
         flash('Не удалось удалить элемент', 'danger')
     
-    return redirect(url_for('manage_storage', device_id=device_id, path=current_path))
+    return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
 
 @storage_bp.route('/storage/<int:device_id>/download/<path:file_path>', methods=['GET'])
 @login_required
@@ -261,7 +261,7 @@ def download_storage_file(device_id, file_path):
     
     if not full_path or not filename:
         flash('Файл не найден', 'warning')
-        return redirect(url_for('manage_storage', device_id=device_id))
+        return redirect(url_for('storage.manage_storage', device_id=device_id))
     
     # Записываем лог
     log_entry = LogEntry(
