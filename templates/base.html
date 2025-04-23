@@ -69,6 +69,28 @@
                     {% endif %}
                 </ul>
                 <div class="d-flex navbar-nav">
+                    {% if network_interfaces %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="interfacesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-ethernet"></i> Сеть
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="interfacesDropdown">
+                            <li><h6 class="dropdown-header">Доступные интерфейсы:</h6></li>
+                            {% for iface_type, interfaces in network_interfaces.items() %}
+                                {% if interfaces %}
+                                    {% for iface in interfaces %}
+                                        <li>
+                                            <a class="dropdown-item" href="{{ iface.url }}" target="_blank">
+                                                <i class="bi bi-{% if iface_type == 'WiFi' %}wifi{% else %}ethernet{% endif %} me-2"></i>
+                                                {{ iface_type }}: {{ iface.ip }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% endif %}
                     <span class="nav-link text-light">
                         <i class="bi bi-person-circle"></i> {{ current_user.username }}
                     </span>
