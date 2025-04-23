@@ -272,7 +272,9 @@ def delete_storage_item(device_id):
         
     if item_path:
         item_path = item_path.replace('\\', '/')
-        # Для item_path не обязательно добавлять начальный слэш
+        # Для item_path не обязательно добавлять начальный слэш, но добавим для стандартизации
+        if not item_path.startswith('/'):
+            item_path = '/' + item_path
         while '//' in item_path:
             item_path = item_path.replace('//', '/')
     
@@ -283,26 +285,34 @@ def delete_storage_item(device_id):
         flash('Не указан путь к файлу или директории', 'warning')
         return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
     
-    # Удаляем элемент
-    success = delete_item(device, item_path)
-    
-    if success:
+    try:
         # Определяем тип элемента для логирования
-        is_dir = '/.' not in item_path and item_path.endswith('/')
+        is_dir = False
+        # Проверяем признаки директории в пути
+        if item_path.endswith('/') or os.path.isdir(os.path.join(device.storage_path, item_path.lstrip('/'))):
+            is_dir = True
         element_type = 'директория' if is_dir else 'файл'
         
-        # Записываем лог
-        log_entry = LogEntry(
-            level='INFO',
-            message=f'Удален {element_type} {item_path} для устройства {device.name}',
-            source='system'
-        )
-        db.session.add(log_entry)
-        db.session.commit()
+        # Удаляем элемент
+        success = delete_item(device, item_path)
         
-        flash(f'{element_type.capitalize()} успешно удален(а)', 'success')
-    else:
-        flash('Не удалось удалить элемент', 'danger')
+        if success:
+            # Записываем лог
+            log_entry = LogEntry(
+                level='INFO',
+                message=f'Удален {element_type} {item_path} для устройства {device.name}',
+                source='system'
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            flash(f'{element_type.capitalize()} успешно удален(а)', 'success')
+        else:
+            flash('Не удалось удалить элемент', 'danger')
+    except Exception as e:
+        # Логируем ошибку и показываем пользователю сообщение
+        logger.error(f"Ошибка при удалении элемента {item_path}: {str(e)}")
+        flash(f'Произошла ошибка при удалении: {str(e)}', 'danger')
     
     return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
 
