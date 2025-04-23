@@ -15,7 +15,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="bi bi-usb-symbol"></i> USB/IP Web
+                <img src="{{ url_for('static', filename='img/favicon.svg') }}" alt="OrangeUSB" width="30" height="30" class="d-inline-block align-text-top me-2">
+                OrangeUSB
             </a>
             {% if network_interfaces %}
             <div class="network-interfaces d-flex align-items-center mx-auto">
