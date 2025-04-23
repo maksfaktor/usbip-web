@@ -64,6 +64,16 @@
                                     {% endif %}
                                 </td>
                                 <td>
+                                    {% if device.device_type == 'storage' %}
+                                        <small>
+                                        {% if device.is_system_path %}
+                                            <strong>Путь: </strong>{{ device.storage_path }}<br>
+                                        {% endif %}
+                                        <strong>Размер: </strong>{{ device.storage_size }} МБ
+                                        </small>
+                                    {% endif %}
+                                </td>
+                                <td>
                                     <div class="btn-group btn-group-sm">
                                         {% if device.device_type == 'storage' %}
                                             <a href="{{ url_for('storage.manage_storage', device_id=device.id) }}" class="btn btn-outline-info">
