@@ -66,11 +66,30 @@ class VirtualUsbDevice(db.Model):
     serial_number = db.Column(db.String(32))
     is_active = db.Column(db.Boolean, default=False)
     config_json = db.Column(db.Text)  # JSON с конфигурацией устройства
+    storage_size = db.Column(db.Integer, default=0)  # Размер хранилища в МБ (для storage устройств)
+    storage_path = db.Column(db.String(256))  # Путь к директории с файлами устройства
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def __repr__(self):
         return f'<VirtualUsbDevice {self.name} ({self.vendor_id}:{self.product_id})>'
+
+class VirtualUsbFile(db.Model):
+    __tablename__ = 'virtual_usb_files'
+    id = db.Column(db.Integer, primary_key=True)
+    device_id = db.Column(db.Integer, db.ForeignKey('virtual_usb_devices.id'))
+    filename = db.Column(db.String(256), nullable=False)
+    file_path = db.Column(db.String(512), nullable=False)  # Относительный путь внутри storage_path
+    file_size = db.Column(db.Integer, default=0)  # Размер файла в байтах
+    file_type = db.Column(db.String(64))  # Тип файла
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Связь с виртуальным устройством
+    device = db.relationship('VirtualUsbDevice', backref=db.backref('files', lazy=True))
+    
+    def __repr__(self):
+        return f'<VirtualUsbFile {self.filename} ({self.file_size} bytes)>'
 
 class VirtualUsbPort(db.Model):
     __tablename__ = 'virtual_usb_ports'

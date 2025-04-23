@@ -190,6 +190,23 @@
                             {% endfor %}
                         </select>
                     </div>
+                    
+                    <!-- Настройки для устройств хранения (storage) -->
+                    <div class="storage-options mb-3" style="display: none;">
+                        <div class="card">
+                            <div class="card-header bg-info bg-opacity-10">
+                                <h6 class="mb-0">Настройки хранилища</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="storage_size" class="form-label">Размер хранилища (МБ)</label>
+                                    <input type="number" class="form-control" id="storage_size" name="storage_size" 
+                                           value="1024" min="1" max="16384">
+                                    <div class="form-text">Размер виртуального хранилища в мегабайтах (от 1 МБ до 16 ГБ)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="vendor_id" class="form-label">Vendor ID</label>
@@ -370,6 +387,24 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('product_id').value = randomPid;
         }
     });
+    
+    // Показать/скрыть настройки хранилища в зависимости от типа устройства
+    const deviceTypeSelect = document.getElementById('device_type');
+    if (deviceTypeSelect) {
+        deviceTypeSelect.addEventListener('change', function() {
+            const storageOptions = document.querySelector('.storage-options');
+            if (this.value === 'storage') {
+                storageOptions.style.display = 'block';
+            } else {
+                storageOptions.style.display = 'none';
+            }
+        });
+        
+        // Инициализация при загрузке страницы
+        if (deviceTypeSelect.value === 'storage') {
+            document.querySelector('.storage-options').style.display = 'block';
+        }
+    }
 });
 </script>
 {% endblock %}
