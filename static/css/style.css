@@ -167,6 +167,35 @@ body {
     border-color: #dc3545;
 }
 
+/* Стили для отображения сетевых интерфейсов */
+.network-interfaces {
+    font-size: 0.85rem;
+}
+
+.iface-group {
+    display: inline-block;
+    position: relative;
+}
+
+.interface-list {
+    display: inline-flex;
+    flex-wrap: wrap;
+}
+
+.interface-list a {
+    margin-right: 0.75rem;
+    white-space: nowrap;
+    transition: color 0.2s ease-in-out;
+}
+
+.interface-list a:hover {
+    color: #0dcaf0 !important;
+}
+
+.interface-list i {
+    margin-right: 0.25rem;
+}
+
 /* Адаптивные стили */
 @media (max-width: 767px) {
     .card-title {
@@ -181,10 +210,42 @@ body {
     .device-info {
         font-size: 0.9rem;
     }
+    
+    .network-interfaces {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .iface-group {
+        width: 100%;
+        margin-bottom: 0.25rem;
+    }
+    
+    .interface-list {
+        display: block;
+        margin-top: 0.25rem;
+    }
+    
+    .interface-list a {
+        display: inline-block;
+        margin-bottom: 0.25rem;
+    }
 }
 
 @media (max-width: 576px) {
     .login-form {
         padding: 1rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .network-interfaces {
+        font-size: 0.8rem;
     }
 }

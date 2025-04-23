@@ -16,6 +16,25 @@
             <a class="navbar-brand" href="{{ url_for('index') }}">
                 <i class="bi bi-usb-symbol"></i> USB/IP Web
             </a>
+            {% if network_interfaces %}
+            <div class="network-interfaces d-none d-md-flex align-items-center mx-auto">
+                {% for iface_type, interfaces in network_interfaces.items() %}
+                    {% if interfaces %}
+                        <div class="iface-group mx-3">
+                            <span class="text-light fw-bold">{{ iface_type }}:</span>
+                            <div class="interface-list">
+                                {% for iface in interfaces %}
+                                    <a href="{{ iface.url }}" class="text-light text-decoration-none small ms-2" target="_blank">
+                                        <i class="bi bi-{% if iface_type == 'WiFi' %}wifi{% else %}ethernet{% endif %}"></i>
+                                        {{ iface.ip }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>

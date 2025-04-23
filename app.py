@@ -250,9 +250,13 @@ def admin():
     usb_ports = UsbPort.query.all()
     device_aliases = DeviceAlias.query.all()
     
+    # Получаем информацию о сетевых интерфейсах
+    network_interfaces = get_network_interfaces()
+    
     return render_template('admin.html', 
                           usb_ports=usb_ports,
-                          device_aliases=device_aliases)
+                          device_aliases=device_aliases,
+                          network_interfaces=network_interfaces)
 
 @app.route('/logs')
 @login_required
@@ -271,7 +275,13 @@ def logs():
     # Пагинация результатов
     logs = query.paginate(page=page, per_page=per_page, error_out=False)
     
-    return render_template('logs.html', logs=logs, current_type=log_type)
+    # Получаем информацию о сетевых интерфейсах
+    network_interfaces = get_network_interfaces()
+    
+    return render_template('logs.html', 
+                          logs=logs, 
+                          current_type=log_type, 
+                          network_interfaces=network_interfaces)
 
 @app.route('/device_alias', methods=['POST'])
 @login_required
@@ -387,7 +397,10 @@ def bind_device_route():
 @app.route('/remote')
 @login_required
 def remote():
-    return render_template('remote.html')
+    # Получаем информацию о сетевых интерфейсах
+    network_interfaces = get_network_interfaces()
+    
+    return render_template('remote.html', network_interfaces=network_interfaces)
 
 @app.route('/get_remote_devices', methods=['POST'])
 @login_required
@@ -487,10 +500,14 @@ def virtual_devices():
         {'id': 'custom', 'name': 'Другое (своя конфигурация)'}
     ]
     
+    # Получаем информацию о сетевых интерфейсах
+    network_interfaces = get_network_interfaces()
+    
     return render_template('virtual_devices.html', 
                           virtual_devices=virtual_devices,
                           virtual_ports=virtual_ports,
-                          device_types=device_types)
+                          device_types=device_types,
+                          network_interfaces=network_interfaces)
 
 @app.route('/create_virtual_device', methods=['POST'])
 @login_required
