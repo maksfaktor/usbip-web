@@ -530,6 +530,18 @@ def create_virtual_device():
     serial_number = request.form.get('serial_number', '')
     config_json = request.form.get('config_json', '{}')
     
+    # Для устройств типа storage получаем размер хранилища
+    storage_size = 1024  # Значение по умолчанию 1 ГБ
+    if device_type == 'storage':
+        try:
+            storage_size = int(request.form.get('storage_size', 1024))
+            # Проверяем диапазон допустимых значений
+            if storage_size < 1 or storage_size > 16384:
+                flash('Размер хранилища должен быть от 1 МБ до 16 ГБ', 'warning')
+                storage_size = 1024  # Устанавливаем значение по умолчанию
+        except ValueError:
+            flash('Указан некорректный размер хранилища, используется размер по умолчанию (1 ГБ)', 'warning')
+    
     # Базовая валидация
     if not name or not device_type:
         flash('Имя и тип устройства обязательны', 'danger')
@@ -548,14 +560,21 @@ def create_virtual_device():
         vendor_id=vendor_id,
         product_id=product_id,
         serial_number=serial_number,
-        config_json=config_json
+        config_json=config_json,
+        storage_size=storage_size if device_type == 'storage' else 0
     )
     db.session.add(device)
+    db.session.commit()  # Сначала коммитим, чтобы получить ID устройства
+    
+    # Если это устройство хранения, создаем хранилище
+    if device_type == 'storage':
+        create_device_storage(device, storage_size)
     
     # Запись в лог
     log_entry = LogEntry(
         level='INFO',
-        message=f'Создано виртуальное устройство: {name} ({vendor_id}:{product_id})',
+        message=f'Создано виртуальное устройство: {name} ({vendor_id}:{product_id})'
+                + (f' с хранилищем {storage_size} МБ' if device_type == 'storage' else ''),
         source='virtual'
     )
     db.session.add(log_entry)
@@ -678,6 +697,10 @@ def delete_virtual_device():
         port.device_id = None
         port.is_connected = False
     
+    # Если это устройство хранения, удаляем его хранилище
+    if device.device_type == 'storage' and device.storage_path:
+        delete_device_storage(device)
+    
     # Удаляем устройство
     device_name = device.name
     db.session.delete(device)
@@ -721,6 +744,44 @@ def delete_virtual_port():
     
     flash(f'Виртуальный порт "{port_name}" удален', 'success')
     return redirect(url_for('virtual_devices'))
+
+# Маршруты для управления хранилищем виртуальных USB устройств
+@app.route('/storage/<int:device_id>', methods=['GET'])
+@app.route('/storage/<int:device_id>/<path:path>', methods=['GET'])
+@login_required
+def manage_storage(device_id, path=None):
+    """Страница управления файлами виртуального USB-устройства"""
+    return storage_bp.manage_storage(device_id, path)
+
+@app.route('/storage/<int:device_id>/resize', methods=['POST'])
+@login_required
+def resize_storage(device_id):
+    """Изменение размера хранилища"""
+    return storage_bp.resize_storage(device_id)
+
+@app.route('/storage/<int:device_id>/create_directory', methods=['POST'])
+@login_required
+def create_storage_directory(device_id):
+    """Создание директории в хранилище"""
+    return storage_bp.create_storage_directory(device_id)
+
+@app.route('/storage/<int:device_id>/upload', methods=['POST'])
+@login_required
+def upload_storage_file(device_id):
+    """Загрузка файла в хранилище"""
+    return storage_bp.upload_storage_file(device_id)
+
+@app.route('/storage/<int:device_id>/delete_item', methods=['POST'])
+@login_required
+def delete_storage_item(device_id):
+    """Удаление файла или директории из хранилища"""
+    return storage_bp.delete_storage_item(device_id)
+
+@app.route('/storage/<int:device_id>/download/<path:file_path>', methods=['GET'])
+@login_required
+def download_storage_file(device_id, file_path):
+    """Скачивание файла из хранилища"""
+    return storage_bp.download_storage_file(device_id, file_path)
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

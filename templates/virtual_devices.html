@@ -396,19 +396,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Показать/скрыть настройки хранилища в зависимости от типа устройства
     const deviceTypeSelect = document.getElementById('device_type');
     if (deviceTypeSelect) {
-        deviceTypeSelect.addEventListener('change', function() {
+        function updateStorageOptions() {
             const storageOptions = document.querySelector('.storage-options');
-            if (this.value === 'storage') {
+            if (deviceTypeSelect.value === 'storage') {
                 storageOptions.style.display = 'block';
             } else {
                 storageOptions.style.display = 'none';
             }
-        });
+        }
+        
+        deviceTypeSelect.addEventListener('change', updateStorageOptions);
         
         // Инициализация при загрузке страницы
-        if (deviceTypeSelect.value === 'storage') {
-            document.querySelector('.storage-options').style.display = 'block';
-        }
+        updateStorageOptions();
     }
 });
 </script>
