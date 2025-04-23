@@ -21,24 +21,22 @@
     </nav>
 
     <div class="container mt-4">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
     
-
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="text-center mb-4">
-            <img src="{{ url_for('static', filename='img/orange_logo.svg') }}" alt="Orange Logo" class="img-fluid" style="max-width: 150px;">
+            <img src="{{ url_for('static', filename='img/new_logo.svg') }}" alt="Orange USB Logo" class="img-fluid" style="max-width: 150px;">
             <h2 class="mt-3">OrangeUSB</h2>
         </div>
+        
+        <!-- Переключение языка -->
+        <div class="text-center mb-3">
+            <div class="btn-group" role="group" aria-label="Выбор языка">
+                <button type="button" class="btn btn-outline-primary active">Русский</button>
+                <button type="button" class="btn btn-outline-primary">English</button>
+            </div>
+        </div>
+        
         <div class="card">
             <div class="card-header bg-primary">
                 <h4 class="mb-0"><i class="bi bi-box-arrow-in-right me-2"></i>Вход в OrangeUSB</h4>
@@ -57,6 +55,9 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-lock"></i></span>
                             <input type="password" class="form-control" id="password" name="password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggle-password" title="Показать/скрыть пароль">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
                     </div>
                     <div class="d-grid">
@@ -67,8 +68,22 @@
                 </form>
             </div>
             <div class="card-footer text-muted">
-                <p class="mb-0">По умолчанию: логин <strong>admin</strong>, пароль <strong>admin</strong></p>
+                <p class="mb-0">По умолчанию: логин <strong>admin</strong>, пароль <strong>admin123</strong></p>
             </div>
+        </div>
+        
+        <!-- Перемещаем сообщения под форму входа -->
+        <div class="mt-3">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
         </div>
     </div>
 </div>
@@ -79,5 +94,24 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
+    <!-- Скрипт для показа/скрытия пароля -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const togglePassword = document.getElementById('toggle-password');
+            const passwordInput = document.getElementById('password');
+            
+            togglePassword.addEventListener('click', function() {
+                // Изменяем тип поля пароля
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    togglePassword.innerHTML = '<i class="bi bi-eye-slash"></i>';
+                } else {
+                    passwordInput.type = 'password';
+                    togglePassword.innerHTML = '<i class="bi bi-eye"></i>';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
