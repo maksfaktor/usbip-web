@@ -233,17 +233,25 @@
                 <h5 class="modal-title" id="createDirModalLabel">Создать новую папку</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" action="{{ url_for('storage.create_storage_directory', device_id=device.id) }}">
+            <form method="POST" action="{{ url_for('storage.create_storage_directory', device_id=device.id) }}" id="createDirForm" onsubmit="return validateDirName();">
                 <div class="modal-body">
                     <input type="hidden" name="current_path" value="{{ current_path }}">
                     <div class="mb-3">
                         <label for="directory_name" class="form-label">Название папки</label>
-                        <input type="text" class="form-control" id="directory_name" name="directory_name" required>
+                        <input type="text" class="form-control" id="directory_name" name="directory_name" required
+                               oninput="validateInputRealtime(this)" maxlength="255">
+                        <div id="dirNameFeedback" class="form-text text-muted">
+                            Укажите имя для новой папки (без символов /, \, :, *, ?, ", <, >, |)
+                        </div>
+                    </div>
+                    <div class="alert alert-danger" id="dirNameError" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> 
+                        <span id="dirNameErrorText">Имя папки содержит недопустимые символы</span>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Создать</button>
+                    <button type="submit" class="btn btn-primary" id="createDirBtn">Создать</button>
                 </div>
             </form>
         </div>
@@ -332,6 +340,76 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Сбросить ошибки при открытии модального окна создания директории
+    document.getElementById('createDirModal').addEventListener('show.bs.modal', function () {
+        const input = document.getElementById('directory_name');
+        const errorElement = document.getElementById('dirNameError');
+        const submitButton = document.getElementById('createDirBtn');
+        
+        input.value = '';
+        input.classList.remove('is-invalid');
+        input.classList.remove('is-valid');
+        errorElement.style.display = 'none';
+        submitButton.disabled = false;
+    });
 });
+
+// Функция для валидации имени директории в реальном времени
+function validateInputRealtime(input) {
+    const invalidChars = /[\\/:*?"<>|]/;
+    const isEmpty = input.value.trim() === '';
+    const hasInvalidChars = invalidChars.test(input.value);
+    const startsWithDot = input.value.startsWith('.');
+    
+    const errorElement = document.getElementById('dirNameError');
+    const errorTextElement = document.getElementById('dirNameErrorText');
+    const submitButton = document.getElementById('createDirBtn');
+    
+    // Проверяем разные условия
+    if (isEmpty) {
+        errorElement.style.display = 'block';
+        errorTextElement.innerText = 'Имя папки не может быть пустым';
+        input.classList.add('is-invalid');
+        submitButton.disabled = true;
+    } else if (hasInvalidChars) {
+        errorElement.style.display = 'block';
+        errorTextElement.innerText = 'Имя папки содержит недопустимые символы: \\ / : * ? " < > |';
+        input.classList.add('is-invalid');
+        submitButton.disabled = true;
+    } else if (startsWithDot) {
+        errorElement.style.display = 'block';
+        errorTextElement.innerText = 'Имя папки не должно начинаться с точки';
+        input.classList.add('is-invalid');
+        submitButton.disabled = true;
+    } else {
+        errorElement.style.display = 'none';
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        submitButton.disabled = false;
+    }
+}
+
+// Функция для валидации формы перед отправкой
+function validateDirName() {
+    const input = document.getElementById('directory_name');
+    const invalidChars = /[\\/:*?"<>|]/;
+    const isEmpty = input.value.trim() === '';
+    const hasInvalidChars = invalidChars.test(input.value);
+    const startsWithDot = input.value.startsWith('.');
+    
+    if (isEmpty || hasInvalidChars || startsWithDot) {
+        // Эта проверка уже будет отображена через validateInputRealtime
+        return false;
+    }
+    
+    // Двойная проверка перед отправкой
+    if (input.value.trim() === '') {
+        alert('Имя папки не может быть пустым');
+        return false;
+    }
+    
+    return true;
+}
 </script>
 {% endblock %}

@@ -231,52 +231,113 @@ def create_directory(device: VirtualUsbDevice, directory_path: str) -> Tuple[boo
         Tuple[bool, Optional[str]]: (успешность создания директории, сообщение об ошибке)
     """
     # Валидация имени директории
+    # Нормализуем входной путь
+    directory_path = normalize_path(directory_path)
+    
     # Извлекаем конечное имя директории из пути
-    dir_name = os.path.basename(directory_path.rstrip('/'))
+    dir_name = os.path.basename(directory_path)
     
     # Проверка на допустимые символы
     if not dir_name or dir_name == '..' or dir_name == '.' or any(c in dir_name for c in ['<', '>', ':', '"', '/', '\\', '|', '?', '*']):
         return False, "Имя директории содержит недопустимые символы"
     
-    # Нормализуем путь: заменяем обратные слэши, удаляем двойные слэши
-    directory_path = directory_path.replace("\\", "/")
-    while "//" in directory_path:
-        directory_path = directory_path.replace("//", "/")
+    # Обрабатываем случай, когда создаваемая директория содержит пробелы или имеет непечатаемые символы
+    if dir_name.strip() != dir_name:
+        return False, "Имя директории не должно начинаться или заканчиваться пробелами"
     
     # Удаляем начальный слэш для работы с файловой системой
-    directory_path = directory_path.lstrip("/")
+    clean_path = directory_path.lstrip("/")
     
     # Логируем для отладки
-    logger.debug(f"Создание директории: устройство={device.name}, путь='{directory_path}'")
+    logger.debug(f"Создание директории: устройство={device.name}, путь='{clean_path}'")
     
     # Проверяем, существует ли физическое хранилище
     storage_exists = device.storage_path and os.path.exists(device.storage_path)
     
+    # Если создаваемая директория - корень, то считаем, что она уже существует
+    if not clean_path or clean_path == '.' or clean_path == '/':
+        logger.warning(f"Попытка создать корневую директорию для устройства {device.name}")
+        return False, "Невозможно создать корневую директорию"
+    
+    # Проверяем, существует ли родительская директория
+    parent_dir = os.path.dirname(clean_path)
+    
     # Создаем директорию в физическом хранилище, если оно доступно
     if storage_exists:
         # Полный путь к директории
-        dir_path = os.path.join(device.storage_path, directory_path)
+        dir_path = os.path.join(device.storage_path, clean_path)
+        parent_path = os.path.join(device.storage_path, parent_dir) if parent_dir else device.storage_path
+        
+        # Проверяем существование родительской директории
+        if parent_dir and not os.path.exists(parent_path):
+            logger.warning(f"Родительская директория {parent_dir} не существует для устройства {device.name}")
+            return False, "Родительская директория не существует"
         
         # Проверяем, существует ли уже директория с таким именем
         if os.path.exists(dir_path):
-            logger.warning(f"Директория {directory_path} уже существует для устройства {device.name}")
+            # Проверяем, является ли существующий путь файлом
+            if os.path.isfile(dir_path):
+                logger.warning(f"Путь {clean_path} уже существует как файл для устройства {device.name}")
+                return False, "По указанному пути уже существует файл"
+                
+            logger.warning(f"Директория {clean_path} уже существует для устройства {device.name}")
             return False, "Директория с таким именем уже существует"
         
         try:
-            os.makedirs(dir_path, exist_ok=False)  # Изменено на False, чтобы вызвать ошибку, если директория существует
-            logger.info(f"Создана директория {directory_path} для устройства {device.name}")
+            # Создаем директорию, используя exist_ok=False для явного контроля ошибок
+            os.makedirs(dir_path, exist_ok=False)
+            logger.info(f"Создана директория {clean_path} для устройства {device.name}")
+            
+            # Небольшая задержка для синхронизации файловой системы
+            import time
+            time.sleep(0.1)
+            
             return True, None
         except FileExistsError:
-            logger.warning(f"Директория {directory_path} уже существует для устройства {device.name}")
+            logger.warning(f"Директория {clean_path} уже существует для устройства {device.name}")
             return False, "Директория с таким именем уже существует"
+        except PermissionError:
+            logger.error(f"Недостаточно прав для создания директории {clean_path}")
+            return False, "Недостаточно прав для создания директории"
         except Exception as e:
             error_msg = f"Ошибка при создании директории: {str(e)}"
             logger.error(f"{error_msg}")
             return False, error_msg
     else:
         # Если хранилище не доступно, просто регистрируем создание директории в логах
-        logger.info(f"Зарегистрировано создание директории {directory_path} для устройства {device.name} (физическое хранилище недоступно)")
+        logger.info(f"Зарегистрировано создание директории {clean_path} для устройства {device.name} (физическое хранилище недоступно)")
         return True, None
+
+
+def normalize_path(path: str) -> str:
+    """
+    Нормализует путь для единообразного использования
+    
+    Args:
+        path: Исходный путь
+        
+    Returns:
+        str: Нормализованный путь
+    """
+    if path is None:
+        return '/'
+        
+    # Заменяем обратные слэши
+    path = path.replace('\\', '/')
+    
+    # Убеждаемся, что путь начинается с "/"
+    if not path.startswith('/'):
+        path = '/' + path
+        
+    # Удаляем двойные слэши
+    while '//' in path:
+        path = path.replace('//', '/')
+        
+    # Удаляем конечный слэш (кроме корневого пути)
+    if path != '/' and path.endswith('/'):
+        path = path[:-1]
+        
+    return path
 
 def delete_item(device: VirtualUsbDevice, item_path: str) -> bool:
     """
@@ -289,17 +350,19 @@ def delete_item(device: VirtualUsbDevice, item_path: str) -> bool:
     Returns:
         bool: Успешность удаления
     """
-    # Нормализуем путь: заменяем обратные слэши и удаляем двойные слэши
-    item_path = item_path.replace("\\", "/")
-    while "//" in item_path:
-        item_path = item_path.replace("//", "/")
+    # Нормализуем путь используя единую функцию
+    item_path = normalize_path(item_path)
+    
+    # Проверка на попытку удаления корневой директории
+    if item_path == '/':
+        logger.error(f"Попытка удалить корневую директорию устройства {device.name}")
+        return False
     
     # Удаляем начальный слэш для работы с файловой системой
-    orig_item_path = item_path  # Сохраняем оригинальный путь для логирования
-    item_path = item_path.lstrip("/")
+    clean_path = item_path.lstrip("/")
     
     # Логируем для отладки
-    logger.debug(f"Удаление элемента: устройство={device.name}, путь='{item_path}'")
+    logger.debug(f"Удаление элемента: устройство={device.name}, путь='{clean_path}'")
     
     # Проверяем, существует ли физическое хранилище
     storage_exists = device.storage_path and os.path.exists(device.storage_path)
@@ -310,7 +373,7 @@ def delete_item(device: VirtualUsbDevice, item_path: str) -> bool:
     # Удаляем физический файл или директорию, если хранилище доступно
     if storage_exists:
         # Полный путь к элементу
-        full_path = os.path.join(device.storage_path, item_path)
+        full_path = os.path.join(device.storage_path, clean_path)
         logger.debug(f"Физический путь к удаляемому элементу: {full_path}")
         
         if os.path.exists(full_path):
@@ -318,50 +381,94 @@ def delete_item(device: VirtualUsbDevice, item_path: str) -> bool:
                 if os.path.isdir(full_path):
                     # Это директория
                     is_directory = True
-                    # Удаляем директорию и все её содержимое
-                    shutil.rmtree(full_path)
+                    
+                    # Проверяем, пуста ли директория
+                    if not os.listdir(full_path):
+                        # Если директория пуста, можно использовать os.rmdir
+                        os.rmdir(full_path)
+                    else:
+                        # Удаляем директорию и все её содержимое
+                        shutil.rmtree(full_path)
+                    
                     logger.debug(f"Успешно удалена директория {full_path}")
                 else:
                     # Удаляем файл
                     os.remove(full_path)
                     logger.debug(f"Успешно удален файл {full_path}")
+                
+                # Небольшая задержка для синхронизации файловой системы
+                import time
+                time.sleep(0.1)
+            except PermissionError:
+                logger.error(f"Недостаточно прав для удаления элемента {full_path}")
+                return False
             except Exception as e:
                 logger.error(f"Ошибка при удалении элемента в физическом хранилище: {e}")
-                # Продолжаем, чтобы очистить записи в базе данных
+                # В случае серьезной ошибки, прерываем операцию
+                return False
     
     try:
         # Определяем, является ли элемент директорией, если мы еще не знаем
-        if not is_directory and (item_path.endswith('/') or orig_item_path.endswith('/')):
+        if not is_directory and item_path.endswith('/'):
             is_directory = True
             
         logger.debug(f"Элемент определен как {'директория' if is_directory else 'файл'}")
         
         # Удаляем записи из базы данных
         if is_directory:
+            # Нормализуем путь для сравнения с путями в БД
+            norm_path = clean_path
+            if not norm_path.endswith('/'):
+                norm_path += '/'
+                
             # Удаляем все файлы внутри директории
+            deleted_count = 0
             for file_entry in VirtualUsbFile.query.filter_by(device_id=device.id).all():
+                # Нормализуем путь файла
                 file_path = file_entry.file_path.replace("\\", "/")
-                # Проверяем, что файл находится в удаляемой директории
+                file_path = '/' + file_path.lstrip('/')
+                
+                # Проверяем, что файл находится в удаляемой директории или это она сама
                 if file_path.startswith(item_path + '/') or file_path == item_path:
                     logger.debug(f"Удаление файла из БД: {file_path}")
                     db.session.delete(file_entry)
+                    deleted_count += 1
+                    
+            if deleted_count == 0 and not storage_exists:
+                # Если не найдено файлов для удаления и физическое хранилище недоступно,
+                # проверяем существование самой директории в другой логике
+                logger.warning(f"Не найдено файлов для удаления в директории {item_path}")
         else:
             # Удаляем запись о файле из базы данных
             file_entry = VirtualUsbFile.query.filter_by(
                 device_id=device.id, 
-                file_path=item_path
+                file_path=clean_path
             ).first()
             
             if file_entry:
                 logger.debug(f"Удаление файла из БД: {file_entry.file_path}")
                 db.session.delete(file_entry)
             else:
-                # Если запись не найдена и хранилище не существует, считаем ошибкой
-                if not storage_exists:
-                    logger.warning(f"Элемент {item_path} не найден в базе данных и физическое хранилище недоступно")
+                # Попытаемся найти файл, игнорируя начальные слэши
+                file_entry = VirtualUsbFile.query.filter(
+                    VirtualUsbFile.device_id == device.id,
+                    VirtualUsbFile.file_path.like(f"%{clean_path}")
+                ).first()
+                
+                if file_entry:
+                    logger.debug(f"Удаление файла из БД (альтернативный поиск): {file_entry.file_path}")
+                    db.session.delete(file_entry)
+                elif not storage_exists:
+                    # Если запись не найдена и хранилище не существует, считаем ошибкой
+                    logger.warning(f"Элемент {clean_path} не найден в базе данных и физическое хранилище недоступно")
                     return False
         
         db.session.commit()
+        
+        # Еще одна маленькая задержка после коммита
+        import time
+        time.sleep(0.1)
+        
         logger.info(f"Удален элемент {item_path} для устройства {device.name}")
         return True
     except Exception as e:
@@ -381,13 +488,16 @@ def upload_file(device: VirtualUsbDevice, file, destination_path: str = "/") -> 
     Returns:
         Optional[VirtualUsbFile]: Созданная запись о файле или None при ошибке
     """
-    # Нормализуем путь назначения
-    destination_path = destination_path.replace("\\", "/")
-    while "//" in destination_path:
-        destination_path = destination_path.replace("//", "/")
+    # Нормализуем путь назначения с использованием единой функции
+    destination_path = normalize_path(destination_path)
     
     # Логируем для отладки
     logger.debug(f"Загрузка файла: устройство={device.name}, путь='{destination_path}', файл='{file.filename}'")
+    
+    # Проверяем имя файла
+    if not file.filename:
+        logger.error("Невозможно загрузить файл: пустое имя файла")
+        return None
     
     # Проверяем, существует ли физическое хранилище
     storage_exists = device.storage_path and os.path.exists(device.storage_path)
@@ -405,32 +515,74 @@ def upload_file(device: VirtualUsbDevice, file, destination_path: str = "/") -> 
         logger.error(f"Недостаточно места в хранилище: используется {used_space/(1024*1024):.2f} МБ из {device.storage_size} МБ")
         return None
     
-    # Безопасное имя файла
+    # Безопасное имя файла (удаляем небезопасные символы)
     filename = secure_filename(file.filename)
     
+    if not filename:
+        logger.error(f"Невозможно загрузить файл: небезопасное имя файла '{file.filename}'")
+        return None
+    
+    # Проверка на пустое имя файла после очистки
+    if not filename.strip():
+        logger.error("Невозможно загрузить файл: имя файла содержит только недопустимые символы")
+        return None
+    
     # Преобразуем путь назначения для работы с файловой системой
-    if destination_path == "/":
-        destination_path = ""
+    dest_dir = destination_path.lstrip("/")
+    if dest_dir == "":
+        # Корневая директория
+        clean_dest_path = ""
     else:
-        destination_path = destination_path.lstrip("/").rstrip("/")
+        # Удаляем конечный слэш, но сохраняем путь
+        clean_dest_path = dest_dir
     
     try:
         # Создаем директории, если нужно
-        if destination_path:
-            dir_path = os.path.join(device.storage_path, destination_path)
-            os.makedirs(dir_path, exist_ok=True)
-            logger.debug(f"Создана директория для загрузки: {dir_path}")
+        if clean_dest_path:
+            dir_path = os.path.join(device.storage_path, clean_dest_path)
+            
+            # Проверяем, существует ли директория
+            if not os.path.exists(dir_path):
+                # Если директория не существует, создаем её
+                os.makedirs(dir_path, exist_ok=True)
+                logger.debug(f"Создана директория для загрузки: {dir_path}")
+            elif not os.path.isdir(dir_path):
+                # Если путь существует, но это не директория
+                logger.error(f"Путь назначения {clean_dest_path} не является директорией")
+                return None
         
         # Путь к файлу относительно хранилища
-        rel_file_path = os.path.join(destination_path, filename).replace("\\", "/")
+        if clean_dest_path:
+            rel_file_path = os.path.join(clean_dest_path, filename).replace("\\", "/")
+        else:
+            rel_file_path = filename
         
         # Полный путь для сохранения файла
         full_path = os.path.join(device.storage_path, rel_file_path)
         logger.debug(f"Полный путь для сохранения файла: {full_path}")
         
+        # Проверяем, существует ли уже файл с таким именем
+        if os.path.exists(full_path):
+            # Если это директория, а не файл, возвращаем ошибку
+            if os.path.isdir(full_path):
+                logger.error(f"По указанному пути {rel_file_path} уже существует директория")
+                return None
+            
+            # Если это файл, перезаписываем его
+            logger.debug(f"Файл {rel_file_path} уже существует, будет перезаписан")
+        
         # Сохраняем файл
         file.save(full_path)
         
+        # Небольшая задержка для синхронизации файловой системы
+        import time
+        time.sleep(0.1)
+        
+        # Проверяем, что файл действительно сохранился
+        if not os.path.exists(full_path):
+            logger.error(f"Не удалось сохранить файл {full_path}")
+            return None
+            
         # Получаем размер файла
         file_size = os.path.getsize(full_path)
         
@@ -464,8 +616,15 @@ def upload_file(device: VirtualUsbDevice, file, destination_path: str = "/") -> 
             db.session.add(new_file)
             db.session.commit()
             
+            # Еще одна маленькая задержка после коммита
+            time.sleep(0.1)
+            
             logger.info(f"Загружен файл {rel_file_path} для устройства {device.name}")
             return new_file
+    except PermissionError:
+        logger.error(f"Недостаточно прав для сохранения файла в {clean_dest_path}")
+        db.session.rollback()
+        return None
     except Exception as e:
         logger.error(f"Ошибка при загрузке файла: {e}")
         # Откатываем транзакцию при ошибке
@@ -536,14 +695,13 @@ def download_file(device: VirtualUsbDevice, file_path: str) -> Tuple[Optional[st
     Returns:
         Tuple[Optional[str], Optional[str]]: (полный путь к файлу, имя файла) или (None, None) при ошибке
     """
-    # Нормализуем путь: заменяем обратные слэши, удаляем двойные слэши
-    file_path = file_path.replace("\\", "/")
-    while "//" in file_path:
-        file_path = file_path.replace("//", "/")
+    # Нормализуем путь с использованием единой функции
+    file_path = normalize_path(file_path)
     
     # Логируем для отладки
     logger.debug(f"Получение файла для скачивания: устройство={device.name}, путь='{file_path}'")
     
+    # Проверяем существование хранилища
     if not device.storage_path or not os.path.exists(device.storage_path):
         logger.error(f"Хранилище для устройства {device.name} не существует")
         return None, None
@@ -551,15 +709,38 @@ def download_file(device: VirtualUsbDevice, file_path: str) -> Tuple[Optional[st
     # Удаляем начальный слэш для работы с файловой системой
     file_path_fs = file_path.lstrip("/")
     
+    if not file_path_fs:
+        logger.error(f"Невозможно скачать корневую директорию")
+        return None, None
+    
     # Полный путь к файлу
     full_path = os.path.join(device.storage_path, file_path_fs)
     logger.debug(f"Полный путь к файлу для скачивания: {full_path}")
     
-    if not os.path.exists(full_path) or not os.path.isfile(full_path):
-        logger.error(f"Файл {file_path} не существует или не является файлом")
+    # Проверяем существование файла и что это не директория
+    if not os.path.exists(full_path):
+        logger.error(f"Файл {file_path} не существует")
         return None, None
     
-    # Получаем имя файла
+    if not os.path.isfile(full_path):
+        logger.error(f"Путь {file_path} указывает на директорию, а не на файл")
+        return None, None
+    
+    # Получаем имя файла из пути
     filename = os.path.basename(file_path)
     
-    return full_path, filename
+    # Проверяем, что имя файла не пустое
+    if not filename:
+        filename = "downloaded_file"
+        logger.warning(f"Имя файла не определено, используется имя по умолчанию: {filename}")
+    
+    # Еще одна проверка, что файл доступен для чтения
+    try:
+        with open(full_path, 'rb') as f:
+            # Просто пытаемся прочитать первый байт файла
+            f.read(1)
+        
+        return full_path, filename
+    except Exception as e:
+        logger.error(f"Не удалось получить доступ к файлу {file_path}: {e}")
+        return None, None
