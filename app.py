@@ -5,7 +5,7 @@ import random
 import logging
 import socket
 import netifaces
-from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, send_file
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -104,7 +104,18 @@ login_manager.login_view = "login"
 from usbip_utils import get_local_usb_devices, bind_device, get_remote_usb_devices, attach_device, detach_device, get_attached_devices
 
 # Импортирование моделей (после настройки db)
-from models import User, DeviceAlias, UsbPort, LogEntry, VirtualUsbDevice, VirtualUsbPort
+from models import User, DeviceAlias, UsbPort, LogEntry, VirtualUsbDevice, VirtualUsbPort, VirtualUsbFile
+
+# Импортирование модулей для управления виртуальным хранилищем
+from virtual_storage_utils import (
+    create_device_storage, delete_device_storage, resize_device_storage,
+    get_device_storage_usage, list_device_files, create_directory,
+    delete_item, upload_file, get_storage_stats, download_file
+)
+from storage_routes import storage_bp
+
+# Регистрация Blueprint для управления хранилищем
+app.register_blueprint(storage_bp)
 
 # Инициализация базы данных
 with app.app_context():

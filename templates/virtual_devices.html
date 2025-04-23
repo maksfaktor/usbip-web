@@ -59,6 +59,11 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
+                                        {% if device.device_type == 'storage' %}
+                                            <a href="{{ url_for('manage_storage', device_id=device.id) }}" class="btn btn-outline-info">
+                                                <i class="fas fa-hdd me-1"></i>Файлы
+                                            </a>
+                                        {% endif %}
                                         <button class="btn btn-outline-primary" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#connectDeviceModal"
