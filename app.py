@@ -816,5 +816,64 @@ def get_system_directories():
             'current_path': base_path
         }), 500
 
+# Обработчики ошибок с пользовательскими страницами
+@app.errorhandler(400)
+def bad_request(error):
+    return render_template('error.html', 
+                          error_code="400",
+                          error_title="Некорректный запрос",
+                          error_description="Сервер не смог обработать ваш запрос из-за некорректных данных. Пожалуйста, проверьте введенные данные и попробуйте снова."), 400
+
+@app.errorhandler(401)
+def unauthorized(error):
+    return render_template('error.html', 
+                          error_code="401",
+                          error_title="Не авторизован",
+                          error_description="Для доступа к этой странице требуется авторизация. Пожалуйста, войдите в систему."), 401
+
+@app.errorhandler(403)
+def forbidden(error):
+    return render_template('error.html', 
+                          error_code="403",
+                          error_title="Доступ запрещен",
+                          error_description="У вас недостаточно прав для доступа к этой странице."), 403
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('error.html', 
+                          error_code="404",
+                          error_title="Страница не найдена",
+                          error_description="Запрашиваемая страница не существует. Возможно, она была удалена или перемещена."), 404
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    return render_template('error.html', 
+                          error_code="500",
+                          error_title="Внутренняя ошибка сервера",
+                          error_description="На сервере произошла непредвиденная ошибка. Наши специалисты уже работают над её устранением."), 500
+
+@app.errorhandler(503)
+def service_unavailable(error):
+    return render_template('error.html', 
+                          error_code="503",
+                          error_title="Сервис недоступен",
+                          error_description="Сервис временно недоступен. Пожалуйста, попробуйте позже."), 503
+
+# Общий обработчик для неопределенных ошибок
+@app.errorhandler(Exception)
+def handle_exception(error):
+    # Если исключение имеет код HTTP
+    if hasattr(error, 'code'):
+        code = error.code
+    else:
+        code = 500
+    
+    app.logger.error(f"Необработанная ошибка: {error}")
+    
+    return render_template('error.html', 
+                          error_code=str(code),
+                          error_title="Ошибка сервера",
+                          error_description="Произошла неожиданная ошибка. Пожалуйста, попробуйте позже или обратитесь к администратору."), code
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
