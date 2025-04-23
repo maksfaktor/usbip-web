@@ -31,6 +31,14 @@ def manage_storage(device_id, path=None):
         flash('Управление файлами доступно только для устройств типа "storage"', 'warning')
         return redirect(url_for('virtual_devices'))
     
+    # Декодируем URL-кодирование в пути, если оно есть
+    if path and '%' in path:
+        try:
+            from urllib.parse import unquote
+            path = unquote(path)
+        except Exception as e:
+            logger.error(f"Ошибка при декодировании пути: {str(e)}")
+    
     # Нормализуем путь используя общую функцию
     path = normalize_path(path)
     

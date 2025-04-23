@@ -321,7 +321,15 @@ def normalize_path(path: str) -> str:
     """
     if path is None:
         return '/'
-        
+    
+    # Пытаемся декодировать URL-encoded символы, если они есть
+    if '%' in path:
+        try:
+            from urllib.parse import unquote
+            path = unquote(path)
+        except Exception as e:
+            logger.error(f"Ошибка при декодировании пути: {str(e)}")
+    
     # Заменяем обратные слэши
     path = path.replace('\\', '/')
     
@@ -336,8 +344,20 @@ def normalize_path(path: str) -> str:
     # Удаляем конечный слэш (кроме корневого пути)
     if path != '/' and path.endswith('/'):
         path = path[:-1]
-        
-    return path
+    
+    # Очистка путей от возможных последовательностей ".." для безопасности
+    parts = []
+    for part in path.split('/'):
+        if part == '..':
+            if parts and parts[-1] != '':
+                parts.pop()
+        elif part and part != '.':
+            parts.append(part)
+    
+    # Собираем путь обратно с начальным слешем
+    clean_path = '/' + '/'.join(parts)
+    
+    return clean_path
 
 def delete_item(device: VirtualUsbDevice, item_path: str) -> bool:
     """
