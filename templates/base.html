@@ -17,7 +17,7 @@
                 <i class="bi bi-usb-symbol"></i> USB/IP Web
             </a>
             {% if network_interfaces %}
-            <div class="network-interfaces d-none d-md-flex align-items-center mx-auto">
+            <div class="network-interfaces d-flex align-items-center mx-auto">
                 {% for iface_type, interfaces in network_interfaces.items() %}
                     {% if interfaces %}
                         <div class="iface-group mx-3">
