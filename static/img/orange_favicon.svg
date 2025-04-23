@@ -105,5 +105,42 @@
        style="fill:#8d5524;stroke:#6d4019;stroke-width:0.15;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 16,7.25 V 5"
        id="path15" />
+       
+    <!-- USB Symbol Overlay -->
+    <g transform="translate(8, 9.5) scale(0.33)">
+      <!-- USB symbol -->
+      <path
+         style="fill:#222222;fill-opacity:0.6;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:0.9"
+         d="M 0,8 H 8 V 0 h 6 V 8 h 8 c 4,0 8,4 8,8 v 10 c 0,4 -4,8 -8,8 H 8 c -4,0 -8,-4 -8,-8 V 16 c 0,-4 4,-8 8,-8 z"
+         id="path16" />
+      
+      <!-- USB prongs -->
+      <rect
+         style="fill:#ffffff;fill-opacity:0.9;stroke:none"
+         width="5"
+         height="4"
+         x="3"
+         y="3"
+         id="rect4" />
+      <rect
+         style="fill:#ffffff;fill-opacity:0.9;stroke:none"
+         width="5"
+         height="4"
+         x="14"
+         y="3"
+         id="rect5" />
+      
+      <!-- USB signal -->
+      <circle
+         style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:0.9"
+         cx="16"
+         cy="24"
+         r="4"
+         id="circle2" />
+      <path
+         style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:0.9"
+         d="m 16,20 v -9"
+         id="path17" />
+    </g>
   </g>
 </svg>
