@@ -55,11 +55,7 @@
                                                     <i class="fas fa-tag me-1"></i>Задать имя
                                                 </button>
                                                 {% endif %}
-                                                <button class="btn btn-outline-secondary search-info-btn" 
-                                                        data-vendor="{{ device.vendor_id }}" 
-                                                        data-product="{{ device.product_id }}">
-                                                    <i class="fas fa-search me-1"></i>Поиск
-                                                </button>
+
                                             </div>
                                         </td>
                                     </tr>
@@ -141,27 +137,7 @@
             </div>
         </div>
         
-        <!-- Блок поиска информации -->
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-search me-2"></i>Поиск информации</h4>
-            </div>
-            <div class="card-body">
-                <form id="device-search-form">
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" id="device_id" 
-                               placeholder="Введите VID:PID (например 1d6b:0002)" 
-                               aria-label="ID устройства">
-                        <button class="btn btn-primary" type="submit">
-                            <i class="fas fa-search me-1"></i>Найти
-                        </button>
-                    </div>
-                </form>
-                <div id="device-info-result">
-                    <!-- Результаты поиска будут здесь -->
-                </div>
-            </div>
-        </div>
+
     </div>
 </div>
 
@@ -197,37 +173,7 @@
     </div>
 </div>
 
-<!-- Модальное окно для сохранения информации об устройстве -->
-<div class="modal fade" id="saveDeviceInfoModal" tabindex="-1" aria-labelledby="saveDeviceInfoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="saveDeviceInfoModalLabel">Сохранить информацию об устройстве</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="POST" action="{{ url_for('device_alias') }}">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="save_busid" class="form-label">Идентификатор устройства</label>
-                        <input type="text" class="form-control" id="save_busid" name="busid" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label for="alias" class="form-label">Название устройства</label>
-                        <input type="text" class="form-control" id="save_alias" name="alias" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="save_device_info" class="form-label">Информация об устройстве</label>
-                        <textarea class="form-control" id="save_device_info" name="device_info" rows="6"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Сохранить</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+
 
 <!-- Модальное окно для установки имени порта -->
 <div class="modal fade" id="setPortNameModal" tabindex="-1" aria-labelledby="setPortNameModalLabel" aria-hidden="true">

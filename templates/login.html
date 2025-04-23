@@ -31,31 +31,7 @@
         {% endif %}
     {% endwith %}
     
-    {% if network_interfaces %}
-        <div class="alert alert-info mb-4">
-            <h5 class="alert-heading"><i class="bi bi-info-circle-fill me-2"></i>Доступные сетевые интерфейсы:</h5>
-            <hr>
-            {% for iface_type, interfaces in network_interfaces.items() %}
-                {% if interfaces %}
-                    <div class="fw-bold mb-2">{{ iface_type }}:</div>
-                    <ul class="list-group mb-3">
-                        {% for iface in interfaces %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center bg-dark text-light border-secondary">
-                                <span>
-                                    <i class="bi bi-{% if iface_type == 'WiFi' %}wifi{% else %}ethernet{% endif %} me-2"></i>
-                                    {{ iface.ip }}
-                                </span>
-                                <a href="{{ iface.url }}" class="btn btn-sm btn-outline-info" target="_blank">
-                                    <i class="bi bi-box-arrow-up-right me-1"></i>Открыть
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            {% endfor %}
-            <small class="text-muted">Эти ссылки можно использовать для доступа к приложению с других устройств в сети.</small>
-        </div>
-    {% endif %}
+
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card">
