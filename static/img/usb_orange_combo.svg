@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 135.46666 135.46667"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient
+       id="orangeGradient"
+       gradientUnits="userSpaceOnUse"
+       x1="67.73333"
+       y1="20"
+       x2="67.73333"
+       y2="115.46667">
+      <stop
+         offset="0%"
+         stop-color="#ffb938"
+         id="stop1" />
+      <stop
+         offset="100%"
+         stop-color="#ff7f1c"
+         id="stop2" />
+    </linearGradient>
+    <filter
+       id="shadow1"
+       x="-0.1"
+       y="-0.1"
+       width="1.2"
+       height="1.2">
+      <feGaussianBlur
+         stdDeviation="2"
+         id="feGaussianBlur2" />
+    </filter>
+  </defs>
+  <g>
+    <!-- Dark background circle -->
+    <circle
+       style="fill:#333333;stroke:#ff8c00;stroke-width:2.11667;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers"
+       id="path1"
+       cx="67.73333"
+       cy="67.73333"
+       r="62" />
+    
+    <!-- Orange fruit body -->
+    <circle
+       style="fill:url(#orangeGradient);stroke:#e67300;stroke-width:0.529167;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers"
+       id="path2"
+       cx="67.73333"
+       cy="67.73333"
+       r="45" />
+    
+    <!-- Orange slice cutout -->
+    <path
+       style="fill:#ffe0a5;stroke:#e6a045;stroke-width:0.396875;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers"
+       d="m 67.73333,67.73333 20,24 c -12.8,10.66667 -27.2,10.66667 -40,0 z"
+       id="path3" />
+    
+    <!-- Segment lines -->
+    <path
+       style="fill:none;stroke:#e67300;stroke-width:0.396875;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.5"
+       d="m 67.73333,22.73333 v 90"
+       id="path4" />
+    <path
+       style="fill:none;stroke:#e67300;stroke-width:0.396875;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.5"
+       d="m 22.73333,67.73333 h 90"
+       id="path5" />
+    <path
+       style="fill:none;stroke:#e67300;stroke-width:0.396875;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.5"
+       d="M 35.3,35.3 100.16667,100.16667"
+       id="path6" />
+    <path
+       style="fill:none;stroke:#e67300;stroke-width:0.396875;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.5"
+       d="M 100.16667,35.3 35.3,100.16667"
+       id="path7" />
+
+    <!-- Slice flesh texture -->
+    <path
+       style="fill:none;stroke:#e6a045;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.5"
+       d="m 67.73333,67.73333 v 24"
+       id="path8" />
+    <path
+       style="fill:none;stroke:#e6a045;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.5"
+       d="m 61.73333,72.73333 12,12"
+       id="path9" />
+    <path
+       style="fill:none;stroke:#e6a045;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.5"
+       d="m 73.73333,72.73333 -12,12"
+       id="path10" />
+    <path
+       style="fill:none;stroke:#e6a045;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.5"
+       d="m 55.73333,80.73333 h 24"
+       id="path11" />
+       
+    <!-- Highlight on the orange surface -->
+    <ellipse
+       style="fill:#ffffff;fill-opacity:0.3;stroke:none;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers"
+       id="path12"
+       cx="55.73333"
+       cy="49.73333"
+       rx="15"
+       ry="10" />
+    
+    <!-- Stem and leaf -->
+    <path
+       style="fill:#5aa02c;stroke:#2d5016;stroke-width:0.529167;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 67.73333,22.73333 c -3,0 -5,2 -3,4 2,2 5,1 5,-1 0,-1 -1,-3 -2,-3 z"
+       id="path13" />
+    <path
+       style="fill:none;stroke:#5aa02c;stroke-width:0.529167;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 64.73333,26.73333 c -3,0 -4,2 -2,3"
+       id="path14" />
+    <path
+       style="fill:#8d5524;stroke:#6d4019;stroke-width:0.529167;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 67.73333,31.73333 v -9"
+       id="path15" />
+       
+    <!-- USB логотип поверх апельсина -->
+    <g transform="translate(32.73333, 37.73333) scale(0.7) rotate(180)">
+      <path d="M50 0 L50 100 M50 20 L70 20 L70 40 M50 40 L30 40 L30 60" 
+            stroke="black" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="30" cy="70" r="8" fill="black"/>
+      <circle cx="70" cy="50" r="8" fill="black"/>
+      <circle cx="50" cy="10" r="8" fill="black"/>
+      <circle cx="50" cy="100" r="8" fill="black"/>
+    </g>
+  </g>
+</svg>
