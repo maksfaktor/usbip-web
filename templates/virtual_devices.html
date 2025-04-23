@@ -2,6 +2,36 @@
 
 {% block title %}Виртуальные USB устройства - OrangeUSB{% endblock %}
 
+{% block head %}
+<style>
+    /* Стили для проводника директорий */
+    .directory-list {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid rgba(0,0,0,.125);
+        border-radius: .25rem;
+    }
+    
+    .folder-item:hover {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+    
+    /* Стили для путей */
+    #current_path {
+        word-break: break-all;
+        max-width: 300px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    /* Стили для неактивных элементов */
+    .list-group-item[disabled] {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <!-- Колонка виртуальных устройств -->
@@ -240,9 +270,15 @@
                                 <div id="system_folder_options" style="display: none;">
                                     <div class="mb-3">
                                         <label for="system_path" class="form-label">Путь к системной папке</label>
-                                        <input type="text" class="form-control" id="system_path" name="system_path" 
-                                               placeholder="/path/to/folder">
-                                        <div class="form-text">Укажите полный путь к существующей системной папке (должна быть доступна на запись)</div>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="system_path" name="system_path" 
+                                                   placeholder="/path/to/folder" readonly>
+                                            <button type="button" class="btn btn-outline-primary" id="browse_button"
+                                                    data-bs-toggle="modal" data-bs-target="#folderBrowserModal">
+                                                <i class="fas fa-folder-open"></i> Выбрать
+                                            </button>
+                                        </div>
+                                        <div class="form-text">Выберите существующую системную папку (должна быть доступна на запись)</div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="system_storage_size" class="form-label">Виртуальный размер хранилища (МБ)</label>
@@ -365,6 +401,58 @@
 <form id="deletePortForm" method="POST" action="{{ url_for('delete_virtual_port') }}" style="display: none;">
     <input type="hidden" name="port_id" id="delete_port_id" value="">
 </form>
+<!-- Модальное окно для выбора папки -->
+<div class="modal fade" id="folderBrowserModal" tabindex="-1" aria-labelledby="folderBrowserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="folderBrowserModalLabel">Выберите папку</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3 d-flex align-items-center">
+                    <nav aria-label="Breadcrumb" class="flex-grow-1">
+                        <ol class="breadcrumb mb-0" id="folder_breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" data-path="/">Root</a></li>
+                        </ol>
+                    </nav>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="parent_dir_button">
+                        <i class="fas fa-level-up-alt"></i> Вверх
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="refresh_dir_button">
+                        <i class="fas fa-sync-alt"></i> Обновить
+                    </button>
+                </div>
+                
+                <div class="alert alert-warning" id="folder_browser_error" style="display: none;">
+                    <i class="fas fa-exclamation-triangle me-2"></i><span id="error_message"></span>
+                </div>
+                
+                <div class="directory-list" id="directory_list">
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="mt-2">Загрузка списка папок...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="d-flex justify-content-between w-100 align-items-center">
+                    <div>
+                        <span class="me-2">Текущий путь:</span>
+                        <code id="current_path">/</code>
+                        <span class="ms-2 badge" id="writable_badge"></span>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-primary" id="select_folder_button">Выбрать</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -468,6 +556,207 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Инициализация при загрузке страницы
         updateStorageOptions();
+    }
+    
+    // Функциональность браузера папок
+    const folderBrowserModal = document.getElementById('folderBrowserModal');
+    if (folderBrowserModal) {
+        let currentPath = '/';
+        let parentPath = '/';
+        let isWritable = false;
+        
+        // Функция для загрузки директорий
+        function loadDirectories(path = '/') {
+            const directoryList = document.getElementById('directory_list');
+            const errorBlock = document.getElementById('folder_browser_error');
+            const currentPathElement = document.getElementById('current_path');
+            const writableBadge = document.getElementById('writable_badge');
+            
+            // Показываем загрузку
+            directoryList.innerHTML = `
+                <div class="text-center p-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p class="mt-2">Загрузка списка папок...</p>
+                </div>
+            `;
+            
+            // Скрываем ошибку если была
+            errorBlock.style.display = 'none';
+            
+            // Запрашиваем директории с сервера
+            fetch(`/get_system_directories?path=${encodeURIComponent(path)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        // Показываем ошибку
+                        errorBlock.style.display = 'block';
+                        document.getElementById('error_message').textContent = data.error;
+                        return;
+                    }
+                    
+                    // Сохраняем текущий и родительский пути
+                    currentPath = data.current_path;
+                    parentPath = data.parent_path;
+                    isWritable = data.writable;
+                    
+                    // Обновляем отображение текущего пути
+                    currentPathElement.textContent = currentPath;
+                    
+                    // Обновляем статус доступа на запись
+                    if (isWritable) {
+                        writableBadge.className = 'badge bg-success';
+                        writableBadge.textContent = 'Доступно для записи';
+                    } else {
+                        writableBadge.className = 'badge bg-danger';
+                        writableBadge.textContent = 'Только чтение';
+                    }
+                    
+                    // Обновляем хлебные крошки
+                    updateBreadcrumbs(currentPath);
+                    
+                    // Если нет директорий и файлов, показываем сообщение
+                    if (data.directories.length === 0 && data.files.length === 0) {
+                        directoryList.innerHTML = `
+                            <div class="alert alert-info m-3">
+                                <i class="fas fa-info-circle me-2"></i>Директория пуста
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Отображаем список директорий и файлов
+                    let html = '<div class="list-group">';
+                    
+                    // Сначала показываем директории
+                    data.directories.forEach(dir => {
+                        const rowClass = dir.writable ? 'list-group-item-action' : 'text-muted';
+                        const writableIcon = dir.writable 
+                            ? '<i class="fas fa-pencil-alt text-success ms-2" title="Доступно для записи"></i>' 
+                            : '<i class="fas fa-lock text-danger ms-2" title="Только чтение"></i>';
+                            
+                        html += `
+                            <a href="#" class="list-group-item ${rowClass} d-flex align-items-center folder-item"
+                               ${dir.writable ? `data-path="${dir.path}"` : 'disabled'}>
+                                <i class="fas fa-folder me-2 text-warning"></i>
+                                <span class="flex-grow-1">${dir.name}</span>
+                                ${writableIcon}
+                            </a>
+                        `;
+                    });
+                    
+                    // Затем файлы в сером цвете (не кликабельные)
+                    data.files.forEach(file => {
+                        const fileSize = formatFileSize(file.size);
+                        html += `
+                            <div class="list-group-item text-muted d-flex align-items-center">
+                                <i class="fas fa-file me-2"></i>
+                                <span class="flex-grow-1">${file.name}</span>
+                                <small>${fileSize}</small>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    directoryList.innerHTML = html;
+                    
+                    // Добавляем обработчики для директорий
+                    document.querySelectorAll('.folder-item').forEach(item => {
+                        if (item.getAttribute('data-path')) {
+                            item.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const path = this.getAttribute('data-path');
+                                loadDirectories(path);
+                            });
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки директорий:', error);
+                    errorBlock.style.display = 'block';
+                    document.getElementById('error_message').textContent = 'Ошибка при загрузке списка директорий';
+                });
+        }
+        
+        // Функция для обновления хлебных крошек
+        function updateBreadcrumbs(path) {
+            const breadcrumb = document.getElementById('folder_breadcrumb');
+            const parts = path.split('/').filter(part => part.length > 0);
+            
+            // Очищаем текущие хлебные крошки
+            breadcrumb.innerHTML = `<li class="breadcrumb-item"><a href="#" data-path="/">Root</a></li>`;
+            
+            let currentPath = '/';
+            parts.forEach((part, index) => {
+                currentPath += part + '/';
+                const isLast = index === parts.length - 1;
+                
+                const item = document.createElement('li');
+                item.className = 'breadcrumb-item';
+                if (isLast) item.classList.add('active');
+                
+                if (isLast) {
+                    item.textContent = part;
+                } else {
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.textContent = part;
+                    link.setAttribute('data-path', currentPath);
+                    item.appendChild(link);
+                }
+                
+                breadcrumb.appendChild(item);
+            });
+            
+            // Добавляем обработчики для хлебных крошек
+            document.querySelectorAll('#folder_breadcrumb a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const path = this.getAttribute('data-path');
+                    loadDirectories(path);
+                });
+            });
+        }
+        
+        // Функция для форматирования размера файла
+        function formatFileSize(size) {
+            if (size < 1024) return size + ' B';
+            if (size < 1024 * 1024) return (size / 1024).toFixed(1) + ' KB';
+            if (size < 1024 * 1024 * 1024) return (size / (1024 * 1024)).toFixed(1) + ' MB';
+            return (size / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+        }
+        
+        // Инициализация модального окна выбора папки
+        folderBrowserModal.addEventListener('show.bs.modal', function() {
+            // Загружаем директории
+            loadDirectories('/');
+        });
+        
+        // Обработчик кнопки "Вверх"
+        document.getElementById('parent_dir_button').addEventListener('click', function() {
+            loadDirectories(parentPath);
+        });
+        
+        // Обработчик кнопки "Обновить"
+        document.getElementById('refresh_dir_button').addEventListener('click', function() {
+            loadDirectories(currentPath);
+        });
+        
+        // Обработчик выбора папки
+        document.getElementById('select_folder_button').addEventListener('click', function() {
+            if (!isWritable) {
+                alert('Выбранная директория недоступна для записи');
+                return;
+            }
+            
+            // Устанавливаем выбранный путь
+            document.getElementById('system_path').value = currentPath;
+            
+            // Закрываем модальное окно
+            const modal = bootstrap.Modal.getInstance(folderBrowserModal);
+            modal.hide();
+        });
     }
 });
 </script>

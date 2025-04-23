@@ -754,5 +754,67 @@ def delete_virtual_port():
 # Маршруты для управления хранилищем виртуальных USB устройств добавлены через Blueprint
 # app.register_blueprint(storage_bp)
 
+@app.route('/get_system_directories', methods=['GET'])
+@login_required
+def get_system_directories():
+    """
+    API для получения списка директорий на сервере
+    """
+    base_path = request.args.get('path', '/')
+    
+    # Базовая защита - запрещаем подниматься выше корня
+    base_path = os.path.normpath(base_path)
+    if base_path.startswith('..'):
+        base_path = '/'
+    
+    try:
+        # Получаем список папок
+        dirs = []
+        files = []
+        
+        for item in os.listdir(base_path):
+            full_path = os.path.join(base_path, item)
+            
+            # Пропускаем скрытые файлы и папки
+            if item.startswith('.'):
+                continue
+                
+            if os.path.isdir(full_path):
+                # Проверяем, есть ли права на запись
+                writable = os.access(full_path, os.W_OK)
+                dirs.append({
+                    'name': item,
+                    'path': full_path,
+                    'writable': writable
+                })
+            else:
+                # Для полноты информации добавляем и файлы
+                size = os.path.getsize(full_path)
+                files.append({
+                    'name': item,
+                    'path': full_path,
+                    'size': size
+                })
+        
+        # Собираем информацию о текущей директории
+        parent_dir = os.path.dirname(base_path) if base_path != '/' else '/'
+        
+        # Проверяем права на запись
+        current_writable = os.access(base_path, os.W_OK)
+        
+        return jsonify({
+            'current_path': base_path,
+            'parent_path': parent_dir,
+            'writable': current_writable,
+            'directories': dirs,
+            'files': files
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'current_path': base_path
+        }), 500
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
