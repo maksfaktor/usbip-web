@@ -35,9 +35,14 @@ def manage_storage(device_id, path=None):
     if path is None:
         path = '/'
     else:
-        # Нормализуем путь
+        # Нормализуем путь: заменяем обратные слэши на прямые
+        path = path.replace('\\', '/')
+        # Убеждаемся, что путь начинается с "/"
         if not path.startswith('/'):
             path = '/' + path
+        # Удаляем двойные слэши
+        while '//' in path:
+            path = path.replace('//', '/')
     
     # Если хранилище еще не создано, создаем его
     if not device.storage_path or not os.path.exists(device.storage_path):
@@ -64,15 +69,26 @@ def manage_storage(device_id, path=None):
     stats = get_storage_stats(device)
     
     # Определяем родительскую директорию для навигации "вверх"
-    # Нормализуем текущий путь
-    norm_path = path.rstrip('/')
-    if norm_path == '':
+    # Стандартизируем путь для корректного определения родителя
+    if path == '/' or path == '':
+        # Мы в корне, родителя нет
         parent_path = '/'
     else:
-        # Правильно обрабатываем путь для навигации вверх
-        parent_path = os.path.dirname(norm_path)
-        if not parent_path or parent_path == '.':
+        # Удаляем конечный слэш, если он есть
+        norm_path = path.rstrip('/')
+        # Находим последний слэш в пути
+        last_slash_pos = norm_path.rfind('/')
+        if last_slash_pos <= 0:
+            # Если нет слэша или слэш только в начале, значит родитель - корневая директория
             parent_path = '/'
+        else:
+            # Родитель - всё до последнего слэша
+            parent_path = norm_path[:last_slash_pos]
+            if not parent_path:
+                parent_path = '/'
+            
+    # Логируем информацию о путях для отладки
+    logger.debug(f"Текущий путь: {path}, Родительский путь: {parent_path}")
     
     return render_template(
         'storage_manager.html',
@@ -137,6 +153,15 @@ def create_storage_directory(device_id):
     
     # Получаем текущий путь и имя новой директории
     current_path = request.form.get('current_path', '/')
+    
+    # Нормализуем текущий путь
+    current_path = current_path.replace('\\', '/')
+    if not current_path.startswith('/'):
+        current_path = '/' + current_path
+    while '//' in current_path:
+        current_path = current_path.replace('//', '/')
+    
+    # Получаем и обрабатываем имя директории
     directory_name = request.form.get('directory_name', '').strip()
     
     if not directory_name:
@@ -152,7 +177,11 @@ def create_storage_directory(device_id):
     if current_path == '/':
         new_dir_path = directory_name
     else:
-        new_dir_path = os.path.join(current_path.lstrip('/'), directory_name)
+        # Используем os.path.join, но заменяем обратные слэши для совместимости с URL
+        new_dir_path = os.path.join(current_path.lstrip('/'), directory_name).replace('\\', '/')
+    
+    # Логируем для отладки
+    logger.debug(f"Создание директории: текущий путь={current_path}, имя директории={directory_name}, полный путь={new_dir_path}")
     
     # Создаем директорию
     success = create_directory(device, new_dir_path)
@@ -183,6 +212,13 @@ def upload_storage_file(device_id):
     
     # Получаем текущий путь
     current_path = request.form.get('current_path', '/')
+    
+    # Нормализуем текущий путь
+    current_path = current_path.replace('\\', '/')
+    if not current_path.startswith('/'):
+        current_path = '/' + current_path
+    while '//' in current_path:
+        current_path = current_path.replace('//', '/')
     
     # Проверяем, есть ли файл в запросе
     if 'file' not in request.files:
@@ -227,6 +263,22 @@ def delete_storage_item(device_id):
     item_path = request.form.get('item_path', '')
     current_path = request.form.get('current_path', '/')
     
+    # Нормализуем пути
+    current_path = current_path.replace('\\', '/')
+    if not current_path.startswith('/'):
+        current_path = '/' + current_path
+    while '//' in current_path:
+        current_path = current_path.replace('//', '/')
+        
+    if item_path:
+        item_path = item_path.replace('\\', '/')
+        # Для item_path не обязательно добавлять начальный слэш
+        while '//' in item_path:
+            item_path = item_path.replace('//', '/')
+    
+    # Логируем для отладки
+    logger.debug(f"Удаление элемента: текущий путь={current_path}, путь элемента={item_path}")
+    
     if not item_path:
         flash('Не указан путь к файлу или директории', 'warning')
         return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
@@ -261,6 +313,14 @@ def download_storage_file(device_id, file_path):
     Скачивание файла из хранилища
     """
     device = VirtualUsbDevice.query.get_or_404(device_id)
+    
+    # Нормализуем путь к файлу
+    file_path = file_path.replace('\\', '/')
+    while '//' in file_path:
+        file_path = file_path.replace('//', '/')
+    
+    # Логируем для отладки
+    logger.debug(f"Скачивание файла: устройство_id={device_id}, путь файла={file_path}")
     
     # Получаем путь к файлу для скачивания
     full_path, filename = download_file(device, file_path)

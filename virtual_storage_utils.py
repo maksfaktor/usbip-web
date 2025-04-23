@@ -146,9 +146,20 @@ def list_device_files(device: VirtualUsbDevice, directory: str = "/") -> List[Di
     Returns:
         List[Dict[str, Any]]: Список файлов и директорий
     """
-    # Нормализуем путь
+    # Предварительная нормализация пути: заменяем обратные слэши и удаляем двойные слэши
+    directory = directory.replace("\\", "/")
+    while "//" in directory:
+        directory = directory.replace("//", "/")
+        
+    # Нормализуем путь для работы с директориями
     if directory == "/":
         directory = ""
+    else:
+        # Удаляем конечный слэш, если он есть
+        directory = directory.rstrip("/")
+        
+    # Логируем для отладки
+    logger.debug(f"Получение списка файлов: устройство={device.name}, директория='{directory}'")
     
     result = []
     
@@ -159,37 +170,49 @@ def list_device_files(device: VirtualUsbDevice, directory: str = "/") -> List[Di
         # Полный путь к директории
         dir_path = os.path.join(device.storage_path, directory.lstrip("/"))
         
+        # Логируем реальный путь в файловой системе
+        logger.debug(f"Физический путь к директории: {dir_path}")
+        
         if os.path.exists(dir_path) and os.path.isdir(dir_path):
             # Список директорий
             for dirname in os.listdir(dir_path):
                 full_path = os.path.join(dir_path, dirname)
                 if os.path.isdir(full_path):
+                    # Формируем путь для URL с прямыми слэшами
+                    path_for_url = directory + "/" + dirname if directory else "/" + dirname
+                    path_for_url = path_for_url.replace("//", "/")
+                    
                     result.append({
                         "name": dirname,
                         "type": "directory",
                         "size": 0,
-                        "path": os.path.join(directory, dirname).replace("\\", "/"),
+                        "path": path_for_url,
                         "modified": os.path.getmtime(full_path)
                     })
     
     # Список файлов из базы данных (работает и при отключенном устройстве)
     for file_entry in VirtualUsbFile.query.filter_by(device_id=device.id).all():
         # Получаем только файлы в текущей директории
-        file_dir = os.path.dirname(file_entry.file_path)
+        file_path = file_entry.file_path.replace("\\", "/")
+        file_dir = os.path.dirname(file_path)
         
-        # Нормализуем пути для сравнения
+        # Нормализуем пути для сравнения без начальных и конечных слэшей
         dir_path_norm = directory.strip("/")
         file_dir_norm = file_dir.strip("/")
         
+        logger.debug(f"Сравнение путей: директория='{dir_path_norm}', файл в '{file_dir_norm}'")
+        
+        # Проверяем, совпадает ли директория файла с текущей директорией
         if file_dir_norm == dir_path_norm:
             # Добавляем информацию о доступности файла
-            file_exists = storage_exists and os.path.exists(os.path.join(device.storage_path, file_entry.file_path.lstrip("/")))
+            file_exists = storage_exists and os.path.exists(os.path.join(
+                device.storage_path, file_entry.file_path.lstrip("/")))
             
             result.append({
                 "name": os.path.basename(file_entry.filename),
                 "type": "file",
                 "size": file_entry.file_size,
-                "path": file_entry.file_path,
+                "path": file_path,
                 "modified": file_entry.updated_at.timestamp() if file_entry.updated_at else 0,
                 "available": file_exists
             })
@@ -207,8 +230,16 @@ def create_directory(device: VirtualUsbDevice, directory_path: str) -> bool:
     Returns:
         bool: Успешность создания директории
     """
-    # Нормализуем путь
+    # Нормализуем путь: заменяем обратные слэши, удаляем двойные слэши
+    directory_path = directory_path.replace("\\", "/")
+    while "//" in directory_path:
+        directory_path = directory_path.replace("//", "/")
+    
+    # Удаляем начальный слэш для работы с файловой системой
     directory_path = directory_path.lstrip("/")
+    
+    # Логируем для отладки
+    logger.debug(f"Создание директории: устройство={device.name}, путь='{directory_path}'")
     
     # Проверяем, существует ли физическое хранилище
     storage_exists = device.storage_path and os.path.exists(device.storage_path)
