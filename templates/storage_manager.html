@@ -123,7 +123,7 @@
                     {% for item in files %}
                         {% if item.type == 'directory' %}
                         <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                            <a href="{{ url_for('manage_storage', device_id=device.id, path=item.path) }}" class="text-decoration-none d-flex align-items-center flex-grow-1">
+                            <a href="{{ url_for('storage.manage_storage', device_id=device.id, path=item.path) }}" class="text-decoration-none d-flex align-items-center flex-grow-1">
                                 <i class="bi bi-folder me-3 fs-5 text-warning"></i>
                                 <span>{{ item.name }}</span>
                             </a>
@@ -146,7 +146,7 @@
                                 </div>
                             </div>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('download_storage_file', device_id=device.id, file_path=item.path) }}" 
+                                <a href="{{ url_for('storage.download_storage_file', device_id=device.id, file_path=item.path) }}" 
                                    class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-download"></i>
                                 </a>
@@ -181,7 +181,7 @@
                 <h5 class="modal-title" id="createDirModalLabel">Создать новую папку</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" action="{{ url_for('create_storage_directory', device_id=device.id) }}">
+            <form method="POST" action="{{ url_for('storage.create_storage_directory', device_id=device.id) }}">
                 <div class="modal-body">
                     <input type="hidden" name="current_path" value="{{ current_path }}">
                     <div class="mb-3">
@@ -206,7 +206,7 @@
                 <h5 class="modal-title" id="uploadFileModalLabel">Загрузить файл</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" action="{{ url_for('upload_storage_file', device_id=device.id) }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ url_for('storage.upload_storage_file', device_id=device.id) }}" enctype="multipart/form-data">
                 <div class="modal-body">
                     <input type="hidden" name="current_path" value="{{ current_path }}">
                     <div class="mb-3">
@@ -233,7 +233,7 @@
 </div>
 
 <!-- Скрытая форма для удаления элементов -->
-<form id="deleteItemForm" method="POST" action="{{ url_for('delete_storage_item', device_id=device.id) }}" style="display: none;">
+<form id="deleteItemForm" method="POST" action="{{ url_for('storage.delete_storage_item', device_id=device.id) }}" style="display: none;">
     <input type="hidden" name="item_path" id="delete_item_path" value="">
     <input type="hidden" name="current_path" value="{{ current_path }}">
 </form>
