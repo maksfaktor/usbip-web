@@ -31,18 +31,8 @@ def manage_storage(device_id, path=None):
         flash('Управление файлами доступно только для устройств типа "storage"', 'warning')
         return redirect(url_for('virtual_devices'))
     
-    # Если путь не указан, используем корневую директорию
-    if path is None:
-        path = '/'
-    else:
-        # Нормализуем путь: заменяем обратные слэши на прямые
-        path = path.replace('\\', '/')
-        # Убеждаемся, что путь начинается с "/"
-        if not path.startswith('/'):
-            path = '/' + path
-        # Удаляем двойные слэши
-        while '//' in path:
-            path = path.replace('//', '/')
+    # Нормализуем путь используя общую функцию
+    path = normalize_path(path)
     
     # Если хранилище еще не создано, создаем его
     if not device.storage_path or not os.path.exists(device.storage_path):
@@ -69,23 +59,16 @@ def manage_storage(device_id, path=None):
     stats = get_storage_stats(device)
     
     # Определяем родительскую директорию для навигации "вверх"
-    # Стандартизируем путь для корректного определения родителя
+    # Используем надежный способ с использованием os.path
     if path == '/' or path == '':
         # Мы в корне, родителя нет
         parent_path = '/'
     else:
-        # Удаляем конечный слэш, если он есть
-        norm_path = path.rstrip('/')
-        # Находим последний слэш в пути
-        last_slash_pos = norm_path.rfind('/')
-        if last_slash_pos <= 0:
-            # Если нет слэша или слэш только в начале, значит родитель - корневая директория
-            parent_path = '/'
-        else:
-            # Родитель - всё до последнего слэша
-            parent_path = norm_path[:last_slash_pos]
-            if not parent_path:
-                parent_path = '/'
+        # Нормализуем путь и используем os.path.dirname для получения родительского пути
+        parent_path = os.path.dirname(path)
+        
+        # Убеждаемся, что родительский путь нормализован
+        parent_path = normalize_path(parent_path)
             
     # Логируем информацию о путях для отладки
     logger.debug(f"Текущий путь: {path}, Родительский путь: {parent_path}")
@@ -155,11 +138,7 @@ def create_storage_directory(device_id):
     current_path = request.form.get('current_path', '/')
     
     # Нормализуем текущий путь
-    current_path = current_path.replace('\\', '/')
-    if not current_path.startswith('/'):
-        current_path = '/' + current_path
-    while '//' in current_path:
-        current_path = current_path.replace('//', '/')
+    current_path = normalize_path(current_path)
     
     # Получаем и обрабатываем имя директории
     directory_name = request.form.get('directory_name', '').strip()
@@ -168,23 +147,31 @@ def create_storage_directory(device_id):
         flash('Необходимо указать имя директории', 'warning')
         return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
     
-    # Проверяем, что имя директории безопасно (базовая проверка)
-    if '/' in directory_name or '\\' in directory_name or '..' in directory_name:
+    # Проверяем, что имя директории безопасно (расширенная проверка)
+    if '/' in directory_name or '\\' in directory_name or '..' in directory_name or directory_name.startswith('.'):
         flash('Имя директории содержит недопустимые символы', 'danger')
+        return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
+    
+    # Проверка на пробелы в конце имени и запрещенные символы Windows
+    directory_name = directory_name.strip()
+    forbidden_chars = '<>:"|?*'
+    if any(c in directory_name for c in forbidden_chars):
+        flash(f'Имя директории содержит недопустимые символы: {forbidden_chars}', 'danger')
         return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
     
     # Формируем полный путь к новой директории
     if current_path == '/':
         new_dir_path = directory_name
     else:
-        # Используем os.path.join, но заменяем обратные слэши для совместимости с URL
-        new_dir_path = os.path.join(current_path.lstrip('/'), directory_name).replace('\\', '/')
+        # Обеспечиваем корректный путь без двойных слешей
+        current_path_clean = current_path.strip('/')
+        new_dir_path = f"{current_path_clean}/{directory_name}"
     
     # Логируем для отладки
     logger.debug(f"Создание директории: текущий путь={current_path}, имя директории={directory_name}, полный путь={new_dir_path}")
     
     try:
-        # Создаем директорию - теперь функция возвращает кортеж (успех, сообщение об ошибке)
+        # Создаем директорию
         success, error_message = create_directory(device, new_dir_path)
         
         if success:
@@ -198,6 +185,21 @@ def create_storage_directory(device_id):
             db.session.commit()
             
             flash(f'Директория "{directory_name}" успешно создана', 'success')
+            
+            # Пауза перед перенаправлением для гарантированного завершения операций
+            import time
+            time.sleep(0.5)
+            
+            # Перенаправляем в созданную директорию (если нужно открыть новую папку)
+            if current_path == '/':
+                redirect_path = f"/{new_dir_path}"
+            else:
+                redirect_path = f"{current_path}/{directory_name}"
+            
+            # Перенаправляем в текущую директорию (если нужно остаться в текущей)
+            # redirect_path = current_path
+            
+            return redirect(url_for('storage.manage_storage', device_id=device_id, path=normalize_path(redirect_path)))
         else:
             # Используем конкретное сообщение об ошибке, если оно есть
             flash(error_message or 'Не удалось создать директорию', 'danger')
@@ -206,7 +208,33 @@ def create_storage_directory(device_id):
         logger.error(f"Ошибка при создании директории {new_dir_path}: {str(e)}")
         flash(f'Произошла ошибка: {str(e)}', 'danger')
     
+    # Перенаправляем в текущую директорию в случае ошибки
     return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
+
+# Функция для стандартизированной нормализации пути
+def normalize_path(path):
+    """
+    Нормализует путь для единообразного использования
+    """
+    if path is None:
+        return '/'
+        
+    # Заменяем обратные слэши
+    path = path.replace('\\', '/')
+    
+    # Убеждаемся, что путь начинается с "/"
+    if not path.startswith('/'):
+        path = '/' + path
+        
+    # Удаляем двойные слэши
+    while '//' in path:
+        path = path.replace('//', '/')
+        
+    # Удаляем конечный слэш (кроме корневого пути)
+    if path != '/' and path.endswith('/'):
+        path = path[:-1]
+        
+    return path
 
 @storage_bp.route('/storage/<int:device_id>/upload', methods=['POST'])
 @login_required
@@ -219,12 +247,8 @@ def upload_storage_file(device_id):
     # Получаем текущий путь
     current_path = request.form.get('current_path', '/')
     
-    # Нормализуем текущий путь
-    current_path = current_path.replace('\\', '/')
-    if not current_path.startswith('/'):
-        current_path = '/' + current_path
-    while '//' in current_path:
-        current_path = current_path.replace('//', '/')
+    # Нормализуем текущий путь единой функцией
+    current_path = normalize_path(current_path)
     
     # Проверяем, есть ли файл в запросе
     if 'file' not in request.files:
@@ -238,22 +262,39 @@ def upload_storage_file(device_id):
         flash('Не выбран файл для загрузки', 'warning')
         return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
     
-    # Загружаем файл
-    file_entry = upload_file(device, file, current_path)
+    # Логируем для отладки
+    logger.debug(f"Загрузка файла: текущий путь={current_path}, имя файла={file.filename}")
     
-    if file_entry:
-        # Записываем лог
-        log_entry = LogEntry(
-            level='INFO',
-            message=f'Загружен файл {file_entry.filename} для устройства {device.name}',
-            source='system'
-        )
-        db.session.add(log_entry)
-        db.session.commit()
+    try:
+        # Проверяем безопасность имени файла
+        filename = secure_filename(file.filename)
+        if not filename:
+            flash('Недопустимое имя файла', 'danger')
+            return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
+            
+        # Загружаем файл
+        file_entry = upload_file(device, file, current_path)
         
-        flash(f'Файл "{file_entry.filename}" успешно загружен', 'success')
-    else:
-        flash('Не удалось загрузить файл', 'danger')
+        if file_entry:
+            # Записываем лог
+            log_entry = LogEntry(
+                level='INFO',
+                message=f'Загружен файл {file_entry.filename} для устройства {device.name}',
+                source='system'
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            # Пауза перед перенаправлением для гарантированного завершения операций
+            import time
+            time.sleep(0.5)
+            
+            flash(f'Файл "{file_entry.filename}" успешно загружен', 'success')
+        else:
+            flash('Не удалось загрузить файл', 'danger')
+    except Exception as e:
+        logger.error(f"Ошибка при загрузке файла {file.filename}: {str(e)}")
+        flash(f'Произошла ошибка при загрузке файла: {str(e)}', 'danger')
     
     return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
 
@@ -269,20 +310,11 @@ def delete_storage_item(device_id):
     item_path = request.form.get('item_path', '')
     current_path = request.form.get('current_path', '/')
     
-    # Нормализуем пути
-    current_path = current_path.replace('\\', '/')
-    if not current_path.startswith('/'):
-        current_path = '/' + current_path
-    while '//' in current_path:
-        current_path = current_path.replace('//', '/')
-        
+    # Нормализуем пути используя общую функцию
+    current_path = normalize_path(current_path)
+    
     if item_path:
-        item_path = item_path.replace('\\', '/')
-        # Для item_path не обязательно добавлять начальный слэш, но добавим для стандартизации
-        if not item_path.startswith('/'):
-            item_path = '/' + item_path
-        while '//' in item_path:
-            item_path = item_path.replace('//', '/')
+        item_path = normalize_path(item_path)
     
     # Логируем для отладки
     logger.debug(f"Удаление элемента: текущий путь={current_path}, путь элемента={item_path}")
@@ -295,7 +327,8 @@ def delete_storage_item(device_id):
         # Определяем тип элемента для логирования
         is_dir = False
         # Проверяем признаки директории в пути
-        if item_path.endswith('/') or os.path.isdir(os.path.join(device.storage_path, item_path.lstrip('/'))):
+        item_path_stripped = item_path.lstrip('/')
+        if item_path.endswith('/') or os.path.isdir(os.path.join(device.storage_path, item_path_stripped)):
             is_dir = True
         element_type = 'директория' if is_dir else 'файл'
         
@@ -313,6 +346,19 @@ def delete_storage_item(device_id):
             db.session.commit()
             
             flash(f'{element_type.capitalize()} успешно удален(а)', 'success')
+            
+            # Пауза перед перенаправлением для гарантированного завершения операций
+            import time
+            time.sleep(0.5)
+            
+            # Проверяем, если удаляемый элемент находится внутри текущего пути, 
+            # то нужно перейти на уровень выше
+            if is_dir and current_path.startswith(item_path):
+                # Если удаляемая директория содержит текущий путь, переходим в родительскую директорию
+                parent_path = os.path.dirname(item_path)
+                if not parent_path or parent_path == '/':
+                    parent_path = '/'
+                return redirect(url_for('storage.manage_storage', device_id=device_id, path=parent_path))
         else:
             flash('Не удалось удалить элемент', 'danger')
     except Exception as e:
@@ -320,6 +366,7 @@ def delete_storage_item(device_id):
         logger.error(f"Ошибка при удалении элемента {item_path}: {str(e)}")
         flash(f'Произошла ошибка при удалении: {str(e)}', 'danger')
     
+    # В случае успешного удаления обычного файла или другой ошибки, остаемся в текущей директории
     return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
 
 @storage_bp.route('/storage/<int:device_id>/download/<path:file_path>', methods=['GET'])
@@ -330,29 +377,38 @@ def download_storage_file(device_id, file_path):
     """
     device = VirtualUsbDevice.query.get_or_404(device_id)
     
-    # Нормализуем путь к файлу
-    file_path = file_path.replace('\\', '/')
-    while '//' in file_path:
-        file_path = file_path.replace('//', '/')
+    # Нормализуем путь к файлу используя единую функцию
+    file_path = normalize_path(file_path)
     
     # Логируем для отладки
     logger.debug(f"Скачивание файла: устройство_id={device_id}, путь файла={file_path}")
     
-    # Получаем путь к файлу для скачивания
-    full_path, filename = download_file(device, file_path)
-    
-    if not full_path or not filename:
-        flash('Файл не найден', 'warning')
+    try:
+        # Получаем путь к файлу для скачивания
+        full_path, filename = download_file(device, file_path)
+        
+        if not full_path or not filename:
+            flash('Файл не найден', 'warning')
+            return redirect(url_for('storage.manage_storage', device_id=device_id))
+        
+        # Проверяем существование файла
+        if not os.path.exists(full_path):
+            flash('Файл не найден на физическом диске', 'warning')
+            return redirect(url_for('storage.manage_storage', device_id=device_id))
+        
+        # Записываем лог
+        log_entry = LogEntry(
+            level='INFO',
+            message=f'Скачан файл {file_path} для устройства {device.name}',
+            source='system'
+        )
+        db.session.add(log_entry)
+        db.session.commit()
+        
+        # Отправляем файл пользователю
+        return send_file(full_path, download_name=filename, as_attachment=True)
+    except Exception as e:
+        # В случае ошибки
+        logger.error(f"Ошибка при скачивании файла {file_path}: {str(e)}")
+        flash(f'Произошла ошибка при скачивании файла: {str(e)}', 'danger')
         return redirect(url_for('storage.manage_storage', device_id=device_id))
-    
-    # Записываем лог
-    log_entry = LogEntry(
-        level='INFO',
-        message=f'Скачан файл {file_path} для устройства {device.name}',
-        source='system'
-    )
-    db.session.add(log_entry)
-    db.session.commit()
-    
-    # Отправляем файл пользователю
-    return send_file(full_path, download_name=filename, as_attachment=True)
