@@ -168,7 +168,7 @@ def create_storage_directory(device_id):
         flash('Необходимо указать имя директории', 'warning')
         return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
     
-    # Проверяем, что имя директории безопасно
+    # Проверяем, что имя директории безопасно (базовая проверка)
     if '/' in directory_name or '\\' in directory_name or '..' in directory_name:
         flash('Имя директории содержит недопустимые символы', 'danger')
         return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
@@ -183,22 +183,28 @@ def create_storage_directory(device_id):
     # Логируем для отладки
     logger.debug(f"Создание директории: текущий путь={current_path}, имя директории={directory_name}, полный путь={new_dir_path}")
     
-    # Создаем директорию
-    success = create_directory(device, new_dir_path)
-    
-    if success:
-        # Записываем лог
-        log_entry = LogEntry(
-            level='INFO',
-            message=f'Создана директория {new_dir_path} для устройства {device.name}',
-            source='system'
-        )
-        db.session.add(log_entry)
-        db.session.commit()
+    try:
+        # Создаем директорию - теперь функция возвращает кортеж (успех, сообщение об ошибке)
+        success, error_message = create_directory(device, new_dir_path)
         
-        flash(f'Директория "{directory_name}" успешно создана', 'success')
-    else:
-        flash('Не удалось создать директорию', 'danger')
+        if success:
+            # Записываем лог
+            log_entry = LogEntry(
+                level='INFO',
+                message=f'Создана директория {new_dir_path} для устройства {device.name}',
+                source='system'
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+            
+            flash(f'Директория "{directory_name}" успешно создана', 'success')
+        else:
+            # Используем конкретное сообщение об ошибке, если оно есть
+            flash(error_message or 'Не удалось создать директорию', 'danger')
+    except Exception as e:
+        # В случае необработанной ошибки
+        logger.error(f"Ошибка при создании директории {new_dir_path}: {str(e)}")
+        flash(f'Произошла ошибка: {str(e)}', 'danger')
     
     return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
 

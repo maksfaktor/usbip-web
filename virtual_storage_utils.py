@@ -219,7 +219,7 @@ def list_device_files(device: VirtualUsbDevice, directory: str = "/") -> List[Di
     
     return result
 
-def create_directory(device: VirtualUsbDevice, directory_path: str) -> bool:
+def create_directory(device: VirtualUsbDevice, directory_path: str) -> Tuple[bool, Optional[str]]:
     """
     Создать директорию в хранилище виртуального USB-устройства
     
@@ -228,8 +228,16 @@ def create_directory(device: VirtualUsbDevice, directory_path: str) -> bool:
         directory_path: Путь к новой директории
         
     Returns:
-        bool: Успешность создания директории
+        Tuple[bool, Optional[str]]: (успешность создания директории, сообщение об ошибке)
     """
+    # Валидация имени директории
+    # Извлекаем конечное имя директории из пути
+    dir_name = os.path.basename(directory_path.rstrip('/'))
+    
+    # Проверка на допустимые символы
+    if not dir_name or dir_name == '..' or dir_name == '.' or any(c in dir_name for c in ['<', '>', ':', '"', '/', '\\', '|', '?', '*']):
+        return False, "Имя директории содержит недопустимые символы"
+    
     # Нормализуем путь: заменяем обратные слэши, удаляем двойные слэши
     directory_path = directory_path.replace("\\", "/")
     while "//" in directory_path:
@@ -249,17 +257,26 @@ def create_directory(device: VirtualUsbDevice, directory_path: str) -> bool:
         # Полный путь к директории
         dir_path = os.path.join(device.storage_path, directory_path)
         
+        # Проверяем, существует ли уже директория с таким именем
+        if os.path.exists(dir_path):
+            logger.warning(f"Директория {directory_path} уже существует для устройства {device.name}")
+            return False, "Директория с таким именем уже существует"
+        
         try:
-            os.makedirs(dir_path, exist_ok=True)
+            os.makedirs(dir_path, exist_ok=False)  # Изменено на False, чтобы вызвать ошибку, если директория существует
             logger.info(f"Создана директория {directory_path} для устройства {device.name}")
-            return True
+            return True, None
+        except FileExistsError:
+            logger.warning(f"Директория {directory_path} уже существует для устройства {device.name}")
+            return False, "Директория с таким именем уже существует"
         except Exception as e:
-            logger.error(f"Ошибка при создании директории в физическом хранилище: {e}")
-            return False
+            error_msg = f"Ошибка при создании директории: {str(e)}"
+            logger.error(f"{error_msg}")
+            return False, error_msg
     else:
         # Если хранилище не доступно, просто регистрируем создание директории в логах
         logger.info(f"Зарегистрировано создание директории {directory_path} для устройства {device.name} (физическое хранилище недоступно)")
-        return True
+        return True, None
 
 def delete_item(device: VirtualUsbDevice, item_path: str) -> bool:
     """
