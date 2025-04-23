@@ -746,42 +746,8 @@ def delete_virtual_port():
     return redirect(url_for('virtual_devices'))
 
 # Маршруты для управления хранилищем виртуальных USB устройств
-@app.route('/storage/<int:device_id>', methods=['GET'])
-@app.route('/storage/<int:device_id>/<path:path>', methods=['GET'])
-@login_required
-def manage_storage(device_id, path=None):
-    """Страница управления файлами виртуального USB-устройства"""
-    return storage_bp.manage_storage(device_id, path)
-
-@app.route('/storage/<int:device_id>/resize', methods=['POST'])
-@login_required
-def resize_storage(device_id):
-    """Изменение размера хранилища"""
-    return storage_bp.resize_storage(device_id)
-
-@app.route('/storage/<int:device_id>/create_directory', methods=['POST'])
-@login_required
-def create_storage_directory(device_id):
-    """Создание директории в хранилище"""
-    return storage_bp.create_storage_directory(device_id)
-
-@app.route('/storage/<int:device_id>/upload', methods=['POST'])
-@login_required
-def upload_storage_file(device_id):
-    """Загрузка файла в хранилище"""
-    return storage_bp.upload_storage_file(device_id)
-
-@app.route('/storage/<int:device_id>/delete_item', methods=['POST'])
-@login_required
-def delete_storage_item(device_id):
-    """Удаление файла или директории из хранилища"""
-    return storage_bp.delete_storage_item(device_id)
-
-@app.route('/storage/<int:device_id>/download/<path:file_path>', methods=['GET'])
-@login_required
-def download_storage_file(device_id, file_path):
-    """Скачивание файла из хранилища"""
-    return storage_bp.download_storage_file(device_id, file_path)
+# Маршруты для управления хранилищем виртуальных USB устройств добавлены через Blueprint
+# app.register_blueprint(storage_bp)
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
