@@ -74,10 +74,10 @@
                     {% if network_interfaces %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="interfacesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-ethernet"></i> Сеть
+                            <i class="bi bi-ethernet"></i> {{ t('network') }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="interfacesDropdown">
-                            <li><h6 class="dropdown-header">Доступные интерфейсы:</h6></li>
+                            <li><h6 class="dropdown-header">{{ t('available_interfaces') }}:</h6></li>
                             {% for iface_type, interfaces in network_interfaces.items() %}
                                 {% if interfaces %}
                                     {% for iface in interfaces %}
@@ -93,11 +93,33 @@
                         </ul>
                     </li>
                     {% endif %}
+                    
+                    <!-- Language selector -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-translate"></i> {{ t('language') }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                            <li>
+                                <a class="dropdown-item {% if session.get('language', 'en') == 'en' %}active{% endif %}" href="{{ url_for('set_language', language='en') }}">
+                                    <i class="bi bi-check2 me-2 {% if session.get('language', 'en') != 'en' %}invisible{% endif %}"></i> 
+                                    {{ t('english') }}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {% if session.get('language') == 'ru' %}active{% endif %}" href="{{ url_for('set_language', language='ru') }}">
+                                    <i class="bi bi-check2 me-2 {% if session.get('language') != 'ru' %}invisible{% endif %}"></i> 
+                                    {{ t('russian') }}
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
                     <span class="nav-link text-light">
                         <i class="bi bi-person-circle"></i> {{ current_user.username }}
                     </span>
                     <a class="nav-link" href="{{ url_for('logout') }}">
-                        <i class="bi bi-box-arrow-right"></i> Выход
+                        <i class="bi bi-box-arrow-right"></i> {{ t('logout') }}
                     </a>
                 </div>
             </div>

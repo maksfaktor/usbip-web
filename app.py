@@ -115,8 +115,8 @@ def inject_translation():
     """
     Добавляет функцию перевода в контекст шаблона.
     """
-    def translate(key):
-        return get_translation(key, get_current_language())
+    def translate(key, default=None):
+        return get_translation(key, get_current_language()) if default is None else default
     return dict(t=translate)
 
 # Импортирование утилит

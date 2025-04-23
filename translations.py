@@ -7,6 +7,7 @@ translations = {
     'en': {
         # Общие фразы
         'app_name': 'OrangeUSB - USB/IP Management System',
+        'default_credentials': 'Default credentials',
         'main_page': 'Home',
         'remote_devices': 'Remote Devices',
         'virtual_devices': 'Virtual Devices',
@@ -113,6 +114,7 @@ translations = {
         
         # Сообщения
         'login_required': 'Please log in to access this page',
+        'available_interfaces': 'Available interfaces',
         'invalid_credentials': 'Invalid username or password',
         'logout_success': 'You have been logged out',
         'password_changed': 'Password successfully changed',
@@ -185,6 +187,8 @@ translations = {
     'ru': {
         # Общие фразы
         'app_name': 'OrangeUSB - Система управления USB/IP',
+        'available_interfaces': 'Доступные интерфейсы',
+        'default_credentials': 'По умолчанию',
         'main_page': 'Главная',
         'remote_devices': 'Удаленные устройства',
         'virtual_devices': 'Виртуальные устройства',
