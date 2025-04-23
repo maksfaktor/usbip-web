@@ -63,11 +63,16 @@ def manage_storage(device_id, path=None):
     # Получаем статистику использования хранилища
     stats = get_storage_stats(device)
     
-    # Определяем родительскую директорию для навигации "назад"
-    parent_path = os.path.dirname(path.rstrip('/'))
-    if not parent_path:
-        # Если мы в корне, то вернем путь к странице виртуальных устройств
+    # Определяем родительскую директорию для навигации "вверх"
+    # Нормализуем текущий путь
+    norm_path = path.rstrip('/')
+    if norm_path == '':
         parent_path = '/'
+    else:
+        # Правильно обрабатываем путь для навигации вверх
+        parent_path = os.path.dirname(norm_path)
+        if not parent_path or parent_path == '.':
+            parent_path = '/'
     
     return render_template(
         'storage_manager.html',

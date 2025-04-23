@@ -146,34 +146,33 @@ def list_device_files(device: VirtualUsbDevice, directory: str = "/") -> List[Di
     Returns:
         List[Dict[str, Any]]: Список файлов и директорий
     """
-    if not device.storage_path or not os.path.exists(device.storage_path):
-        return []
-    
     # Нормализуем путь
     if directory == "/":
         directory = ""
     
-    # Полный путь к директории
-    dir_path = os.path.join(device.storage_path, directory.lstrip("/"))
-    
-    if not os.path.exists(dir_path) or not os.path.isdir(dir_path):
-        return []
-    
     result = []
     
-    # Список директорий
-    for dirname in os.listdir(dir_path):
-        full_path = os.path.join(dir_path, dirname)
-        if os.path.isdir(full_path):
-            result.append({
-                "name": dirname,
-                "type": "directory",
-                "size": 0,
-                "path": os.path.join(directory, dirname).replace("\\", "/"),
-                "modified": os.path.getmtime(full_path)
-            })
+    # Проверяем существует ли хранилище
+    storage_exists = device.storage_path and os.path.exists(device.storage_path)
     
-    # Список файлов из базы данных
+    if storage_exists:
+        # Полный путь к директории
+        dir_path = os.path.join(device.storage_path, directory.lstrip("/"))
+        
+        if os.path.exists(dir_path) and os.path.isdir(dir_path):
+            # Список директорий
+            for dirname in os.listdir(dir_path):
+                full_path = os.path.join(dir_path, dirname)
+                if os.path.isdir(full_path):
+                    result.append({
+                        "name": dirname,
+                        "type": "directory",
+                        "size": 0,
+                        "path": os.path.join(directory, dirname).replace("\\", "/"),
+                        "modified": os.path.getmtime(full_path)
+                    })
+    
+    # Список файлов из базы данных (работает и при отключенном устройстве)
     for file_entry in VirtualUsbFile.query.filter_by(device_id=device.id).all():
         # Получаем только файлы в текущей директории
         file_dir = os.path.dirname(file_entry.file_path)
@@ -183,12 +182,16 @@ def list_device_files(device: VirtualUsbDevice, directory: str = "/") -> List[Di
         file_dir_norm = file_dir.strip("/")
         
         if file_dir_norm == dir_path_norm:
+            # Добавляем информацию о доступности файла
+            file_exists = storage_exists and os.path.exists(os.path.join(device.storage_path, file_entry.file_path.lstrip("/")))
+            
             result.append({
                 "name": os.path.basename(file_entry.filename),
                 "type": "file",
                 "size": file_entry.file_size,
                 "path": file_entry.file_path,
-                "modified": file_entry.updated_at.timestamp() if file_entry.updated_at else 0
+                "modified": file_entry.updated_at.timestamp() if file_entry.updated_at else 0,
+                "available": file_exists
             })
     
     return result
@@ -204,22 +207,28 @@ def create_directory(device: VirtualUsbDevice, directory_path: str) -> bool:
     Returns:
         bool: Успешность создания директории
     """
-    if not device.storage_path or not os.path.exists(device.storage_path):
-        return False
-    
     # Нормализуем путь
     directory_path = directory_path.lstrip("/")
     
-    # Полный путь к директории
-    dir_path = os.path.join(device.storage_path, directory_path)
+    # Проверяем, существует ли физическое хранилище
+    storage_exists = device.storage_path and os.path.exists(device.storage_path)
     
-    try:
-        os.makedirs(dir_path, exist_ok=True)
-        logger.info(f"Создана директория {directory_path} для устройства {device.name}")
+    # Создаем директорию в физическом хранилище, если оно доступно
+    if storage_exists:
+        # Полный путь к директории
+        dir_path = os.path.join(device.storage_path, directory_path)
+        
+        try:
+            os.makedirs(dir_path, exist_ok=True)
+            logger.info(f"Создана директория {directory_path} для устройства {device.name}")
+            return True
+        except Exception as e:
+            logger.error(f"Ошибка при создании директории в физическом хранилище: {e}")
+            return False
+    else:
+        # Если хранилище не доступно, просто регистрируем создание директории в логах
+        logger.info(f"Зарегистрировано создание директории {directory_path} для устройства {device.name} (физическое хранилище недоступно)")
         return True
-    except Exception as e:
-        logger.error(f"Ошибка при создании директории: {e}")
-        return False
 
 def delete_item(device: VirtualUsbDevice, item_path: str) -> bool:
     """
@@ -232,32 +241,42 @@ def delete_item(device: VirtualUsbDevice, item_path: str) -> bool:
     Returns:
         bool: Успешность удаления
     """
-    if not device.storage_path or not os.path.exists(device.storage_path):
-        return False
-    
     # Нормализуем путь
     item_path = item_path.lstrip("/")
     
-    # Полный путь к элементу
-    full_path = os.path.join(device.storage_path, item_path)
+    # Проверяем, существует ли физическое хранилище
+    storage_exists = device.storage_path and os.path.exists(device.storage_path)
     
-    if not os.path.exists(full_path):
-        logger.warning(f"Элемент {item_path} не существует")
-        return False
+    # Флаг для определения того, является ли элемент директорией
+    is_directory = False
+    
+    # Удаляем физический файл или директорию, если хранилище доступно
+    if storage_exists:
+        # Полный путь к элементу
+        full_path = os.path.join(device.storage_path, item_path)
+        
+        if os.path.exists(full_path):
+            try:
+                if os.path.isdir(full_path):
+                    # Это директория
+                    is_directory = True
+                    # Удаляем директорию и все её содержимое
+                    shutil.rmtree(full_path)
+                else:
+                    # Удаляем файл
+                    os.remove(full_path)
+            except Exception as e:
+                logger.error(f"Ошибка при удалении элемента в физическом хранилище: {e}")
+                # Продолжаем, чтобы очистить записи в базе данных
     
     try:
-        if os.path.isdir(full_path):
-            # Удаляем директорию и все её содержимое
-            shutil.rmtree(full_path)
-            
-            # Удаляем записи о файлах из базы данных
+        # Удаляем записи из базы данных
+        if is_directory or item_path.endswith('/'):
+            # Удаляем все файлы внутри директории
             for file_entry in VirtualUsbFile.query.filter_by(device_id=device.id).all():
                 if file_entry.file_path.startswith(item_path):
                     db.session.delete(file_entry)
         else:
-            # Удаляем файл
-            os.remove(full_path)
-            
             # Удаляем запись о файле из базы данных
             file_entry = VirtualUsbFile.query.filter_by(
                 device_id=device.id, 
@@ -266,12 +285,17 @@ def delete_item(device: VirtualUsbDevice, item_path: str) -> bool:
             
             if file_entry:
                 db.session.delete(file_entry)
+            else:
+                # Если запись не найдена и хранилище не существует, считаем ошибкой
+                if not storage_exists:
+                    logger.warning(f"Элемент {item_path} не найден в базе данных и физическое хранилище недоступно")
+                    return False
         
         db.session.commit()
         logger.info(f"Удален элемент {item_path} для устройства {device.name}")
         return True
     except Exception as e:
-        logger.error(f"Ошибка при удалении элемента: {e}")
+        logger.error(f"Ошибка при удалении записей в базе данных: {e}")
         return False
 
 def upload_file(device: VirtualUsbDevice, file, destination_path: str = "/") -> Optional[VirtualUsbFile]:
@@ -286,8 +310,12 @@ def upload_file(device: VirtualUsbDevice, file, destination_path: str = "/") -> 
     Returns:
         Optional[VirtualUsbFile]: Созданная запись о файле или None при ошибке
     """
-    if not device.storage_path or not os.path.exists(device.storage_path):
-        logger.error(f"Хранилище для устройства {device.name} не существует")
+    # Проверяем, существует ли физическое хранилище
+    storage_exists = device.storage_path and os.path.exists(device.storage_path)
+    
+    # Если хранилище недоступно, возвращаем ошибку
+    if not storage_exists:
+        logger.error(f"Невозможно загрузить файл: хранилище для устройства {device.name} недоступно")
         return None
     
     # Проверяем доступное место
@@ -371,26 +399,47 @@ def get_storage_stats(device: VirtualUsbDevice) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: Статистика использования хранилища
     """
-    used_space = get_device_storage_usage(device)
-    max_space = device.storage_size * 1024 * 1024  # Переводим МБ в байты
+    # Проверяем, существует ли физическое хранилище
+    storage_exists = device.storage_path and os.path.exists(device.storage_path)
     
-    # Получаем количество файлов и директорий
+    # Определяем размер устройства (в МБ)
+    storage_size = device.storage_size or 1024  # По умолчанию 1 ГБ
+    
+    # Получаем количество файлов из БД
     file_count = VirtualUsbFile.query.filter_by(device_id=device.id).count()
-    dir_count = 0
     
-    if device.storage_path and os.path.exists(device.storage_path):
+    # Оцениваем использованное пространство
+    if storage_exists:
+        # Если хранилище доступно, получаем точную информацию
+        used_space = get_device_storage_usage(device)
+        
+        # Подсчитываем количество директорий
+        dir_count = 0
         for _, dirnames, _ in os.walk(device.storage_path):
             dir_count += len(dirnames)
+    else:
+        # Если хранилище недоступно, оцениваем использованное место по файлам в БД
+        used_space = 0
+        for file_entry in VirtualUsbFile.query.filter_by(device_id=device.id).all():
+            used_space += file_entry.file_size
+        
+        # Предполагаем, что директорий нет, когда хранилище недоступно
+        dir_count = 0
     
+    # Вычисляем максимальный размер в байтах
+    max_space = storage_size * 1024 * 1024  # Переводим МБ в байты
+    
+    # Формируем статистику
     return {
-        "total_size_mb": device.storage_size,
+        "total_size_mb": storage_size,
         "used_space_bytes": used_space,
         "used_space_mb": used_space / (1024 * 1024),
         "free_space_bytes": max(0, max_space - used_space),
         "free_space_mb": max(0, (max_space - used_space) / (1024 * 1024)),
         "usage_percent": (used_space / max_space * 100) if max_space > 0 else 0,
         "file_count": file_count,
-        "directory_count": dir_count
+        "directory_count": dir_count,
+        "storage_available": storage_exists
     }
 
 def download_file(device: VirtualUsbDevice, file_path: str) -> Tuple[Optional[str], Optional[str]]:
