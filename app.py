@@ -147,7 +147,9 @@ def login():
             db.session.add(log_entry)
             db.session.commit()
             
-            flash('Вход выполнен успешно!', 'success')
+            # Добавляем текущее время к сообщению об успешном входе
+            current_time = datetime.now().strftime('%H:%M:%S')
+            flash(f'Вход выполнен успешно! [{current_time}]', 'login-success')
             return redirect(url_for('index'))
         else:
             # Запись в лог о неудачной попытке
@@ -155,8 +157,10 @@ def login():
                 log_entry = LogEntry(level='WARNING', message=f'Неудачная попытка входа для пользователя {username}', source='auth')
                 db.session.add(log_entry)
                 db.session.commit()
-                
-            flash('Неверное имя пользователя или пароль', 'danger')
+            
+            # Добавляем время и подсказку о проверке раскладки/Caps Lock
+            current_time = datetime.now().strftime('%H:%M:%S')
+            flash(f'Неверное имя пользователя или пароль. [{current_time}] Проверьте раскладку клавиатуры и состояние Caps Lock.', 'login-error')
     
     # Получаем информацию о сетевых интерфейсах
     network_interfaces = get_network_interfaces()
