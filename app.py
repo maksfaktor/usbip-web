@@ -12,7 +12,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
-import trafilatura
+
 
 # Настройка логгирования
 logging.basicConfig(level=logging.DEBUG)
@@ -344,45 +344,7 @@ def port_name():
     
     return redirect(url_for('index'))
 
-@app.route('/search_device_info', methods=['POST'])
-@login_required
-def search_device_info():
-    device_id = request.form.get('device_id')
-    if not device_id:
-        return jsonify({'success': False, 'message': 'Не указан идентификатор устройства'})
-    
-    try:
-        # Используем trafilatura для поиска информации об устройстве
-        # (это пример, в реальном случае нужно использовать специализированные API)
-        search_url = f"https://www.google.com/search?q=usb+device+{device_id}+specifications"
-        downloaded = trafilatura.fetch_url(search_url)
-        text = trafilatura.extract(downloaded)
-        
-        if text:
-            # Записываем в лог результат поиска
-            log_entry = LogEntry(
-                level='INFO', 
-                message=f'Поиск информации для устройства {device_id}', 
-                source='search'
-            )
-            db.session.add(log_entry)
-            db.session.commit()
-            
-            return jsonify({
-                'success': True, 
-                'message': 'Информация найдена', 
-                'data': text[:500] + '...' if len(text) > 500 else text
-            })
-        else:
-            return jsonify({
-                'success': False, 
-                'message': 'Информация не найдена для данного устройства'
-            })
-    except Exception as e:
-        return jsonify({
-            'success': False, 
-            'message': f'Ошибка при поиске информации: {str(e)}'
-        })
+
 
 @app.route('/bind_device', methods=['POST'])
 @login_required
