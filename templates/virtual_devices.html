@@ -96,8 +96,11 @@
                                 <td>
                                     {% if device.device_type == 'storage' %}
                                         <small>
-                                        {% if device.is_system_path %}
-                                            <strong>Путь: </strong>{{ device.storage_path }}<br>
+                                        {% if device.is_system_path and device.storage_path %}
+                                            <strong>Путь: </strong>
+                                            <span class="text-break d-inline-block" style="max-width: 150px;">
+                                                <code>{{ device.storage_path }}</code>
+                                            </span><br>
                                         {% endif %}
                                         <strong>Размер: </strong>{{ device.storage_size }} МБ
                                         </small>

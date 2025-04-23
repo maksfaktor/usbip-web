@@ -67,6 +67,13 @@
                                 <span class="badge bg-warning">Недоступно</span>
                             {% endif %}
                         </dd>
+                        
+                        {% if device.is_system_path and device.storage_path %}
+                        <dt class="col-sm-4">Путь:</dt>
+                        <dd class="col-sm-8">
+                            <small class="text-break"><code>{{ device.storage_path }}</code></small>
+                        </dd>
+                        {% endif %}
                     </dl>
                 </div>
                 
