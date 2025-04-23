@@ -1,0 +1,380 @@
+"""
+Модуль для хранения переводов интерфейса на разные языки.
+"""
+
+# Словари с переводами для каждого языка
+translations = {
+    'en': {
+        # Общие фразы
+        'app_name': 'OrangeUSB - USB/IP Management System',
+        'main_page': 'Home',
+        'remote_devices': 'Remote Devices',
+        'virtual_devices': 'Virtual Devices',
+        'logs': 'Logs',
+        'admin_panel': 'Admin Panel',
+        'network': 'Network',
+        'logout': 'Logout',
+        'login': 'Login',
+        'username': 'Username',
+        'password': 'Password',
+        'back_to_main': 'Back to Main Page',
+        
+        # Кнопки и действия
+        'connect': 'Connect',
+        'disconnect': 'Disconnect',
+        'create': 'Create',
+        'delete': 'Delete',
+        'edit': 'Edit',
+        'save': 'Save',
+        'cancel': 'Cancel',
+        'select': 'Select',
+        'search': 'Search',
+        'refresh': 'Refresh',
+        'publish': 'Publish',
+        'attach': 'Attach',
+        'detach': 'Detach',
+        'show_password': 'Show Password',
+        'hide_password': 'Hide Password',
+        
+        # Главная страница
+        'local_devices': 'Local USB Devices',
+        'attached_devices': 'Attached Remote Devices',
+        'no_local_devices': 'No local USB devices found',
+        'no_attached_devices': 'No remote devices attached',
+        'device_info': 'Device Info',
+        'busid': 'Bus ID',
+        'vendor_id': 'Vendor ID',
+        'product_id': 'Product ID',
+        'device_name': 'Device Name',
+        'set_alias': 'Set Alias',
+        'current_alias': 'Current Alias',
+        'new_alias': 'New Alias',
+        
+        # Страница удаленных устройств
+        'remote_server': 'Remote Server',
+        'ip_address': 'IP Address',
+        'search_devices': 'Search Devices',
+        'available_devices': 'Available Remote Devices',
+        'no_remote_devices': 'No remote devices found',
+        
+        # Страница виртуальных устройств
+        'virtual_usb_devices': 'Virtual USB Devices',
+        'virtual_usb_ports': 'Virtual USB Ports',
+        'create_virtual_device': 'Create Virtual Device',
+        'create_virtual_port': 'Create Virtual Port',
+        'device_type': 'Device Type',
+        'hid_device': 'HID (Mouse, Keyboard)',
+        'storage_device': 'Storage Device (Flash Drive)',
+        'serial_device': 'Serial Port',
+        'ethernet_device': 'Network Adapter',
+        'audio_device': 'Audio Device',
+        'printer_device': 'Printer',
+        'camera_device': 'Web Camera',
+        'custom_device': 'Other (Custom Configuration)',
+        'serial_number': 'Serial Number',
+        'config': 'Configuration',
+        'storage_settings': 'Storage Settings',
+        'use_system_folder': 'Use Existing System Folder',
+        'system_folder_path': 'System Folder Path',
+        'select_folder': 'Select Folder',
+        'virtual_storage_size': 'Virtual Storage Size (MB)',
+        'size_note': 'Size to be displayed in the system (may differ from actual folder size)',
+        'device_status': 'Status',
+        'active': 'Active',
+        'inactive': 'Inactive',
+        'port_name': 'Port Name',
+        'port_number': 'Port Number',
+        'connect_to_device': 'Connect to Device',
+        'connected_device': 'Connected Device',
+        'not_connected': 'Not Connected',
+        
+        # Страница логов
+        'log_filter': 'Log Filter',
+        'all_logs': 'All Logs',
+        'system_logs': 'System Logs',
+        'auth_logs': 'Authentication Logs',
+        'usb_logs': 'USB Logs',
+        'virtual_logs': 'Virtual Device Logs',
+        'log_level': 'Level',
+        'log_timestamp': 'Time',
+        'log_message': 'Message',
+        'log_source': 'Source',
+        
+        # Админ-панель
+        'change_password': 'Change Password',
+        'current_password': 'Current Password',
+        'new_password': 'New Password',
+        'confirm_password': 'Confirm New Password',
+        'port_aliases': 'USB Port Aliases',
+        'device_aliases': 'Device Aliases',
+        'set_port_name': 'Set Port Name',
+        'current_port_name': 'Current Port Name',
+        'new_port_name': 'New Port Name',
+        
+        # Сообщения
+        'login_required': 'Please log in to access this page',
+        'invalid_credentials': 'Invalid username or password',
+        'logout_success': 'You have been logged out',
+        'password_changed': 'Password successfully changed',
+        'current_password_incorrect': 'Current password is incorrect',
+        'passwords_not_match': 'New password and confirmation do not match',
+        'password_too_short': 'New password must be at least 6 characters',
+        'alias_set': 'Alias successfully set',
+        'port_name_set': 'Port name successfully set',
+        'device_created': 'Virtual device created',
+        'device_deleted': 'Virtual device deleted',
+        'port_created': 'Virtual port created',
+        'port_deleted': 'Virtual port deleted',
+        'device_connected': 'Device connected to port',
+        'device_disconnected': 'Device disconnected from port',
+        'upload_success': 'File uploaded successfully',
+        'upload_error': 'Error uploading file',
+        'delete_success': 'Item deleted successfully',
+        'delete_error': 'Error deleting item',
+        'folder_created': 'Folder created successfully',
+        'folder_error': 'Error creating folder',
+        
+        # Хранилище
+        'storage_manager': 'Storage Manager',
+        'storage_for_device': 'Storage for Device',
+        'current_directory': 'Current Directory',
+        'parent_directory': 'Parent Directory',
+        'file_name': 'File Name',
+        'file_size': 'Size',
+        'upload_file': 'Upload File',
+        'create_directory': 'Create Directory',
+        'select_files': 'Select Files',
+        'directory_name': 'Directory Name',
+        'resize_storage': 'Resize Storage',
+        'new_storage_size': 'New Storage Size (MB)',
+        'current_usage': 'Current Usage',
+        'used': 'Used',
+        'free': 'Free',
+        'writable': 'Writable',
+        'read_only': 'Read Only',
+        
+        # Выбор языка
+        'language': 'Language',
+        'russian': 'Russian',
+        'english': 'English',
+        'keyboard_layout': 'Keyboard Layout',
+        
+        # Директории
+        'folder_browser': 'Folder Browser',
+        'refresh_directory': 'Refresh',
+        'select_writable_folder': 'Please select a writable folder',
+        'current_path': 'Current Path',
+        
+        # Ошибки
+        'error_400': 'Bad Request',
+        'error_401': 'Unauthorized',
+        'error_403': 'Forbidden',
+        'error_404': 'Page Not Found',
+        'error_500': 'Internal Server Error',
+        'error_503': 'Service Unavailable',
+        'error_400_description': 'The server could not process your request due to invalid data. Please check the data and try again.',
+        'error_401_description': 'Authentication is required to access this page. Please log in.',
+        'error_403_description': 'You do not have permission to access this page.',
+        'error_404_description': 'The requested page does not exist. It may have been moved or deleted.',
+        'error_500_description': 'An unexpected error occurred on the server. Our specialists are already working on fixing it.',
+        'error_503_description': 'The service is temporarily unavailable. Please try again later.',
+        'error_generic': 'Server Error',
+        'error_generic_description': 'An unexpected error occurred. Please try again later or contact the administrator.',
+    },
+    
+    'ru': {
+        # Общие фразы
+        'app_name': 'OrangeUSB - Система управления USB/IP',
+        'main_page': 'Главная',
+        'remote_devices': 'Удаленные устройства',
+        'virtual_devices': 'Виртуальные устройства',
+        'logs': 'Логи',
+        'admin_panel': 'Админ-панель',
+        'network': 'Сеть',
+        'logout': 'Выход',
+        'login': 'Вход',
+        'username': 'Имя пользователя',
+        'password': 'Пароль',
+        'back_to_main': 'Вернуться на главную',
+        
+        # Кнопки и действия
+        'connect': 'Подключить',
+        'disconnect': 'Отключить',
+        'create': 'Создать',
+        'delete': 'Удалить',
+        'edit': 'Изменить',
+        'save': 'Сохранить',
+        'cancel': 'Отмена',
+        'select': 'Выбрать',
+        'search': 'Поиск',
+        'refresh': 'Обновить',
+        'publish': 'Опубликовать',
+        'attach': 'Подключить',
+        'detach': 'Отключить',
+        'show_password': 'Показать пароль',
+        'hide_password': 'Скрыть пароль',
+        
+        # Главная страница
+        'local_devices': 'Локальные USB устройства',
+        'attached_devices': 'Подключенные удаленные устройства',
+        'no_local_devices': 'Локальные USB устройства не найдены',
+        'no_attached_devices': 'Нет подключенных удаленных устройств',
+        'device_info': 'Информация об устройстве',
+        'busid': 'Bus ID',
+        'vendor_id': 'Vendor ID',
+        'product_id': 'Product ID',
+        'device_name': 'Название устройства',
+        'set_alias': 'Установить алиас',
+        'current_alias': 'Текущий алиас',
+        'new_alias': 'Новый алиас',
+        
+        # Страница удаленных устройств
+        'remote_server': 'Удаленный сервер',
+        'ip_address': 'IP-адрес',
+        'search_devices': 'Искать устройства',
+        'available_devices': 'Доступные удаленные устройства',
+        'no_remote_devices': 'Удаленные устройства не найдены',
+        
+        # Страница виртуальных устройств
+        'virtual_usb_devices': 'Виртуальные USB устройства',
+        'virtual_usb_ports': 'Виртуальные USB порты',
+        'create_virtual_device': 'Создать виртуальное устройство',
+        'create_virtual_port': 'Создать виртуальный порт',
+        'device_type': 'Тип устройства',
+        'hid_device': 'HID (мышь, клавиатура)',
+        'storage_device': 'Устройство хранения (флешка)',
+        'serial_device': 'Последовательный порт',
+        'ethernet_device': 'Сетевой адаптер',
+        'audio_device': 'Аудио устройство',
+        'printer_device': 'Принтер',
+        'camera_device': 'Веб-камера',
+        'custom_device': 'Другое (своя конфигурация)',
+        'serial_number': 'Серийный номер',
+        'config': 'Конфигурация',
+        'storage_settings': 'Настройки хранилища',
+        'use_system_folder': 'Использовать существующую системную папку',
+        'system_folder_path': 'Путь к системной папке',
+        'select_folder': 'Выбрать',
+        'virtual_storage_size': 'Виртуальный размер хранилища (МБ)',
+        'size_note': 'Размер, который будет отображаться в системе (может отличаться от фактического размера папки)',
+        'device_status': 'Статус',
+        'active': 'Активно',
+        'inactive': 'Неактивно',
+        'port_name': 'Имя порта',
+        'port_number': 'Номер порта',
+        'connect_to_device': 'Подключить к устройству',
+        'connected_device': 'Подключенное устройство',
+        'not_connected': 'Не подключено',
+        
+        # Страница логов
+        'log_filter': 'Фильтр логов',
+        'all_logs': 'Все логи',
+        'system_logs': 'Системные логи',
+        'auth_logs': 'Логи авторизации',
+        'usb_logs': 'Логи USB',
+        'virtual_logs': 'Логи виртуальных устройств',
+        'log_level': 'Уровень',
+        'log_timestamp': 'Время',
+        'log_message': 'Сообщение',
+        'log_source': 'Источник',
+        
+        # Админ-панель
+        'change_password': 'Смена пароля',
+        'current_password': 'Текущий пароль',
+        'new_password': 'Новый пароль',
+        'confirm_password': 'Подтверждение нового пароля',
+        'port_aliases': 'Алиасы USB портов',
+        'device_aliases': 'Алиасы устройств',
+        'set_port_name': 'Установить имя порта',
+        'current_port_name': 'Текущее имя порта',
+        'new_port_name': 'Новое имя порта',
+        
+        # Сообщения
+        'login_required': 'Пожалуйста, войдите в систему для доступа к этой странице',
+        'invalid_credentials': 'Неверное имя пользователя или пароль',
+        'logout_success': 'Вы вышли из системы',
+        'password_changed': 'Пароль успешно изменен',
+        'current_password_incorrect': 'Текущий пароль указан неверно',
+        'passwords_not_match': 'Новый пароль и подтверждение не совпадают',
+        'password_too_short': 'Новый пароль должен содержать минимум 6 символов',
+        'alias_set': 'Алиас успешно установлен',
+        'port_name_set': 'Имя порта успешно установлено',
+        'device_created': 'Виртуальное устройство создано',
+        'device_deleted': 'Виртуальное устройство удалено',
+        'port_created': 'Виртуальный порт создан',
+        'port_deleted': 'Виртуальный порт удален',
+        'device_connected': 'Устройство подключено к порту',
+        'device_disconnected': 'Устройство отключено от порта',
+        'upload_success': 'Файл успешно загружен',
+        'upload_error': 'Ошибка при загрузке файла',
+        'delete_success': 'Элемент успешно удален',
+        'delete_error': 'Ошибка при удалении элемента',
+        'folder_created': 'Папка успешно создана',
+        'folder_error': 'Ошибка при создании папки',
+        
+        # Хранилище
+        'storage_manager': 'Менеджер хранилища',
+        'storage_for_device': 'Хранилище для устройства',
+        'current_directory': 'Текущая директория',
+        'parent_directory': 'Родительская директория',
+        'file_name': 'Имя файла',
+        'file_size': 'Размер',
+        'upload_file': 'Загрузить файл',
+        'create_directory': 'Создать директорию',
+        'select_files': 'Выбрать файлы',
+        'directory_name': 'Имя директории',
+        'resize_storage': 'Изменить размер хранилища',
+        'new_storage_size': 'Новый размер хранилища (МБ)',
+        'current_usage': 'Текущее использование',
+        'used': 'Использовано',
+        'free': 'Свободно',
+        'writable': 'Доступно для записи',
+        'read_only': 'Только для чтения',
+        
+        # Выбор языка
+        'language': 'Язык',
+        'russian': 'Русский',
+        'english': 'English',
+        'keyboard_layout': 'Раскладка клавиатуры',
+        
+        # Директории
+        'folder_browser': 'Браузер папок',
+        'refresh_directory': 'Обновить',
+        'select_writable_folder': 'Пожалуйста, выберите папку с правами на запись',
+        'current_path': 'Текущий путь',
+        
+        # Ошибки
+        'error_400': 'Некорректный запрос',
+        'error_401': 'Не авторизован',
+        'error_403': 'Доступ запрещен',
+        'error_404': 'Страница не найдена',
+        'error_500': 'Внутренняя ошибка сервера',
+        'error_503': 'Сервис недоступен',
+        'error_400_description': 'Сервер не смог обработать ваш запрос из-за некорректных данных. Пожалуйста, проверьте введенные данные и попробуйте снова.',
+        'error_401_description': 'Для доступа к этой странице требуется авторизация. Пожалуйста, войдите в систему.',
+        'error_403_description': 'У вас недостаточно прав для доступа к этой странице.',
+        'error_404_description': 'Запрашиваемая страница не существует. Возможно, она была удалена или перемещена.',
+        'error_500_description': 'На сервере произошла непредвиденная ошибка. Наши специалисты уже работают над её устранением.',
+        'error_503_description': 'Сервис временно недоступен. Пожалуйста, попробуйте позже.',
+        'error_generic': 'Ошибка сервера',
+        'error_generic_description': 'Произошла неожиданная ошибка. Пожалуйста, попробуйте позже или обратитесь к администратору.',
+    }
+}
+
+# Функция для получения перевода
+def get_translation(key, language):
+    """
+    Возвращает перевод для указанного ключа и языка.
+    Если перевод не найден, возвращает сам ключ.
+    
+    Args:
+        key (str): Ключ для перевода
+        language (str): Код языка ('en' или 'ru')
+        
+    Returns:
+        str: Переведенная строка или исходный ключ, если перевод не найден
+    """
+    if language not in translations:
+        language = 'en'  # Язык по умолчанию - английский
+        
+    return translations[language].get(key, key)

@@ -5,13 +5,14 @@ import random
 import logging
 import socket
 import netifaces
-from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, send_file
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, send_file, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
+from translations import get_translation
 
 
 # Настройка логгирования
@@ -100,6 +101,24 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
+# Helper function to get current language
+def get_current_language():
+    """
+    Получает текущий язык пользователя из сессии.
+    Если язык не выбран, возвращает язык по умолчанию (английский).
+    """
+    return session.get('language', 'en')
+
+# Add translation function to template context
+@app.context_processor
+def inject_translation():
+    """
+    Добавляет функцию перевода в контекст шаблона.
+    """
+    def translate(key):
+        return get_translation(key, get_current_language())
+    return dict(t=translate)
+
 # Импортирование утилит
 from usbip_utils import get_local_usb_devices, bind_device, get_remote_usb_devices, attach_device, detach_device, get_attached_devices
 
@@ -166,6 +185,21 @@ def login():
     network_interfaces = get_network_interfaces()
     return render_template('login.html', network_interfaces=network_interfaces)
 
+@app.route('/set_language/<language>')
+def set_language(language):
+    """
+    Устанавливает язык интерфейса.
+    
+    Args:
+        language (str): Код языка ('en' или 'ru')
+    """
+    if language in ['en', 'ru']:
+        session['language'] = language
+    
+    # Перенаправляем на предыдущую страницу или на главную
+    next_page = request.args.get('next') or request.referrer or url_for('index')
+    return redirect(next_page)
+
 @app.route('/logout')
 @login_required
 def logout():
@@ -177,7 +211,10 @@ def logout():
     db.session.add(log_entry)
     db.session.commit()
     
-    flash('Вы вышли из системы', 'info')
+    # Используем функцию перевода
+    lang = get_current_language()
+    message = 'You have been logged out' if lang == 'en' else 'Вы вышли из системы'
+    flash(message, 'info')
     return redirect(url_for('login'))
 
 @app.route('/')
