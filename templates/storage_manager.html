@@ -152,7 +152,11 @@
             <div class="card-body p-0">
                 {% if current_path != '/' %}
                 <div class="list-group-item list-group-item-action d-flex align-items-center">
+                    {% if parent_path == '/' %}
+                    <a href="{{ url_for('storage.manage_storage', device_id=device.id) }}" class="text-decoration-none d-flex align-items-center w-100">
+                    {% else %}
                     <a href="{{ url_for('storage.manage_storage', device_id=device.id, path=parent_path) }}" class="text-decoration-none d-flex align-items-center w-100">
+                    {% endif %}
                         <i class="bi bi-arrow-up-circle me-3 fs-5"></i>
                         <span>Вверх</span>
                     </a>

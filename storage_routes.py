@@ -397,12 +397,14 @@ def delete_storage_item(device_id):
                     parent_path = os.path.dirname(item_path)
                     
                     # Дополнительная проверка для пустого результата
-                    if not parent_path:
+                    if not parent_path or parent_path == '/':
                         parent_path = '/'
+                        logger.debug(f"Переход в корневую директорию")
+                        return redirect(url_for('storage.manage_storage', device_id=device_id))
                     else:
                         parent_path = normalize_path(parent_path)  # Нормализуем
-                    logger.debug(f"Переход в родительскую директорию: {parent_path}")
-                    return redirect(url_for('storage.manage_storage', device_id=device_id, path=parent_path))
+                        logger.debug(f"Переход в родительскую директорию: {parent_path}")
+                        return redirect(url_for('storage.manage_storage', device_id=device_id, path=parent_path))
         else:
             flash('Не удалось удалить элемент', 'danger')
     except Exception as e:
