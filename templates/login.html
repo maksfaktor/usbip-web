@@ -25,6 +25,9 @@
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="text-center mb-4">
+            <div class="d-flex justify-content-center align-items-center mb-3">
+                <img src="{{ url_for('static', filename='img/usb_logo.svg') }}" alt="USB Logo" class="img-fluid me-3" style="max-width: 80px;">
+            </div>
             <img src="{{ url_for('static', filename='img/orange_logo.svg') }}" alt="Orange USB Logo" class="img-fluid" style="max-width: 150px;">
             <h2 class="mt-3">OrangeUSB</h2>
         </div>
@@ -61,10 +64,7 @@
                         <label for="password" class="form-label">{{ t('password') }}</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                            <button class="btn btn-outline-secondary" type="button" id="toggle-password" title="{{ t('show_password') }}">
-                                <i class="bi bi-eye"></i>
-                            </button>
+                            <input type="text" class="form-control" id="password" name="password" required>
                         </div>
                     </div>
                     <div class="d-grid">
@@ -107,22 +107,8 @@
     <!-- Скрипты для функциональности страницы входа -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Функциональность показа/скрытия пароля
-            const togglePassword = document.getElementById('toggle-password');
+            // Удалена функциональность показа/скрытия пароля
             const passwordInput = document.getElementById('password');
-            
-            togglePassword.addEventListener('click', function() {
-                // Изменяем тип поля пароля
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    togglePassword.innerHTML = '<i class="bi bi-eye-slash"></i>';
-                    togglePassword.title = "{{ t('hide_password') }}";
-                } else {
-                    passwordInput.type = 'password';
-                    togglePassword.innerHTML = '<i class="bi bi-eye"></i>';
-                    togglePassword.title = "{{ t('show_password') }}";
-                }
-            });
             
             // 2. Определение и отображение текущей раскладки клавиатуры
             const keyboardLayoutElement = document.getElementById('keyboard-layout');
