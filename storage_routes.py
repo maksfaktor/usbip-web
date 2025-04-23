@@ -31,15 +31,7 @@ def manage_storage(device_id, path=None):
         flash('Управление файлами доступно только для устройств типа "storage"', 'warning')
         return redirect(url_for('virtual_devices'))
     
-    # Декодируем URL-кодирование в пути, если оно есть
-    if path and '%' in path:
-        try:
-            from urllib.parse import unquote
-            path = unquote(path)
-        except Exception as e:
-            logger.error(f"Ошибка при декодировании пути: {str(e)}")
-    
-    # Нормализуем путь используя общую функцию
+    # Нормализуем путь используя общую функцию (она уже включает декодирование URL)
     path = normalize_path(path)
     
     # Если хранилище еще не создано, создаем его
@@ -226,7 +218,15 @@ def normalize_path(path):
     """
     if path is None:
         return '/'
-        
+    
+    # Пытаемся декодировать URL-encoded символы, если они есть
+    if '%' in path:
+        try:
+            from urllib.parse import unquote
+            path = unquote(path)
+        except Exception as e:
+            logger.error(f"Ошибка при декодировании пути: {str(e)}")
+    
     # Заменяем обратные слэши
     path = path.replace('\\', '/')
     
@@ -241,8 +241,20 @@ def normalize_path(path):
     # Удаляем конечный слэш (кроме корневого пути)
     if path != '/' and path.endswith('/'):
         path = path[:-1]
-        
-    return path
+    
+    # Очистка путей от возможных последовательностей ".." для безопасности
+    parts = []
+    for part in path.split('/'):
+        if part == '..':
+            if parts and parts[-1] != '':
+                parts.pop()
+        elif part and part != '.':
+            parts.append(part)
+    
+    # Собираем путь обратно с начальным слешем
+    clean_path = '/' + '/'.join(parts)
+    
+    return clean_path
 
 @storage_bp.route('/storage/<int:device_id>/upload', methods=['POST'])
 @login_required
@@ -318,7 +330,7 @@ def delete_storage_item(device_id):
     item_path = request.form.get('item_path', '')
     current_path = request.form.get('current_path', '/')
     
-    # Нормализуем пути используя общую функцию
+    # Нормализуем пути используя общую функцию (она уже включает декодирование URL)
     current_path = normalize_path(current_path)
     
     if item_path:
@@ -331,14 +343,28 @@ def delete_storage_item(device_id):
         flash('Не указан путь к файлу или директории', 'warning')
         return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
     
+    # Проверяем попытку удаления корневой директории
+    if item_path == '/':
+        flash('Невозможно удалить корневую директорию', 'danger')
+        return redirect(url_for('storage.manage_storage', device_id=device_id, path=current_path))
+    
     try:
         # Определяем тип элемента для логирования
         is_dir = False
-        # Проверяем признаки директории в пути
         item_path_stripped = item_path.lstrip('/')
-        if item_path.endswith('/') or os.path.isdir(os.path.join(device.storage_path, item_path_stripped)):
+        
+        # Проверяем признаки директории
+        if item_path.endswith('/'):
+            # Если путь заканчивается на '/', это директория
             is_dir = True
+        elif device.storage_path and os.path.exists(device.storage_path):
+            # Проверяем физический файл, если хранилище доступно
+            full_path = os.path.join(device.storage_path, item_path_stripped)
+            if os.path.exists(full_path) and os.path.isdir(full_path):
+                is_dir = True
+                
         element_type = 'директория' if is_dir else 'файл'
+        logger.debug(f"Определен тип элемента: {element_type}")
         
         # Удаляем элемент
         success = delete_item(device, item_path)
@@ -359,14 +385,15 @@ def delete_storage_item(device_id):
             import time
             time.sleep(0.5)
             
-            # Проверяем, если удаляемый элемент находится внутри текущего пути, 
-            # то нужно перейти на уровень выше
-            if is_dir and current_path.startswith(item_path):
-                # Если удаляемая директория содержит текущий путь, переходим в родительскую директорию
-                parent_path = os.path.dirname(item_path)
-                if not parent_path or parent_path == '/':
-                    parent_path = '/'
-                return redirect(url_for('storage.manage_storage', device_id=device_id, path=parent_path))
+            # Особая обработка при удалении директории
+            if is_dir:
+                # Проверяем текущую директорию - если она удалена, нужно перейти наверх
+                if current_path == item_path or current_path.startswith(item_path + '/'):
+                    # Получаем родительскую директорию с помощью os.path
+                    parent_path = os.path.dirname(item_path)
+                    parent_path = normalize_path(parent_path)  # Нормализуем
+                    logger.debug(f"Переход в родительскую директорию: {parent_path}")
+                    return redirect(url_for('storage.manage_storage', device_id=device_id, path=parent_path))
         else:
             flash('Не удалось удалить элемент', 'danger')
     except Exception as e:
