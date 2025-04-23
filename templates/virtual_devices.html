@@ -204,10 +204,36 @@
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
-                                    <label for="storage_size" class="form-label">Размер хранилища (МБ)</label>
-                                    <input type="number" class="form-control" id="storage_size" name="storage_size" 
-                                           value="1024" min="1" max="16384">
-                                    <div class="form-text">Размер виртуального хранилища в мегабайтах (от 1 МБ до 16 ГБ)</div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="use_system_folder" name="use_system_folder">
+                                        <label class="form-check-label" for="use_system_folder">Использовать существующую системную папку</label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Опции для нового виртуального хранилища -->
+                                <div id="virtual_storage_options">
+                                    <div class="mb-3">
+                                        <label for="storage_size" class="form-label">Размер хранилища (МБ)</label>
+                                        <input type="number" class="form-control" id="storage_size" name="storage_size" 
+                                               value="1024" min="1" max="16384">
+                                        <div class="form-text">Размер виртуального хранилища в мегабайтах (от 1 МБ до 16 ГБ)</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Опции для существующей системной папки -->
+                                <div id="system_folder_options" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="system_path" class="form-label">Путь к системной папке</label>
+                                        <input type="text" class="form-control" id="system_path" name="system_path" 
+                                               placeholder="/path/to/folder">
+                                        <div class="form-text">Укажите полный путь к существующей системной папке (должна быть доступна на запись)</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="system_storage_size" class="form-label">Виртуальный размер хранилища (МБ)</label>
+                                        <input type="number" class="form-control" id="system_storage_size" name="system_storage_size" 
+                                               value="1024" min="1" max="16384">
+                                        <div class="form-text">Размер, который будет отображаться в системе (может отличаться от фактического размера папки)</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

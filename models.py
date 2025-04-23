@@ -68,6 +68,7 @@ class VirtualUsbDevice(db.Model):
     config_json = db.Column(db.Text)  # JSON с конфигурацией устройства
     storage_size = db.Column(db.Integer, default=0)  # Размер хранилища в МБ (для storage устройств)
     storage_path = db.Column(db.String(256))  # Путь к директории с файлами устройства
+    is_system_path = db.Column(db.Boolean, default=False)  # Флаг, указывающий, что используется системная папка
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

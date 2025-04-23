@@ -20,17 +20,41 @@ def ensure_storage_dir_exists() -> None:
         os.makedirs(VIRTUAL_STORAGE_BASE_DIR, exist_ok=True)
         logger.info(f"Создана базовая директория для виртуальных устройств: {VIRTUAL_STORAGE_BASE_DIR}")
 
-def create_device_storage(device: VirtualUsbDevice, size_mb: int = 1024) -> bool:
+def create_device_storage(device: VirtualUsbDevice, size_mb: int = 1024, system_path: str = None) -> bool:
     """
     Создать хранилище для виртуального USB-устройства
     
     Args:
         device: Модель виртуального устройства
         size_mb: Размер хранилища в МБ
+        system_path: Путь к существующей системной папке (если None, создается новая папка)
         
     Returns:
         bool: Успешность создания хранилища
     """
+    
+    # Проверяем, используется ли системная папка
+    if system_path:
+        # Проверяем существование системной папки
+        if not os.path.exists(system_path):
+            logger.error(f"Указанная системная папка не существует: {system_path}")
+            return False
+        
+        # Проверяем права доступа
+        if not os.access(system_path, os.R_OK | os.W_OK):
+            logger.error(f"Недостаточно прав для доступа к системной папке: {system_path}")
+            return False
+        
+        # Устанавливаем флаг системной папки
+        device.is_system_path = True
+        device.storage_path = system_path
+        device.storage_size = size_mb
+        db.session.commit()
+        
+        logger.info(f"Подключена системная папка {system_path} как хранилище для устройства {device.name}")
+        return True
+        
+    # Создаем новое хранилище в виртуальной папке
     ensure_storage_dir_exists()
     
     # Создаем уникальный путь для устройства
@@ -49,6 +73,7 @@ def create_device_storage(device: VirtualUsbDevice, size_mb: int = 1024) -> bool
         os.makedirs(device_dir, exist_ok=True)
         
         # Обновляем информацию об устройстве
+        device.is_system_path = False
         device.storage_path = device_dir
         device.storage_size = size_mb
         db.session.commit()
@@ -69,11 +94,37 @@ def delete_device_storage(device: VirtualUsbDevice) -> bool:
     Returns:
         bool: Успешность удаления хранилища
     """
-    if not device.storage_path or not os.path.exists(device.storage_path):
+    if not device.storage_path:
         logger.warning(f"Хранилище для устройства {device.name} не существует")
         return True
     
+    # Проверяем является ли путь системным
+    if device.is_system_path:
+        # Системные папки не удаляем, только снимаем связь
+        logger.info(f"Отключена системная папка {device.storage_path} от устройства {device.name}")
+        
+        # Удаляем записи о файлах из базы данных
+        VirtualUsbFile.query.filter_by(device_id=device.id).delete()
+        
+        # Обновляем информацию об устройстве
+        device.storage_path = None
+        device.storage_size = 0
+        device.is_system_path = False
+        db.session.commit()
+        
+        return True
+    
+    # Проверяем существование папки
+    if not os.path.exists(device.storage_path):
+        logger.warning(f"Хранилище для устройства {device.name} отсутствует: {device.storage_path}")
+        # Сбрасываем информацию в БД, но считаем операцию успешной
+        device.storage_path = None
+        device.storage_size = 0
+        db.session.commit()
+        return True
+    
     try:
+        # Удаляем виртуальную директорию
         shutil.rmtree(device.storage_path)
         
         # Удаляем записи о файлах из базы данных
