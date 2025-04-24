@@ -233,11 +233,11 @@
             <form method="POST" action="{{ url_for('create_virtual_device') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="name" class="form-label">Название устройства</label>
+                        <label for="name" class="form-label">{{ t('device_name') }}</label>
                         <input type="text" class="form-control" id="name" name="name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="device_type" class="form-label">Тип устройства</label>
+                        <label for="device_type" class="form-label">{{ t('device_type') }}</label>
                         <select class="form-select" id="device_type" name="device_type" required>
                             {% for type in device_types %}
                                 <option value="{{ type.id }}">{{ type.name }}</option>
@@ -249,45 +249,45 @@
                     <div class="storage-options mb-3" style="display: none;">
                         <div class="card">
                             <div class="card-header bg-info bg-opacity-10">
-                                <h6 class="mb-0">Настройки хранилища</h6>
+                                <h6 class="mb-0">{{ t('storage_settings') }}</h6>
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="use_system_folder" name="use_system_folder">
-                                        <label class="form-check-label" for="use_system_folder">Использовать существующую системную папку</label>
+                                        <label class="form-check-label" for="use_system_folder">{{ t('use_existing_system_folder') }}</label>
                                     </div>
                                 </div>
                                 
                                 <!-- Опции для нового виртуального хранилища -->
                                 <div id="virtual_storage_options">
                                     <div class="mb-3">
-                                        <label for="storage_size" class="form-label">Размер хранилища (МБ)</label>
+                                        <label for="storage_size" class="form-label">{{ t('storage_size_mb') }}</label>
                                         <input type="number" class="form-control" id="storage_size" name="storage_size" 
                                                value="1024" min="1" max="16384">
-                                        <div class="form-text">Размер виртуального хранилища в мегабайтах (от 1 МБ до 16 ГБ)</div>
+                                        <div class="form-text">{{ t('storage_size_description') }}</div>
                                     </div>
                                 </div>
                                 
                                 <!-- Опции для существующей системной папки -->
                                 <div id="system_folder_options" style="display: none;">
                                     <div class="mb-3">
-                                        <label for="system_path" class="form-label">Путь к системной папке</label>
+                                        <label for="system_path" class="form-label">{{ t('system_folder_path') }}</label>
                                         <div class="input-group">
                                             <input type="text" class="form-control" id="system_path" name="system_path" 
                                                    placeholder="/path/to/folder" readonly>
                                             <button type="button" class="btn btn-outline-primary" id="browse_button"
                                                     data-bs-toggle="modal" data-bs-target="#folderBrowserModal">
-                                                <i class="fas fa-folder-open"></i> Выбрать
+                                                <i class="fas fa-folder-open"></i> {{ t('select') }}
                                             </button>
                                         </div>
-                                        <div class="form-text">Выберите существующую системную папку (должна быть доступна на запись)</div>
+                                        <div class="form-text">{{ t('select_system_folder_description') }}</div>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="system_storage_size" class="form-label">Виртуальный размер хранилища (МБ)</label>
+                                        <label for="system_storage_size" class="form-label">{{ t('virtual_storage_size_mb') }}</label>
                                         <input type="number" class="form-control" id="system_storage_size" name="system_storage_size" 
                                                value="1024" min="1" max="16384">
-                                        <div class="form-text">Размер, который будет отображаться в системе (может отличаться от фактического размера папки)</div>
+                                        <div class="form-text">{{ t('virtual_storage_size_description') }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -295,26 +295,26 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="vendor_id" class="form-label">Vendor ID</label>
+                            <label for="vendor_id" class="form-label">{{ t('vendor_id') }}</label>
                             <input type="text" class="form-control" id="vendor_id" name="vendor_id" 
                                    placeholder="1a2b" pattern="[0-9a-fA-F]{4}" maxlength="4">
-                            <div class="form-text">4 символа в hex формате</div>
+                            <div class="form-text">{{ t('hex_format_4chars') }}</div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="product_id" class="form-label">Product ID</label>
+                            <label for="product_id" class="form-label">{{ t('product_id') }}</label>
                             <input type="text" class="form-control" id="product_id" name="product_id"
                                    placeholder="3c4d" pattern="[0-9a-fA-F]{4}" maxlength="4">
-                            <div class="form-text">4 символа в hex формате</div>
+                            <div class="form-text">{{ t('hex_format_4chars') }}</div>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="serial_number" class="form-label">Серийный номер (необязательно)</label>
+                        <label for="serial_number" class="form-label">{{ t('serial_number') }} ({{ t('optional') }})</label>
                         <input type="text" class="form-control" id="serial_number" name="serial_number">
                     </div>
                     <div class="mb-3">
-                        <label for="config_json" class="form-label">Конфигурация (JSON, необязательно)</label>
+                        <label for="config_json" class="form-label">{{ t('configuration') }} (JSON, {{ t('optional') }})</label>
                         <textarea class="form-control" id="config_json" name="config_json" rows="3"></textarea>
-                        <div class="form-text">JSON с дополнительными параметрами устройства</div>
+                        <div class="form-text">{{ t('json_config_description') }}</div>
                     </div>
                 </div>
                 <div class="modal-footer">
