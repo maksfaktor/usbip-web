@@ -1,15 +1,15 @@
 # Orange USBIP
 
-Комплексное веб-решение для управления USB/IP на Linux, позволяющее публиковать, подключать и эмулировать USB-устройства через сеть.
+A comprehensive web-based solution for managing USB/IP on Linux, allowing you to share, connect, and emulate USB devices over the network.
 
 <div align="center">
 
-**🏆 Полностью кроссплатформенное управление USB устройствами по сети**  
-**💻 Работает на всех Linux: ARM, x86, x86_64, ARM64 📱**
+**🏆 Completely cross-platform USB device management over network**  
+**💻 Works on all Linux: ARM, x86, x86_64, ARM64 📱**
 
 </div>
 
-## 📌 Быстрая установка в одну команду
+## 📌 Quick One-line Installation
 
 ### ARMv7 (Orange Pi, Raspberry Pi 32-bit):
 ```bash
@@ -21,46 +21,46 @@ sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-we
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)"
 ```
 
-## Что такое Orange USBIP?
+## What is Orange USBIP?
 
-Orange USBIP — это веб-интерфейс на Flask для технологии USB/IP, которая позволяет использовать USB-устройства по сети. Проект разработан для легкого управления USB-устройствами на всех Linux платформах, включая ARM (Raspberry Pi, Orange Pi), x86, x86_64 и ARM64.
+Orange USBIP is a Flask-based web interface for USB/IP technology that allows you to use USB devices over a network. The project is designed for easy management of USB devices on all Linux platforms, including ARM (Raspberry Pi, Orange Pi), x86, x86_64, and ARM64.
 
-## Основные возможности
+## Key Features
 
-✅ **Управление физическими USB-устройствами:**
-- Публикация локальных USB-устройств для удаленного доступа
-- Подключение к удаленным устройствам по сети
-- Настройка алиасов для удобной идентификации устройств
+✅ **Physical USB Device Management:**
+- Share local USB devices for remote access
+- Connect to remote devices over the network
+- Configure aliases for easy device identification
 
-✅ **Эмуляция виртуальных USB-устройств:**
-- Создание виртуальных HID-устройств (клавиатуры, мыши)
-- Эмуляция USB-накопителей с управляемым хранилищем
-- Настройка виртуальных COM-портов
+✅ **Virtual USB Device Emulation:**
+- Create virtual HID devices (keyboards, mice)
+- Emulate USB storage devices with managed storage
+- Configure virtual COM ports
 
-✅ **Дополнительные возможности:**
-- Мультиязычный интерфейс (русский и английский)
-- Защищенный доступ с аутентификацией
-- Детальное логирование действий
-- Автоматическое определение сетевых интерфейсов
+✅ **Additional Features:**
+- Multilingual interface (English and Russian)
+- Secure access with authentication
+- Detailed action logging
+- Automatic network interface detection
 
-## Технологии
+## Technologies
 
 - Python 3
 - Flask
 - SQLAlchemy
-- SQLite (по умолчанию) или PostgreSQL (опционально)
+- SQLite
 - USB/IP (Linux)
 - Bootstrap 5
-- Мультиязычный интерфейс (английский и русский)
+- Multilingual interface (English and Russian)
 
-## Требования
+## Requirements
 
-- Linux с установленной утилитой USB/IP
+- Linux with USB/IP utility installed
 - Python 3.7+
 
-### Установка USB/IP в Linux
+### Installing USB/IP on Linux
 
-На большинстве дистрибутивов Linux утилиту USB/IP можно установить следующим образом:
+On most Linux distributions, you can install the USB/IP utility as follows:
 
 #### Ubuntu/Debian:
 ```
@@ -68,69 +68,37 @@ sudo apt update
 sudo apt install linux-tools-generic
 ```
 
-#### Fedora:
-```
-sudo dnf install kernel-modules-extra
-sudo dnf install usbip
-```
+### Database Information
 
-#### Arch Linux:
-```
-sudo pacman -S usbip
-```
+The application uses SQLite by default, which requires no additional configuration. The database will be automatically created when the application is first launched.
 
-### О базе данных
+## Installation
 
-По умолчанию приложение использует SQLite, что не требует дополнительной настройки. База данных будет автоматически создана при первом запуске приложения.
+### One-line Installation
 
-#### Использование PostgreSQL (опционально)
+Simply copy and paste **one** of the following commands into your terminal:
 
-Если вам необходимо использовать PostgreSQL вместо SQLite, вы можете установить его и настроить:
-
-```
-# Установка PostgreSQL
-sudo apt install postgresql postgresql-contrib
-
-# Запуск и включение службы PostgreSQL
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-
-# Создание пользователя и базы данных
-sudo -u postgres psql -c "CREATE USER usbip_user WITH PASSWORD 'your_password';"
-sudo -u postgres psql -c "CREATE DATABASE usbip_db OWNER usbip_user;"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE usbip_db TO usbip_user;"
-
-# Установка переменной окружения для использования PostgreSQL
-export DATABASE_URL="postgresql://usbip_user:your_password@localhost/usbip_db"
-```
-
-## Установка
-
-### Быстрая установка
-
-Просто скопируйте и вставьте **одну** из следующих команд в терминал:
-
-#### Для ARMv7 (Orange Pi, Raspberry Pi 32-bit и др.):
+#### For ARMv7 (Orange Pi, Raspberry Pi 32-bit, etc.):
 
 ```bash
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh)"
 ```
 
-#### Для x86, x86_64 и ARM64 (включая Raspberry Pi 64-bit):
+#### For x86, x86_64, and ARM64 (including Raspberry Pi 64-bit):
 
 ```bash
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)"
 ```
 
-### Стандартная автоматическая установка
+### Standard Installation
 
-Если вы предпочитаете проверить скрипт перед выполнением, можете использовать стандартный подход:
+If you prefer to check the script before running it, you can use the standard approach:
 
-1. Скачайте установочный скрипт
-2. Сделайте его исполняемым
-3. Запустите от имени суперпользователя
+1. Download the installation script
+2. Make it executable
+3. Run it as superuser
 
-#### Для ARM-устройств (Orange Pi, Raspberry Pi 32-bit):
+#### For ARM devices (Orange Pi, Raspberry Pi 32-bit):
 
 ```bash
 wget https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh
@@ -138,7 +106,7 @@ chmod +x install_arm.sh
 sudo ./install_arm.sh
 ```
 
-#### Для x86, x86_64 и ARM64 систем:
+#### For x86, x86_64, and ARM64 systems:
 
 ```bash
 wget https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh
@@ -146,297 +114,194 @@ chmod +x install_debian.sh
 sudo ./install_debian.sh
 ```
 
-### Что делают установочные скрипты?
+### What do the installation scripts do?
 
-Скрипты автоматически выполняют все необходимые шаги:
-1. ✅ Проверяют и устанавливают все системные зависимости
-2. ✅ Настраивают модули ядра для USB/IP
-3. ✅ Создают и запускают systemd-сервисы
-4. ✅ Настраивают права доступа
-5. ✅ Создают рабочий каталог и виртуальное окружение Python
-6. ✅ Проверяют необходимость перезагрузки системы
-7. ✅ Сообщают IP-адрес для доступа к веб-интерфейсу
+The scripts automatically perform all necessary steps:
+1. ✅ Check and install all system dependencies
+2. ✅ Configure kernel modules for USB/IP
+3. ✅ Create and start systemd services
+4. ✅ Set up access permissions
+5. ✅ Create a working directory and Python virtual environment
+6. ✅ Check if a system reboot is needed
+7. ✅ Display the IP address for accessing the web interface
 
-После успешной установки скрипт выведет адрес для доступа к веб-интерфейсу и учетные данные по умолчанию (`admin`/`admin`). Приложение будет запущено как системный сервис, который запускается автоматически при старте системы.
+After successful installation, the script will display the address for accessing the web interface and the default credentials (`admin`/`admin`). The application will run as a system service that starts automatically when the system boots.
 
-### Ручная установка (для опытных пользователей)
+## Usage
 
-Если вы предпочитаете устанавливать программу вручную, выполните следующие шаги:
+After launching the application, open your browser and go to http://localhost:5000/
 
-1. Установите необходимые системные зависимости:
-   ```bash
-   sudo apt update
-   sudo apt install git python3 python3-pip python3-venv linux-tools-generic curl
-   ```
+By default, a user with the login `admin` and password `admin` is created.
+**Important**: After the first login, be sure to change the administrator password!
 
-2. Установите и настройте USB/IP:
-   ```bash
-   sudo modprobe usbip-core
-   sudo modprobe usbip-host
-   sudo modprobe vhci-hcd
-   
-   # Добавление модулей в автозагрузку
-   echo "usbip-core" | sudo tee -a /etc/modules
-   echo "usbip-host" | sudo tee -a /etc/modules
-   echo "vhci-hcd" | sudo tee -a /etc/modules
-   ```
+## Cross-platform Compatibility
 
-3. Клонируйте репозиторий:
-   ```bash
-   mkdir -p ~/orange-usbip
-   cd ~/orange-usbip
-   git clone https://github.com/maksfaktor/usbip-web.git .
-   ```
-
-4. Создайте и активируйте виртуальное окружение:
-
-   **Вариант 1: Установка через uv (рекомендуется для ускорения):**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   
-   # Установка uv
-   curl -sSf https://astral.sh/uv/install.sh | sh
-   export PATH="$HOME/.cargo/bin:$PATH"
-   
-   # Установка зависимостей через uv
-   uv pip install --upgrade pip
-   uv pip install -r requirements-deploy.txt
-   ```
-
-   **Вариант 2: Стандартная установка через pip:**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install --upgrade pip
-   pip install -r requirements-deploy.txt
-   ```
-
-5. Для запуска приложения используйте:
-   ```bash
-   gunicorn --bind 0.0.0.0:5000 main:app
-   ```
-
-6. Чтобы настроить systemd-сервис, создайте файл `/etc/systemd/system/orange-usbip.service`:
-   ```ini
-   [Unit]
-   Description=Orange USBIP Web Interface
-   After=network.target
-
-   [Service]
-   User=YOUR_USERNAME
-   Group=YOUR_USERNAME
-   WorkingDirectory=/home/YOUR_USERNAME/orange-usbip
-   ExecStart=/home/YOUR_USERNAME/orange-usbip/venv/bin/gunicorn --bind 0.0.0.0:5000 main:app
-   Restart=on-failure
-
-   [Install]
-   WantedBy=multi-user.target
-   ```
-
-   Затем включите и запустите сервис:
-   ```bash
-   sudo systemctl daemon-reload
-   sudo systemctl enable orange-usbip
-   sudo systemctl start orange-usbip
-   ```
-
-> **Примечание по базе данных**: По умолчанию приложение использует SQLite. Для использования PostgreSQL установите переменную окружения в файле сервиса: `Environment="DATABASE_URL=postgresql://user:password@localhost/usbip_db"`
-
-## Использование
-
-После запуска приложения откройте браузер и перейдите по адресу http://localhost:5000/
-
-По умолчанию создается пользователь с логином `admin` и паролем `admin`.
-**Важно**: После первого входа в систему обязательно смените пароль администратора!
-
-## Кросс-платформенная совместимость
-
-Приложение разработано для работы на различных процессорных архитектурах:
-- ARM (Orange Pi, Raspberry Pi и др.)
+The application is designed to work on various processor architectures:
+- ARM (Orange Pi, Raspberry Pi, etc.)
 - x86
 - x86-64
 
-### Настройка на Orange Pi, Raspberry Pi и других ARM-устройствах
+### Setup on Orange Pi, Raspberry Pi, and other ARM devices
 
-Для установки на ARM-устройства рекомендуется использовать специальный автоматический скрипт `install_arm.sh`, как описано в разделе "Автоматическая установка". Скрипт справится со всеми особенностями платформы, включая:
+For installation on ARM devices, it is recommended to use the special automatic script `install_arm.sh`, as described in the "Installation" section. The script handles all platform-specific features, including:
 
-1. Компиляцию и установку USB/IP из исходников (на некоторых ARM-платформах стандартные пакеты могут не работать)
-2. Настройку и загрузку совместимых модулей ядра
-3. Создание необходимых системных сервисов
-4. Оптимизацию для работы на устройствах с ограниченными ресурсами
+1. Compilation and installation of USB/IP from source (standard packages may not work on some ARM platforms)
+2. Configuration and loading of compatible kernel modules
+3. Creating necessary system services
+4. Optimization for devices with limited resources
 
-```bash
-# Скачайте установочный скрипт
-wget https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh
+After installation, the web interface will be available on port 5000, and logs can be viewed using `sudo journalctl -u orange-usbip`.
 
-# Сделайте скрипт исполняемым
-chmod +x install_arm.sh
+## Security
 
-# Запустите скрипт от имени суперпользователя
-sudo ./install_arm.sh
-```
+All USB/IP commands are executed with root privileges via sudo.
+It is recommended to configure sudoers to run specific usbip commands without a password.
 
-После установки веб-интерфейс будет доступен на порту 5000, а логи можно просмотреть с помощью `sudo journalctl -u orange-usbip`.
+### Configuring Sudo for USB/IP
 
-## Безопасность
-
-Все команды USB/IP выполняются с привилегиями root через sudo. 
-Рекомендуется настроить sudoers для выполнения специфичных команд usbip без пароля.
-
-### Настройка Sudo для USB/IP
-
-Чтобы избежать постоянного ввода пароля при выполнении команд USB/IP, настройте файл sudoers:
+To avoid constantly entering a password when running USB/IP commands, configure the sudoers file:
 
 ```
-# Откройте файл sudoers для редактирования
+# Open the sudoers file for editing
 sudo visudo -f /etc/sudoers.d/usbip
 
-# Добавьте следующие строки, заменив YOUR_USERNAME на ваше имя пользователя
+# Add the following lines, replacing YOUR_USERNAME with your username
 YOUR_USERNAME ALL=(ALL) NOPASSWD: /usr/sbin/usbip
 YOUR_USERNAME ALL=(ALL) NOPASSWD: /usr/lib/linux-tools/*/usbip
 
-# Сохраните файл и выйдите (в vi: нажмите ESC, затем :wq и Enter)
+# Save the file and exit (in vi: press ESC, then :wq and Enter)
 ```
 
-После этого вы сможете выполнять команды usbip с sudo без запроса пароля.
+After this, you will be able to run usbip commands with sudo without being prompted for a password.
 
-## Тестирование в локальной сети
+## Testing in a Local Network
 
-Вы можете настроить тестовую среду с несколькими компьютерами, где каждый из них может выступать как в роли USB/IP сервера (предоставляющего USB устройства), так и в роли клиента (подключающегося к удаленным USB устройствам).
+You can set up a test environment with multiple computers, where each can act as both a USB/IP server (providing USB devices) and a client (connecting to remote USB devices).
 
-### Настройка тестовой среды с двумя компьютерами
+### Setting up a Test Environment with Two Computers
 
-Эта инструкция поможет вам настроить два компьютера в локальной сети для тестирования функциональности USB/IP.
+This guide will help you set up two computers in a local network to test USB/IP functionality.
 
-#### Предварительные требования
+#### Prerequisites
 
-- Два компьютера с поддержкой Linux
-- Локальная сеть с возможностью соединения между компьютерами
-- USB устройства для тестирования
+- Two computers with Linux support
+- Local network with connectivity between computers
+- USB devices for testing
 
-#### Шаг 1: Настройка сети
+#### Step 1: Network Configuration
 
-1. Настройте статические IP-адреса на обоих компьютерах:
+1. Set static IP addresses on both computers:
 
-   **Компьютер A:**
+   **Computer A:**
    ```
    sudo ip addr add 192.168.1.10/24 dev eth0
    ```
 
-   **Компьютер B:**
+   **Computer B:**
    ```
    sudo ip addr add 192.168.1.11/24 dev eth0
    ```
 
-   Замените `eth0` на имя вашего сетевого интерфейса.
+   Replace `eth0` with your network interface name.
 
-2. Убедитесь, что компьютеры видят друг друга:
-
-   ```
-   ping 192.168.1.10  # с компьютера B
-   ping 192.168.1.11  # с компьютера A
-   ```
-
-3. Настройте брандмауэр для разрешения соединений по порту 3240:
+2. Make sure the computers can see each other:
 
    ```
-   sudo ufw allow 3240/tcp  # для Ubuntu/Debian с ufw
-   # или
-   sudo firewall-cmd --permanent --add-port=3240/tcp  # для Fedora/RHEL
+   ping 192.168.1.10  # from Computer B
+   ping 192.168.1.11  # from Computer A
+   ```
+
+3. Configure the firewall to allow connections on port 3240:
+
+   ```
+   sudo ufw allow 3240/tcp  # for Ubuntu/Debian with ufw
+   # or
+   sudo firewall-cmd --permanent --add-port=3240/tcp  # for Fedora/RHEL
    sudo firewall-cmd --reload
    ```
 
-#### Шаг 2: Установка на обоих компьютерах
+#### Step 2: Installation on Both Computers
 
-Следуйте инструкциям из раздела "Установка" для каждого компьютера:
+Follow the instructions from the "Installation" section for each computer:
 
-1. Установите USB/IP
-2. Установите зависимости
-3. Клонируйте и настройте приложение
+1. Install USB/IP
+2. Install dependencies
+3. Clone and configure the application
 
-SQLite будет использоваться по умолчанию, без необходимости дополнительной настройки.
+#### Step 3: Starting the USB/IP Daemon
 
-#### Шаг 3: Запуск демона USB/IP
-
-На обоих компьютерах запустите демон USB/IP:
+On both computers, start the USB/IP daemon:
 
 ```
 sudo systemctl start usbipd
 sudo systemctl enable usbipd
 ```
 
-#### Шаг 4: Запуск приложения
+#### Step 4: Running the Application
 
-На обоих компьютерах запустите приложение:
+On both computers, start the application:
 
 ```
 source venv/bin/activate
 gunicorn --bind 0.0.0.0:5000 main:app
 ```
 
-Приложение будет использовать SQLite по умолчанию. Если нужен PostgreSQL, перед запуском добавьте:
+#### Step 5: Testing Functionality
 
-```
-export DATABASE_URL=postgresql://usbip_user:your_password@localhost/usbip_db
-```
+1. **Testing Device Publication:**
+   - On Computer A, open the web interface at http://192.168.1.10:5000/
+   - Log in
+   - Find your USB devices on the main page
+   - Click the "Publish" button for one of the devices
 
-#### Шаг 5: Тестирование функциональности
+2. **Testing Connection to Remote Devices:**
+   - On Computer B, open the web interface at http://192.168.1.11:5000/
+   - Log in
+   - Go to the "Remote Devices" page
+   - Enter Computer A's IP address (192.168.1.10) and click "Search for Devices"
+   - You should see the published devices from Computer A
+   - Click "Connect" for one of the devices
+   - Return to the main page where the connected remote device should now be displayed
 
-1. **Проверка публикации устройств:**
-   - На компьютере A откройте веб-интерфейс по адресу http://192.168.1.10:5000/
-   - Войдите в систему
-   - На главной странице найдите свои USB устройства
-   - Нажмите кнопку "Опубликовать" для одного из устройств
+3. **Testing in the Opposite Direction:**
+   - Repeat steps 1-2, but publish devices from Computer B and connect to them from Computer A
 
-2. **Проверка подключения к удаленным устройствам:**
-   - На компьютере B откройте веб-интерфейс по адресу http://192.168.1.11:5000/
-   - Войдите в систему
-   - Перейдите на страницу "Удаленные устройства"
-   - Введите IP-адрес компьютера A (192.168.1.10) и нажмите "Поиск устройств"
-   - Вы должны увидеть опубликованные устройства с компьютера A
-   - Нажмите "Подключить" для одного из устройств
-   - Вернитесь на главную страницу, где теперь должно отображаться подключенное удаленное устройство
+### Troubleshooting
 
-3. **Тестирование в обратном направлении:**
-   - Повторите шаги 1-2, но публикуйте устройства с компьютера B и подключайтесь к ним с компьютера A
+1. **Devices don't appear on the remote devices page:**
+   - Make sure port 3240 is open in the firewall
+   - Check if the usbipd daemon is running on the server computer
+   - Ensure the device is properly published
 
-### Возможные проблемы и их решение
+2. **Error when connecting to a device:**
+   - Check logs on both computers (`journalctl -u usbipd`)
+   - Make sure the device is supported by USB/IP (not all devices work)
+   - Verify necessary access permissions
 
-1. **Устройства не отображаются на странице удаленных устройств:**
-   - Убедитесь, что порт 3240 открыт в брандмауэре
-   - Проверьте, запущен ли демон usbipd на компьютере-сервере
-   - Убедитесь, что устройство правильно опубликовано
+3. **Device appears but doesn't work after connection:**
+   - Some devices require additional drivers or configuration
+   - USB devices requiring high data transfer rates may work unstably over the network
+   - Try disconnecting and reconnecting the device
 
-2. **Ошибка при подключении устройства:**
-   - Проверьте журналы на обоих компьютерах (`journalctl -u usbipd`)
-   - Убедитесь, что устройство поддерживается USB/IP (не все устройства могут работать)
-   - Проверьте наличие необходимых прав доступа
-
-3. **Устройство отображается, но не работает после подключения:**
-   - Некоторые устройства требуют дополнительных драйверов или настроек
-   - USB устройства, требующие высокой скорости передачи данных, могут работать нестабильно через сеть
-   - Попробуйте отключить и снова подключить устройство
-
-## Лицензия
+## License
 
 MIT
 
-## Структура проекта
+## Project Structure
 
-### Основные рабочие файлы проекта:
-✓ app.py - главный файл приложения с маршрутами и логикой
-✓ models.py - модели данных SQLite
-✓ storage_routes.py - маршруты для управления хранилищем
-✓ translations.py - система многоязычности
-✓ usbip_utils.py - утилиты для работы с USB/IP
-✓ virtual_storage_utils.py - функции для виртуального хранилища
-✓ main.py - запуск приложения (используется)
+### Main Working Files:
+✓ app.py - Main application file with routes and logic
+✓ models.py - SQLite data models
+✓ storage_routes.py - Routes for storage management
+✓ translations.py - Multilingual system
+✓ usbip_utils.py - Utilities for working with USB/IP
+✓ virtual_storage_utils.py - Functions for virtual storage
+✓ main.py - Application launcher
 
-### Статические файлы:
-Все файлы в каталоге static/css, static/js и static/img используются в шаблонах через url_for.
+### Static Files:
+All files in the static/css, static/js, and static/img directories are used in templates via url_for.
 
-### Каталоги, которые можно игнорировать в git:
-✓ __pycache__ - кэш Python модулей
-✓ .cache - кэш для UV
-✓ attached_assets - вспомогательные файлы для Replit
+### Directories to Ignore in Git:
+✓ __pycache__ - Python module cache
+✓ .cache - UV cache
+✓ attached_assets - Replit support files
