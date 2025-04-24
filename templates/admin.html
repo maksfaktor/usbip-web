@@ -224,6 +224,12 @@
 
 {% block extra_js %}
 <script>
+// Тексты для перевода
+const translations = {
+    edit_port: "{{ t('edit') }}",
+    add_port: "{{ t('create') }}"
+};
+
 // Обработчики для редактирования портов
 document.querySelectorAll('.edit-port-btn').forEach(button => {
     button.addEventListener('click', function() {
@@ -233,7 +239,7 @@ document.querySelectorAll('.edit-port-btn').forEach(button => {
         const modal = new bootstrap.Modal(document.getElementById('addPortModal'));
         document.getElementById('port_number').value = portNumber;
         document.getElementById('custom_name').value = portName;
-        document.getElementById('addPortModalLabel').textContent = 'Редактировать порт';
+        document.getElementById('addPortModalLabel').textContent = translations.edit_port;
         
         modal.show();
     });
@@ -260,7 +266,7 @@ document.getElementById('addPortModal').addEventListener('hidden.bs.modal', func
     document.getElementById('port_number').value = '';
     document.getElementById('port_number').readOnly = false;
     document.getElementById('custom_name').value = '';
-    document.getElementById('addPortModalLabel').textContent = 'Добавить порт';
+    document.getElementById('addPortModalLabel').textContent = translations.add_port;
 });
 </script>
 {% endblock %}
