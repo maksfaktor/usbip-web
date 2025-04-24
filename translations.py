@@ -24,6 +24,8 @@ translations = {
         'connect': 'Connect',
         'disconnect': 'Disconnect',
         'create': 'Create',
+        'create_device': 'Create Device',
+        'create_port': 'Create Port',
         'delete': 'Delete',
         'edit': 'Edit',
         'save': 'Save',
@@ -61,6 +63,7 @@ translations = {
         # Страница виртуальных устройств
         'virtual_usb_devices': 'Virtual USB Devices',
         'virtual_usb_ports': 'Virtual USB Ports',
+        'virtual_ports': 'Virtual Ports',
         'create_virtual_device': 'Create Virtual Device',
         'create_virtual_port': 'Create Virtual Port',
         'device_type': 'Device Type',
@@ -222,6 +225,8 @@ translations = {
         'connect': 'Подключить',
         'disconnect': 'Отключить',
         'create': 'Создать',
+        'create_device': 'Создать устройство',
+        'create_port': 'Создать порт',
         'delete': 'Удалить',
         'edit': 'Изменить',
         'save': 'Сохранить',
@@ -259,6 +264,7 @@ translations = {
         # Страница виртуальных устройств
         'virtual_usb_devices': 'Виртуальные USB устройства',
         'virtual_usb_ports': 'Виртуальные USB порты',
+        'virtual_ports': 'Виртуальные порты',
         'create_virtual_device': 'Создать виртуальное устройство',
         'create_virtual_port': 'Создать виртуальный порт',
         'device_type': 'Тип устройства',
