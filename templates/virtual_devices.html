@@ -30,29 +30,36 @@
         opacity: 0.6;
     }
     
-    /* Дополнительные стили для максимального использования пространства */
-    .row {
-        margin-right: 0;
-        margin-left: 0;
-        width: 100%;
-    }
-    @media (min-width: 992px) {
-        .device-col {
-            padding-right: 5px;
-        }
-        .port-col {
-            padding-left: 5px;
-        }
-    }
+    /* Специфичные стили для страницы виртуальных устройств */
     .card {
-        border-radius: 0;
-        margin-bottom: 0;
+        border-width: 1px !important;
+        border-style: solid !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    .device-col .card {
+        margin-right: 2px !important;
+    }
+    
+    .port-col .card {
+        margin-left: 2px !important;
+    }
+    
+    .table-responsive {
+        width: 100% !important;
+    }
+    
+    /* Убираем все отступы */
+    .virtual-devices-container {
+        padding: 0 !important;
+        width: 100vw !important;
+        max-width: 100% !important;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row g-0">
+<div class="row g-0 virtual-devices-container">
     <!-- Колонка виртуальных устройств -->
     <div class="col-lg-8 mb-lg-0 device-col">
         <div class="card h-100">
