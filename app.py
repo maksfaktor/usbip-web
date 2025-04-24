@@ -464,13 +464,11 @@ def attach_device_route():
     
     # Запись в лог
     level = 'INFO' if success else 'ERROR'
-    log_entry = LogEntry(
-        level=level, 
-        message=f'Подключение устройства {busid} с сервера {ip}: {message}', 
-        source='usbip'
+    add_log_entry(
+        level, 
+        f'Attached device {busid} from server {ip}: {message}', 
+        'usbip'
     )
-    db.session.add(log_entry)
-    db.session.commit()
     
     return jsonify({'success': success, 'message': message})
 
@@ -485,13 +483,11 @@ def detach_device_route():
     
     # Запись в лог
     level = 'INFO' if success else 'ERROR'
-    log_entry = LogEntry(
-        level=level, 
-        message=f'Отключение устройства с порта {port}: {message}', 
-        source='usbip'
+    add_log_entry(
+        level, 
+        f'Detached device from port {port}: {message}', 
+        'usbip'
     )
-    db.session.add(log_entry)
-    db.session.commit()
     
     return jsonify({'success': success, 'message': message})
 
@@ -605,23 +601,17 @@ def create_virtual_device():
             create_device_storage(device, storage_size)
     
     # Запись в лог
-    log_message = f'Создано виртуальное устройство: {name} ({vendor_id}:{product_id})'
+    log_message = f'Created virtual device: {name} ({vendor_id}:{product_id})'
     
     if device_type == 'storage':
         if 'use_system_folder' in request.form:
             system_path = request.form.get('system_path', '').strip()
             system_storage_size = int(request.form.get('system_storage_size', 1024))
-            log_message += f' с системной папкой {system_path} ({system_storage_size} МБ)'
+            log_message += f' with system folder {system_path} ({system_storage_size} MB)'
         else:
-            log_message += f' с виртуальным хранилищем {storage_size} МБ'
+            log_message += f' with virtual storage {storage_size} MB'
     
-    log_entry = LogEntry(
-        level='INFO',
-        message=log_message,
-        source='virtual'
-    )
-    db.session.add(log_entry)
-    db.session.commit()
+    add_log_entry('INFO', log_message, 'virtual')
     
     flash(f'Виртуальное устройство "{name}" создано', 'success')
     return redirect(url_for('virtual_devices'))
@@ -647,13 +637,11 @@ def create_virtual_port():
     db.session.add(port)
     
     # Запись в лог
-    log_entry = LogEntry(
-        level='INFO',
-        message=f'Создан виртуальный порт: {name} ({port_number})',
-        source='virtual'
+    add_log_entry(
+        'INFO',
+        f'Created virtual port: {name} ({port_number})',
+        'virtual'
     )
-    db.session.add(log_entry)
-    db.session.commit()
     
     flash(f'Виртуальный порт "{name}" создан', 'success')
     return redirect(url_for('virtual_devices'))
@@ -678,13 +666,11 @@ def connect_virtual_device():
     device.is_active = True
     
     # Запись в лог
-    log_entry = LogEntry(
-        level='INFO',
-        message=f'Устройство {device.name} подключено к порту {port.name}',
-        source='virtual'
+    add_log_entry(
+        'INFO',
+        f'Device {device.name} connected to port {port.name}',
+        'virtual'
     )
-    db.session.add(log_entry)
-    db.session.commit()
     
     flash(f'Устройство {device.name} успешно подключено к порту {port.name}', 'success')
     return redirect(url_for('virtual_devices'))
@@ -712,13 +698,11 @@ def disconnect_virtual_device():
     port.is_connected = False
     
     # Запись в лог
-    log_entry = LogEntry(
-        level='INFO',
-        message=f'Устройство {device_name} отключено от порта {port.name}',
-        source='virtual'
+    add_log_entry(
+        'INFO',
+        f'Device {device_name} disconnected from port {port.name}',
+        'virtual'
     )
-    db.session.add(log_entry)
-    db.session.commit()
     
     flash(f'Устройство отключено от порта {port.name}', 'success')
     return redirect(url_for('virtual_devices'))
@@ -749,13 +733,11 @@ def delete_virtual_device():
     db.session.delete(device)
     
     # Запись в лог
-    log_entry = LogEntry(
-        level='INFO',
-        message=f'Виртуальное устройство {device_name} удалено',
-        source='virtual'
+    add_log_entry(
+        'INFO',
+        f'Virtual device {device_name} deleted',
+        'virtual'
     )
-    db.session.add(log_entry)
-    db.session.commit()
     
     flash(f'Виртуальное устройство "{device_name}" удалено', 'success')
     return redirect(url_for('virtual_devices'))
@@ -777,13 +759,11 @@ def delete_virtual_port():
     db.session.delete(port)
     
     # Запись в лог
-    log_entry = LogEntry(
-        level='INFO',
-        message=f'Виртуальный порт {port_name} удален',
-        source='virtual'
+    add_log_entry(
+        'INFO',
+        f'Virtual port {port_name} deleted',
+        'virtual'
     )
-    db.session.add(log_entry)
-    db.session.commit()
     
     flash(f'Виртуальный порт "{port_name}" удален', 'success')
     return redirect(url_for('virtual_devices'))
@@ -906,7 +886,7 @@ def handle_exception(error):
     else:
         code = 500
     
-    app.logger.error(f"Необработанная ошибка: {error}")
+    app.logger.error(f"Unhandled error: {error}")
     
     return render_template('error.html', 
                           error_code=str(code),
