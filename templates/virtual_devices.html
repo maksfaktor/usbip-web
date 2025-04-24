@@ -29,13 +29,32 @@
         pointer-events: none;
         opacity: 0.6;
     }
+    
+    /* Дополнительные стили для максимального использования пространства */
+    .row {
+        margin-right: 0;
+        margin-left: 0;
+        width: 100%;
+    }
+    @media (min-width: 992px) {
+        .device-col {
+            padding-right: 5px;
+        }
+        .port-col {
+            padding-left: 5px;
+        }
+    }
+    .card {
+        border-radius: 0;
+        margin-bottom: 0;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row g-4">
+<div class="row g-0">
     <!-- Колонка виртуальных устройств -->
-    <div class="col-lg-8 mb-lg-0">
+    <div class="col-lg-8 mb-lg-0 device-col">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="fas fa-microchip me-2"></i>{{ t('virtual_devices') }}</h4>
@@ -142,7 +161,7 @@
     </div>
     
     <!-- Колонка виртуальных портов -->
-    <div class="col-lg-4">
+    <div class="col-lg-4 port-col">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="fas fa-plug me-2"></i>{{ t('virtual_ports') }}</h4>
