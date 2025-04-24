@@ -116,14 +116,6 @@
        d="m 67.73333,31.73333 v -9"
        id="path15" />
        
-    <!-- USB логотип поверх апельсина -->
-    <g transform="translate(32.73333, 37.73333) scale(0.7) rotate(180)">
-      <path d="M50 0 L50 100 M50 20 L70 20 L70 40 M50 40 L30 40 L30 60" 
-            stroke="black" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="30" cy="70" r="8" fill="black"/>
-      <circle cx="70" cy="50" r="8" fill="black"/>
-      <circle cx="50" cy="10" r="8" fill="black"/>
-      <circle cx="50" cy="100" r="8" fill="black"/>
-    </g>
+    <!-- USB логотип удален -->
   </g>
 </svg>
