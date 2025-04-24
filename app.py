@@ -503,15 +503,17 @@ def virtual_devices():
     virtual_ports = VirtualUsbPort.query.all()
     
     # Форматируем для шаблона
+    # Используем переводы для типов устройств
+    current_language = get_current_language()
     device_types = [
-        {'id': 'storage', 'name': 'Устройство хранения (флешка)'},
-        {'id': 'hid', 'name': 'HID (мышь, клавиатура)'},
-        {'id': 'serial', 'name': 'Последовательный порт'},
-        {'id': 'ethernet', 'name': 'Сетевой адаптер'},
-        {'id': 'audio', 'name': 'Аудио устройство'},
-        {'id': 'printer', 'name': 'Принтер'},
-        {'id': 'camera', 'name': 'Веб-камера'},
-        {'id': 'custom', 'name': 'Другое (своя конфигурация)'}
+        {'id': 'storage', 'name': get_translation('storage_device', current_language)},
+        {'id': 'hid', 'name': get_translation('hid_device', current_language)},
+        {'id': 'serial', 'name': get_translation('serial_device', current_language)},
+        {'id': 'ethernet', 'name': get_translation('ethernet_device', current_language)},
+        {'id': 'audio', 'name': get_translation('audio_device', current_language)},
+        {'id': 'printer', 'name': get_translation('printer_device', current_language)},
+        {'id': 'camera', 'name': get_translation('camera_device', current_language)},
+        {'id': 'custom', 'name': get_translation('custom_device', current_language)}
     ]
     
     # Получаем информацию о сетевых интерфейсах
