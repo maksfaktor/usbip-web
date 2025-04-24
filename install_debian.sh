@@ -62,7 +62,25 @@ fi
 
 # Проверка архитектуры
 ARCH=$(uname -m)
-echo_color "green" "✓ Операционная система совместима. Архитектура: $ARCH."
+
+# Поддерживаемые архитектуры: x86, x86_64, arm64/aarch64
+if [[ "$ARCH" == "arm"* ]] && [[ "$ARCH" != "armv7"* ]]; then
+    echo_color "green" "✓ Архитектура $ARCH совместима (64-битный ARM)."
+elif [[ "$ARCH" == "aarch64" ]]; then
+    echo_color "green" "✓ Архитектура $ARCH совместима (64-битный ARM)."
+elif [[ "$ARCH" == "armv7"* ]]; then
+    echo_color "yellow" "Для 32-битных ARM систем (ARMv7) рекомендуется использовать скрипт install_arm.sh"
+    echo "Продолжить установку? (y/n)"
+    read -r response
+    if [[ "$response" != "y" ]]; then
+        echo_color "yellow" "Установка прервана пользователем."
+        exit 0
+    fi
+elif [[ "$ARCH" == "x86_64" ]] || [[ "$ARCH" == "i686" ]]; then
+    echo_color "green" "✓ Архитектура $ARCH совместима (x86/x86_64)."
+else
+    echo_color "yellow" "Архитектура $ARCH не тестировалась, но мы попробуем установить."
+fi
 
 # Шаг 2: Обновление системы
 CURRENT_STEP=$((CURRENT_STEP + 1))
@@ -76,6 +94,24 @@ CURRENT_STEP=$((CURRENT_STEP + 1))
 progress_update $CURRENT_STEP $TOTAL_STEPS "Установка необходимых пакетов..."
 
 apt-get install -y git python3 python3-pip python3-venv linux-tools-generic usbutils curl > /dev/null 2>&1
+
+# Установка uv - современного пакетного менеджера Python
+echo_color "yellow" "Установка uv - современного пакетного менеджера Python..."
+curl -sSf https://astral.sh/uv/install.sh | sh > /dev/null 2>&1 || {
+    echo_color "yellow" "Не удалось установить uv через скрипт, попробуем через pip..."
+    pip3 install -q --break-system-packages uv
+}
+
+# Добавляем uv в PATH, если необходимо
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# Проверка установки uv
+if ! command -v uv &> /dev/null; then
+    echo_color "yellow" "Не удалось установить uv. Будем использовать стандартный pip."
+else
+    echo_color "green" "✓ uv успешно установлен."
+fi
+
 echo_color "green" "✓ Необходимые пакеты установлены."
 
 # Шаг 4: Проверка установки usbip
@@ -193,12 +229,24 @@ if [ ! -d "venv" ]; then
     sudo -u $REAL_USER python3 -m venv venv
 fi
 
-sudo -u $REAL_USER bash -c "
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements-deploy.txt
-deactivate
-"
+# Установка зависимостей через uv или pip
+if command -v uv &> /dev/null; then
+    echo_color "blue" "Используем uv для быстрой установки зависимостей..."
+    sudo -u $REAL_USER bash -c "
+    source venv/bin/activate
+    uv pip install --upgrade pip
+    uv pip install -r requirements-deploy.txt
+    deactivate
+    "
+else
+    echo_color "yellow" "Используем стандартный pip для установки зависимостей..."
+    sudo -u $REAL_USER bash -c "
+    source venv/bin/activate
+    pip install --upgrade pip
+    pip install -r requirements-deploy.txt
+    deactivate
+    "
+fi
 
 echo_color "green" "✓ Виртуальная среда Python настроена."
 

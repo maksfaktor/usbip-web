@@ -74,7 +74,24 @@ echo_color "green" "✓ Репозитории обновлены."
 CURRENT_STEP=$((CURRENT_STEP + 1))
 progress_update $CURRENT_STEP $TOTAL_STEPS "Установка необходимых пакетов..."
 
-apt-get install -y git python3 python3-pip python3-venv usbutils linux-tools-generic build-essential libnl-3-dev libnl-genl-3-dev > /dev/null 2>&1
+apt-get install -y git python3 python3-pip python3-venv usbutils linux-tools-generic build-essential libnl-3-dev libnl-genl-3-dev curl > /dev/null 2>&1
+
+# Установка uv - современного пакетного менеджера Python
+echo_color "yellow" "Установка uv - современного пакетного менеджера Python..."
+curl -sSf https://astral.sh/uv/install.sh | sh > /dev/null 2>&1 || {
+    echo_color "yellow" "Не удалось установить uv через скрипт, попробуем через pip..."
+    pip3 install -q --break-system-packages uv
+}
+
+# Добавляем uv в PATH, если необходимо
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# Проверка установки uv
+if ! command -v uv &> /dev/null; then
+    echo_color "yellow" "Не удалось установить uv. Будем использовать стандартный pip."
+else
+    echo_color "green" "✓ uv успешно установлен."
+fi
 
 # Проверка установки usbip
 echo "Настройка USB/IP..."
@@ -180,12 +197,24 @@ if [ ! -d "venv" ]; then
     sudo -u $REAL_USER python3 -m venv venv
 fi
 
-sudo -u $REAL_USER bash -c "
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements-deploy.txt
-deactivate
-"
+# Установка зависимостей через uv или pip
+if command -v uv &> /dev/null; then
+    echo_color "blue" "Используем uv для быстрой установки зависимостей..."
+    sudo -u $REAL_USER bash -c "
+    source venv/bin/activate
+    uv pip install --upgrade pip
+    uv pip install -r requirements-deploy.txt
+    deactivate
+    "
+else
+    echo_color "yellow" "Используем стандартный pip для установки зависимостей..."
+    sudo -u $REAL_USER bash -c "
+    source venv/bin/activate
+    pip install --upgrade pip
+    pip install -r requirements-deploy.txt
+    deactivate
+    "
+fi
 
 echo_color "green" "✓ Виртуальная среда Python настроена."
 
