@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %}Журнал событий - OrangeUSB{% endblock %}
+{% block title %}{{ t('logs') }} - OrangeUSB{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
         <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Журнал событий</h4>
+        <h4 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>{{ t('logs') }}</h4>
         <div class="btn-group">
-            <a href="{{ url_for('logs', type='all') }}" class="btn btn-sm {% if current_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">Все</a>
-            <a href="{{ url_for('logs', type='info') }}" class="btn btn-sm {% if current_type == 'info' %}btn-info{% else %}btn-outline-info{% endif %}">Информация</a>
-            <a href="{{ url_for('logs', type='warning') }}" class="btn btn-sm {% if current_type == 'warning' %}btn-warning{% else %}btn-outline-warning{% endif %}">Предупреждения</a>
-            <a href="{{ url_for('logs', type='error') }}" class="btn btn-sm {% if current_type == 'error' %}btn-danger{% else %}btn-outline-danger{% endif %}">Ошибки</a>
-            <a href="{{ url_for('logs', type='debug') }}" class="btn btn-sm {% if current_type == 'debug' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Отладка</a>
+            <a href="{{ url_for('logs', type='all') }}" class="btn btn-sm {% if current_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ t('all') }}</a>
+            <a href="{{ url_for('logs', type='info') }}" class="btn btn-sm {% if current_type == 'info' %}btn-info{% else %}btn-outline-info{% endif %}">{{ t('information') }}</a>
+            <a href="{{ url_for('logs', type='warning') }}" class="btn btn-sm {% if current_type == 'warning' %}btn-warning{% else %}btn-outline-warning{% endif %}">{{ t('warnings') }}</a>
+            <a href="{{ url_for('logs', type='error') }}" class="btn btn-sm {% if current_type == 'error' %}btn-danger{% else %}btn-outline-danger{% endif %}">{{ t('errors') }}</a>
+            <a href="{{ url_for('logs', type='debug') }}" class="btn btn-sm {% if current_type == 'debug' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">{{ t('debug') }}</a>
         </div>
     </div>
     <div class="card-body p-0">
@@ -21,10 +21,10 @@
             <table class="table table-hover table-striped mb-0">
                 <thead>
                     <tr>
-                        <th>Время</th>
-                        <th>Уровень</th>
-                        <th>Источник</th>
-                        <th>Сообщение</th>
+                        <th>{{ t('time') }}</th>
+                        <th>{{ t('level') }}</th>
+                        <th>{{ t('source') }}</th>
+                        <th>{{ t('message') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,26 +39,26 @@
                                 <td>{{ log.timestamp.strftime('%d.%m.%Y %H:%M:%S') }}</td>
                                 <td>
                                     {% if log.level == 'INFO' %}
-                                        <span class="badge bg-info">ИНФО</span>
+                                        <span class="badge bg-info">{{ t('info_badge') }}</span>
                                     {% elif log.level == 'WARNING' %}
-                                        <span class="badge bg-warning">ВНИМАНИЕ</span>
+                                        <span class="badge bg-warning">{{ t('warning_badge') }}</span>
                                     {% elif log.level == 'ERROR' %}
-                                        <span class="badge bg-danger">ОШИБКА</span>
+                                        <span class="badge bg-danger">{{ t('error_badge') }}</span>
                                     {% elif log.level == 'DEBUG' %}
-                                        <span class="badge bg-secondary">ОТЛАДКА</span>
+                                        <span class="badge bg-secondary">{{ t('debug_badge') }}</span>
                                     {% else %}
                                         <span class="badge bg-light">{{ log.level }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if log.source == 'auth' %}
-                                        <span class="badge bg-primary">Авторизация</span>
+                                        <span class="badge bg-primary">{{ t('auth_badge') }}</span>
                                     {% elif log.source == 'usbip' %}
                                         <span class="badge bg-success">USB/IP</span>
                                     {% elif log.source == 'search' %}
-                                        <span class="badge bg-info">Поиск</span>
+                                        <span class="badge bg-info">{{ t('search_badge') }}</span>
                                     {% elif log.source == 'system' %}
-                                        <span class="badge bg-dark">Система</span>
+                                        <span class="badge bg-dark">{{ t('system_badge') }}</span>
                                     {% else %}
                                         <span class="badge bg-light">{{ log.source }}</span>
                                     {% endif %}
@@ -69,7 +69,7 @@
                     {% else %}
                         <tr>
                             <td colspan="4" class="text-center py-3">
-                                <span class="text-muted">Журнал событий пуст</span>
+                                <span class="text-muted">{{ t('logs_empty') }}</span>
                             </td>
                         </tr>
                     {% endif %}
