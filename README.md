@@ -421,3 +421,22 @@ export DATABASE_URL=postgresql://usbip_user:your_password@localhost/usbip_db
 ## Лицензия
 
 MIT
+
+## Структура проекта
+
+### Основные рабочие файлы проекта:
+✓ app.py - главный файл приложения с маршрутами и логикой
+✓ models.py - модели данных SQLite
+✓ storage_routes.py - маршруты для управления хранилищем
+✓ translations.py - система многоязычности
+✓ usbip_utils.py - утилиты для работы с USB/IP
+✓ virtual_storage_utils.py - функции для виртуального хранилища
+✓ main.py - запуск приложения (используется)
+
+### Статические файлы:
+Все файлы в каталоге static/css, static/js и static/img используются в шаблонах через url_for.
+
+### Каталоги, которые можно игнорировать в git:
+✓ __pycache__ - кэш Python модулей
+✓ .cache - кэш для UV
+✓ attached_assets - вспомогательные файлы для Replit
