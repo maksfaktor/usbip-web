@@ -227,7 +227,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createDeviceModalLabel">Создать виртуальное устройство</h5>
+                <h5 class="modal-title" id="createDeviceModalLabel">{{ t('create_virtual_device') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('create_virtual_device') }}">
@@ -331,7 +331,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createPortModalLabel">Создать виртуальный порт</h5>
+                <h5 class="modal-title" id="createPortModalLabel">{{ t('create_virtual_port') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('create_virtual_port') }}">
@@ -361,7 +361,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="connectDeviceModalLabel">Подключить устройство к порту</h5>
+                <h5 class="modal-title" id="connectDeviceModalLabel">{{ t('connect_device_to_port') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('connect_virtual_device') }}">
@@ -409,7 +409,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="folderBrowserModalLabel">Выберите папку</h5>
+                <h5 class="modal-title" id="folderBrowserModalLabel">{{ t('select_folder') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -420,10 +420,10 @@
                         </ol>
                     </nav>
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="parent_dir_button">
-                        <i class="fas fa-level-up-alt"></i> Вверх
+                        <i class="fas fa-level-up-alt"></i> {{ t('up') }}
                     </button>
                     <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="refresh_dir_button">
-                        <i class="fas fa-sync-alt"></i> Обновить
+                        <i class="fas fa-sync-alt"></i> {{ t('refresh') }}
                     </button>
                 </div>
                 
@@ -434,22 +434,22 @@
                 <div class="directory-list" id="directory_list">
                     <div class="text-center p-5">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Загрузка...</span>
+                            <span class="visually-hidden">{{ t('loading') }}...</span>
                         </div>
-                        <p class="mt-2">Загрузка списка папок...</p>
+                        <p class="mt-2">{{ t('loading_folders') }}...</p>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <div class="d-flex justify-content-between w-100 align-items-center">
                     <div>
-                        <span class="me-2">Текущий путь:</span>
+                        <span class="me-2">{{ t('current_path') }}:</span>
                         <code id="current_path">/</code>
                         <span class="ms-2 badge" id="writable_badge"></span>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                        <button type="button" class="btn btn-primary" id="select_folder_button">Выбрать</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                        <button type="button" class="btn btn-primary" id="select_folder_button">{{ t('select') }}</button>
                     </div>
                 </div>
             </div>
@@ -610,10 +610,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Обновляем статус доступа на запись
                     if (isWritable) {
                         writableBadge.className = 'badge bg-success';
-                        writableBadge.textContent = 'Доступно для записи';
+                        writableBadge.textContent = '{{ t('writable') }}';
                     } else {
                         writableBadge.className = 'badge bg-danger';
-                        writableBadge.textContent = 'Только чтение';
+                        writableBadge.textContent = '{{ t('readonly') }}';
                     }
                     
                     // Обновляем хлебные крошки
@@ -623,7 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.directories.length === 0 && data.files.length === 0) {
                         directoryList.innerHTML = `
                             <div class="alert alert-info m-3">
-                                <i class="fas fa-info-circle me-2"></i>Директория пуста
+                                <i class="fas fa-info-circle me-2"></i>{{ t('directory_empty') }}
                             </div>
                         `;
                         return;
@@ -749,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Обработчик выбора папки
         document.getElementById('select_folder_button').addEventListener('click', function() {
             if (!isWritable) {
-                alert('Выбранная директория недоступна для записи');
+                alert('{{ t('directory_not_writable') }}');
                 return;
             }
             
