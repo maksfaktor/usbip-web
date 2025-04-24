@@ -63,24 +63,24 @@
                                 <td>{{ device.name }}</td>
                                 <td>
                                     {% if device.device_type == 'hid' %}
-                                        <span class="badge bg-primary">HID устройство</span>
+                                        <span class="badge bg-primary">{{ t('hid_device_badge') }}</span>
                                     {% elif device.device_type == 'storage' %}
-                                        <span class="badge bg-info">Хранилище</span>
+                                        <span class="badge bg-info">{{ t('storage_device_badge') }}</span>
                                         {% if device.is_system_path %}
-                                            <span class="badge bg-warning">Системная папка</span>
+                                            <span class="badge bg-warning">{{ t('system_folder_badge') }}</span>
                                         {% else %}
-                                            <span class="badge bg-secondary">Виртуальное</span>
+                                            <span class="badge bg-secondary">{{ t('virtual_badge') }}</span>
                                         {% endif %}
                                     {% elif device.device_type == 'serial' %}
-                                        <span class="badge bg-secondary">COM порт</span>
+                                        <span class="badge bg-secondary">{{ t('serial_device_badge') }}</span>
                                     {% elif device.device_type == 'ethernet' %}
-                                        <span class="badge bg-dark">Сетевой</span>
+                                        <span class="badge bg-dark">{{ t('ethernet_device_badge') }}</span>
                                     {% elif device.device_type == 'audio' %}
-                                        <span class="badge bg-success">Аудио</span>
+                                        <span class="badge bg-success">{{ t('audio_device_badge') }}</span>
                                     {% elif device.device_type == 'printer' %}
-                                        <span class="badge bg-danger">Принтер</span>
+                                        <span class="badge bg-danger">{{ t('printer_device_badge') }}</span>
                                     {% elif device.device_type == 'camera' %}
-                                        <span class="badge bg-warning">Камера</span>
+                                        <span class="badge bg-warning">{{ t('camera_device_badge') }}</span>
                                     {% else %}
                                         <span class="badge bg-light text-dark">{{ device.device_type }}</span>
                                     {% endif %}
@@ -88,21 +88,21 @@
                                 <td><code>{{ device.vendor_id }}:{{ device.product_id }}</code></td>
                                 <td>
                                     {% if device.is_active %}
-                                        <span class="badge bg-success">Активно</span>
+                                        <span class="badge bg-success">{{ t('active') }}</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">Не активно</span>
+                                        <span class="badge bg-secondary">{{ t('inactive') }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if device.device_type == 'storage' %}
                                         <small>
                                         {% if device.is_system_path and device.storage_path %}
-                                            <strong>Путь: </strong>
+                                            <strong>{{ t('path') }}: </strong>
                                             <span class="text-break d-inline-block" style="max-width: 150px;">
                                                 <code>{{ device.storage_path }}</code>
                                             </span><br>
                                         {% endif %}
-                                        <strong>Размер: </strong>{{ device.storage_size }} МБ
+                                        <strong>{{ t('size') }}: </strong>{{ device.storage_size }} {{ t('mb_unit') }}
                                         </small>
                                     {% endif %}
                                 </td>
