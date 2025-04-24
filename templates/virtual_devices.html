@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Виртуальные USB устройства - OrangeUSB{% endblock %}
+{% block title %}{{ t('virtual_usb_devices') }} - OrangeUSB{% endblock %}
 
 {% block head %}
 <style>
@@ -38,9 +38,9 @@
     <div class="col-lg-6 mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><i class="fas fa-microchip me-2"></i>Виртуальные устройства</h4>
+                <h4 class="mb-0"><i class="fas fa-microchip me-2"></i>{{ t('virtual_devices') }}</h4>
                 <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createDeviceModal">
-                    <i class="fas fa-plus me-1"></i>Создать устройство
+                    <i class="fas fa-plus me-1"></i>{{ t('create_device') }}
                 </button>
             </div>
             <div class="card-body p-0">
@@ -49,12 +49,12 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th>Имя</th>
-                                <th>Тип</th>
+                                <th>{{ t('name') }}</th>
+                                <th>{{ t('type') }}</th>
                                 <th>VID:PID</th>
-                                <th>Статус</th>
-                                <th>Информация</th>
-                                <th>Действия</th>
+                                <th>{{ t('status') }}</th>
+                                <th>{{ t('info') }}</th>
+                                <th>{{ t('actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -134,7 +134,7 @@
                 </div>
                 {% else %}
                 <div class="alert alert-info m-3">
-                    <i class="fas fa-info-circle me-2"></i>Нет виртуальных устройств. Создайте новое устройство, нажав на кнопку выше.
+                    <i class="fas fa-info-circle me-2"></i>{{ t('no_virtual_devices') }}
                 </div>
                 {% endif %}
             </div>
@@ -145,9 +145,9 @@
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>Виртуальные порты</h4>
+                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>{{ t('virtual_ports') }}</h4>
                 <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createPortModal">
-                    <i class="fas fa-plus me-1"></i>Создать порт
+                    <i class="fas fa-plus me-1"></i>{{ t('create_port') }}
                 </button>
             </div>
             <div class="card-body p-0">
@@ -156,11 +156,11 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th>Имя</th>
-                                <th>Номер</th>
-                                <th>Устройство</th>
-                                <th>Статус</th>
-                                <th>Действия</th>
+                                <th>{{ t('name') }}</th>
+                                <th>{{ t('number') }}</th>
+                                <th>{{ t('device') }}</th>
+                                <th>{{ t('status') }}</th>
+                                <th>{{ t('actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -214,7 +214,7 @@
                 </div>
                 {% else %}
                 <div class="alert alert-info m-3">
-                    <i class="fas fa-info-circle me-2"></i>Нет виртуальных портов. Создайте новый порт, нажав на кнопку выше.
+                    <i class="fas fa-info-circle me-2"></i>{{ t('no_virtual_ports') }}
                 </div>
                 {% endif %}
             </div>
