@@ -688,7 +688,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const parts = path.split('/').filter(part => part.length > 0);
             
             // Очищаем текущие хлебные крошки
-            breadcrumb.innerHTML = `<li class="breadcrumb-item"><a href="#" data-path="/">Root</a></li>`;
+            breadcrumb.innerHTML = `<li class="breadcrumb-item"><a href="#" data-path="/">{{ t('root') }}</a></li>`;
             
             let currentPath = '/';
             parts.forEach((part, index) => {
