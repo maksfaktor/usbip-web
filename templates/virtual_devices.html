@@ -110,7 +110,7 @@
                                     <div class="btn-group btn-group-sm">
                                         {% if device.device_type == 'storage' %}
                                             <a href="{{ url_for('storage.manage_storage', device_id=device.id) }}" class="btn btn-outline-info">
-                                                <i class="fas fa-hdd me-1"></i>Файлы
+                                                <i class="fas fa-hdd me-1"></i>{{ t('files') }}
                                             </a>
                                         {% endif %}
                                         <button class="btn btn-outline-primary" 
@@ -118,12 +118,12 @@
                                                 data-bs-target="#connectDeviceModal"
                                                 data-device-id="{{ device.id }}"
                                                 data-device-name="{{ device.name }}">
-                                            <i class="fas fa-plug me-1"></i>Подключить
+                                            <i class="fas fa-plug me-1"></i>{{ t('connect') }}
                                         </button>
                                         <button class="btn btn-outline-danger delete-device-btn"
                                                 data-device-id="{{ device.id }}"
                                                 data-device-name="{{ device.name }}">
-                                            <i class="fas fa-trash me-1"></i>Удалить
+                                            <i class="fas fa-trash me-1"></i>{{ t('delete') }}
                                         </button>
                                     </div>
                                 </td>
@@ -172,14 +172,14 @@
                                     {% if port.device %}
                                         {{ port.device.name }}
                                     {% else %}
-                                        <span class="text-muted">Не подключено</span>
+                                        <span class="text-muted">{{ t('not_connected') }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if port.is_connected %}
-                                        <span class="badge bg-success">Подключено</span>
+                                        <span class="badge bg-success">{{ t('connected') }}</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">Отключено</span>
+                                        <span class="badge bg-secondary">{{ t('disconnected') }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -188,7 +188,7 @@
                                             <form method="POST" action="{{ url_for('disconnect_virtual_device') }}" class="d-inline">
                                                 <input type="hidden" name="port_id" value="{{ port.id }}">
                                                 <button type="submit" class="btn btn-outline-warning">
-                                                    <i class="fas fa-unlink me-1"></i>Отключить
+                                                    <i class="fas fa-unlink me-1"></i>{{ t('disconnect') }}
                                                 </button>
                                             </form>
                                         {% else %}
@@ -197,13 +197,13 @@
                                                     data-bs-target="#connectDeviceModal"
                                                     data-port-id="{{ port.id }}"
                                                     data-port-name="{{ port.name }}">
-                                                <i class="fas fa-link me-1"></i>Подключить
+                                                <i class="fas fa-link me-1"></i>{{ t('connect') }}
                                             </button>
                                         {% endif %}
                                         <button class="btn btn-outline-danger delete-port-btn"
                                                 data-port-id="{{ port.id }}"
                                                 data-port-name="{{ port.name }}">
-                                            <i class="fas fa-trash me-1"></i>Удалить
+                                            <i class="fas fa-trash me-1"></i>{{ t('delete') }}
                                         </button>
                                     </div>
                                 </td>

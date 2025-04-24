@@ -91,6 +91,8 @@ translations = {
         'connect_to_device': 'Connect to Device',
         'connected_device': 'Connected Device',
         'not_connected': 'Not Connected',
+        'connected': 'Connected',
+        'disconnected': 'Disconnected',
         
         # Страница логов
         'log_filter': 'Log Filter',
@@ -146,6 +148,7 @@ translations = {
         'parent_directory': 'Parent Directory',
         'file_name': 'File Name',
         'file_size': 'Size',
+        'files': 'Files',
         'upload_file': 'Upload File',
         'create_directory': 'Create Directory',
         'select_files': 'Select Files',
@@ -292,6 +295,8 @@ translations = {
         'connect_to_device': 'Подключить к устройству',
         'connected_device': 'Подключенное устройство',
         'not_connected': 'Не подключено',
+        'connected': 'Подключено',
+        'disconnected': 'Отключено',
         
         # Страница логов
         'log_filter': 'Фильтр логов',
@@ -346,6 +351,7 @@ translations = {
         'parent_directory': 'Родительская директория',
         'file_name': 'Имя файла',
         'file_size': 'Размер',
+        'files': 'Файлы',
         'upload_file': 'Загрузить файл',
         'create_directory': 'Создать директорию',
         'select_files': 'Выбрать файлы',
