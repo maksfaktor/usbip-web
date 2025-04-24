@@ -318,8 +318,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Создать</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ t('create') }}</button>
                 </div>
             </form>
         </div>
@@ -337,19 +337,19 @@
             <form method="POST" action="{{ url_for('create_virtual_port') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="port_name" class="form-label">Название порта</label>
+                        <label for="port_name" class="form-label">{{ t('port_name') }}</label>
                         <input type="text" class="form-control" id="port_name" name="name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="port_number" class="form-label">Номер порта (необязательно)</label>
+                        <label for="port_number" class="form-label">{{ t('port_number') }} ({{ t('optional') }})</label>
                         <input type="text" class="form-control" id="port_number" name="port_number" 
-                               placeholder="Будет сгенерирован автоматически">
-                        <div class="form-text">Если не указан, будет сгенерирован автоматически</div>
+                               placeholder="{{ t('will_be_generated_automatically') }}">
+                        <div class="form-text">{{ t('if_not_specified_auto_generated') }}</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Создать</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ t('create') }}</button>
                 </div>
             </form>
         </div>
@@ -367,9 +367,9 @@
             <form method="POST" action="{{ url_for('connect_virtual_device') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="connect_port_id" class="form-label">Выберите порт</label>
+                        <label for="connect_port_id" class="form-label">{{ t('select_port') }}</label>
                         <select class="form-select" id="connect_port_id" name="port_id" required>
-                            <option value="" selected disabled>Выберите порт...</option>
+                            <option value="" selected disabled>{{ t('select_port') }}...</option>
                             {% for port in virtual_ports %}
                                 {% if not port.is_connected %}
                                     <option value="{{ port.id }}">{{ port.name }} ({{ port.port_number }})</option>
@@ -378,9 +378,9 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="connect_device_id" class="form-label">Выберите устройство</label>
+                        <label for="connect_device_id" class="form-label">{{ t('select_device') }}</label>
                         <select class="form-select" id="connect_device_id" name="device_id" required>
-                            <option value="" selected disabled>Выберите устройство...</option>
+                            <option value="" selected disabled>{{ t('select_device') }}...</option>
                             {% for device in virtual_devices %}
                                 <option value="{{ device.id }}">{{ device.name }} ({{ device.vendor_id }}:{{ device.product_id }})</option>
                             {% endfor %}
@@ -388,8 +388,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Подключить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ t('connect') }}</button>
                 </div>
             </form>
         </div>
@@ -467,7 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const deviceId = this.getAttribute('data-device-id');
             const deviceName = this.getAttribute('data-device-name');
             
-            if (confirm(`Вы уверены, что хотите удалить устройство "${deviceName}"?`)) {
+            if (confirm(`{{ t('confirm_delete_device') }} "${deviceName}"?`)) {
                 document.getElementById('delete_device_id').value = deviceId;
                 document.getElementById('deleteDeviceForm').submit();
             }
@@ -480,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const portId = this.getAttribute('data-port-id');
             const portName = this.getAttribute('data-port-name');
             
-            if (confirm(`Вы уверены, что хотите удалить порт "${portName}"?`)) {
+            if (confirm(`{{ t('confirm_delete_port') }} "${portName}"?`)) {
                 document.getElementById('delete_port_id').value = portId;
                 document.getElementById('deletePortForm').submit();
             }
