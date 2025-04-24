@@ -107,7 +107,7 @@ chmod +x install_arm.sh
 sudo ./install_arm.sh
 ```
 
-#### Для Debian, Ubuntu и других совместимых дистрибутивов (x86/x86_64):
+#### Для Debian, Ubuntu и других совместимых дистрибутивов (x86/x86_64/arm64):
 
 ```bash
 # Скачайте установочный скрипт
@@ -129,7 +129,7 @@ sudo ./install_debian.sh
 1. Установите необходимые системные зависимости:
    ```bash
    sudo apt update
-   sudo apt install git python3 python3-pip python3-venv linux-tools-generic
+   sudo apt install git python3 python3-pip python3-venv linux-tools-generic curl
    ```
 
 2. Установите и настройте USB/IP:
@@ -152,6 +152,22 @@ sudo ./install_debian.sh
    ```
 
 4. Создайте и активируйте виртуальное окружение:
+
+   **Вариант 1: Установка через uv (рекомендуется для ускорения):**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   
+   # Установка uv
+   curl -sSf https://astral.sh/uv/install.sh | sh
+   export PATH="$HOME/.cargo/bin:$PATH"
+   
+   # Установка зависимостей через uv
+   uv pip install --upgrade pip
+   uv pip install -r requirements-deploy.txt
+   ```
+
+   **Вариант 2: Стандартная установка через pip:**
    ```bash
    python3 -m venv venv
    source venv/bin/activate
