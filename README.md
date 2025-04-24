@@ -85,54 +85,110 @@ export DATABASE_URL="postgresql://usbip_user:your_password@localhost/usbip_db"
 
 ## Установка
 
-1. Клонируйте репозиторий:
-   ```
-   git clone https://github.com/maksfaktor/usbip-web.git
-   cd usbip-web
+### Автоматическая установка (рекомендуется)
+
+Мы подготовили специальные скрипты для автоматической установки, которые выполнят все необходимые шаги:
+1. Проверят и установят все зависимости
+2. Настроят модули ядра для USB/IP
+3. Создадут и запустят systemd-сервисы
+4. Настроят права доступа
+5. Создадут рабочий каталог и виртуальное окружение Python
+
+#### Для Raspberry Pi и других ARM-устройств (Orange Pi, Banana Pi и т.д.):
+
+```bash
+# Скачайте установочный скрипт
+wget https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh
+
+# Сделайте скрипт исполняемым
+chmod +x install_arm.sh
+
+# Запустите скрипт от имени суперпользователя
+sudo ./install_arm.sh
+```
+
+#### Для Debian, Ubuntu и других совместимых дистрибутивов (x86/x86_64):
+
+```bash
+# Скачайте установочный скрипт
+wget https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh
+
+# Сделайте скрипт исполняемым
+chmod +x install_debian.sh
+
+# Запустите скрипт от имени суперпользователя
+sudo ./install_debian.sh
+```
+
+После успешной установки скрипт выведет адрес для доступа к веб-интерфейсу и учетные данные по умолчанию. Приложение будет запущено как системный сервис, который запускается автоматически при старте системы.
+
+### Ручная установка (для опытных пользователей)
+
+Если вы предпочитаете устанавливать программу вручную, выполните следующие шаги:
+
+1. Установите необходимые системные зависимости:
+   ```bash
+   sudo apt update
+   sudo apt install git python3 python3-pip python3-venv linux-tools-generic
    ```
 
-2. Установите зависимости:
-
-   ### Метод 1: Быстрая установка с uv (рекомендуется)
-   Для наиболее быстрой и надежной установки мы рекомендуем использовать скрипт с uv:
-   ```
-   # Сделайте скрипт исполняемым
-   chmod +x install_with_uv.sh
+2. Установите и настройте USB/IP:
+   ```bash
+   sudo modprobe usbip-core
+   sudo modprobe usbip-host
+   sudo modprobe vhci-hcd
    
-   # Запустите скрипт
-   sudo ./install_with_uv.sh
-   ```
-   
-   Скрипт автоматически установит все необходимые зависимости, настроит базу данных и подготовит систему к запуску приложения.
-
-   ### Метод 2: Установка через стандартный скрипт
-   Вы можете использовать включенный скрипт, который автоматически создаст виртуальное окружение и установит зависимости:
-   ```
-   # Сделайте скрипт исполняемым
-   chmod +x install_python.sh
-   
-   # Запустите скрипт
-   ./install_python.sh
+   # Добавление модулей в автозагрузку
+   echo "usbip-core" | sudo tee -a /etc/modules
+   echo "usbip-host" | sudo tee -a /etc/modules
+   echo "vhci-hcd" | sudo tee -a /etc/modules
    ```
 
-3. Запуск приложения:
-   
-   Если вы использовали Метод 2, сначала активируйте виртуальное окружение:
+3. Клонируйте репозиторий:
+   ```bash
+   mkdir -p ~/orange-usbip
+   cd ~/orange-usbip
+   git clone https://github.com/maksfaktor/usbip-web.git .
    ```
+
+4. Создайте и активируйте виртуальное окружение:
+   ```bash
+   python3 -m venv venv
    source venv/bin/activate
+   pip install --upgrade pip
+   pip install -r requirements-deploy.txt
    ```
-   
-   Затем запустите сервер:
-   ```
+
+5. Для запуска приложения используйте:
+   ```bash
    gunicorn --bind 0.0.0.0:5000 main:app
    ```
-   
-   По умолчанию будет использоваться SQLite. Если вы хотите использовать PostgreSQL, настройте переменную окружения:
-   ```
-   export DATABASE_URL=postgresql://user:password@localhost/usbip_db
+
+6. Чтобы настроить systemd-сервис, создайте файл `/etc/systemd/system/orange-usbip.service`:
+   ```ini
+   [Unit]
+   Description=Orange USBIP Web Interface
+   After=network.target
+
+   [Service]
+   User=YOUR_USERNAME
+   Group=YOUR_USERNAME
+   WorkingDirectory=/home/YOUR_USERNAME/orange-usbip
+   ExecStart=/home/YOUR_USERNAME/orange-usbip/venv/bin/gunicorn --bind 0.0.0.0:5000 main:app
+   Restart=on-failure
+
+   [Install]
+   WantedBy=multi-user.target
    ```
 
-> **Примечание**: В Ubuntu 24.04 и других современных дистрибутивах рекомендуется использовать виртуальное окружение для установки пакетов Python (согласно PEP 668).
+   Затем включите и запустите сервис:
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable orange-usbip
+   sudo systemctl start orange-usbip
+   ```
+
+> **Примечание по базе данных**: По умолчанию приложение использует SQLite. Для использования PostgreSQL установите переменную окружения в файле сервиса: `Environment="DATABASE_URL=postgresql://user:password@localhost/usbip_db"`
 
 ## Использование
 
@@ -148,35 +204,27 @@ export DATABASE_URL="postgresql://usbip_user:your_password@localhost/usbip_db"
 - x86
 - x86-64
 
-### Настройка на Orange Pi Plus 2E (ARMv7)
+### Настройка на Orange Pi, Raspberry Pi и других ARM-устройствах
 
-Для работы приложения на Orange Pi, выполните следующие шаги:
+Для установки на ARM-устройства рекомендуется использовать специальный автоматический скрипт `install_arm.sh`, как описано в разделе "Автоматическая установка". Скрипт справится со всеми особенностями платформы, включая:
 
-1. Установите Armbian или другой совместимый дистрибутив Linux.
-2. Установите USB/IP:
-   ```
-   sudo apt update
-   sudo apt install linux-tools-generic
-   ```
-3. Убедитесь, что модуль USB/IP загружен:
-   ```
-   sudo modprobe usbip-core
-   sudo modprobe usbip-host
-   sudo modprobe vhci-hcd
-   ```
-4. Добавьте модули в автозагрузку:
-   ```
-   echo "usbip-core" | sudo tee -a /etc/modules
-   echo "usbip-host" | sudo tee -a /etc/modules
-   echo "vhci-hcd" | sudo tee -a /etc/modules
-   ```
-5. Запустите usbip демон:
-   ```
-   sudo systemctl enable usbipd
-   sudo systemctl start usbipd
-   ```
+1. Компиляцию и установку USB/IP из исходников (на некоторых ARM-платформах стандартные пакеты могут не работать)
+2. Настройку и загрузку совместимых модулей ядра
+3. Создание необходимых системных сервисов
+4. Оптимизацию для работы на устройствах с ограниченными ресурсами
 
-После этого выполните обычную процедуру установки приложения, как указано в разделе "Установка".
+```bash
+# Скачайте установочный скрипт
+wget https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh
+
+# Сделайте скрипт исполняемым
+chmod +x install_arm.sh
+
+# Запустите скрипт от имени суперпользователя
+sudo ./install_arm.sh
+```
+
+После установки веб-интерфейс будет доступен на порту 5000, а логи можно просмотреть с помощью `sudo journalctl -u orange-usbip`.
 
 ## Безопасность
 
