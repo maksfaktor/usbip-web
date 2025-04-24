@@ -103,3 +103,10 @@ replit.nix
 .venv/
 venv/
 pyproject.toml
+# Файлы кэша и временные файлы
+__pycache__/
+*.py[cod]
+*.class
+.cache/
+.env
+uv.lock
