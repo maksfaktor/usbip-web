@@ -95,22 +95,11 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Настройка базы данных
 database_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'usbip_web.db')
-database_uri = os.environ.get("DATABASE_URL")
-
-# Проверяем, используется ли SQLite или PostgreSQL
-if database_uri and database_uri.startswith('postgresql'):
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_recycle": 300,
-        "pool_pre_ping": True,
-    }
-else:
-    # Используем SQLite по умолчанию
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{database_path}"
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {}
-    # Для SQLite добавляем специальные настройки
-    if app.config["SQLALCHEMY_DATABASE_URI"].startswith('sqlite'):
-        app.config["SQLALCHEMY_ENGINE_OPTIONS"]["connect_args"] = {"check_same_thread": False}
+# Используем SQLite
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{database_path}"
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "connect_args": {"check_same_thread": False}
+}
 db.init_app(app)
 
 # Настройка Flask-Login
