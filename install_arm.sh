@@ -93,8 +93,12 @@ else
     echo_color "green" "✓ uv успешно установлен."
 fi
 
-# Проверка установки usbip
-echo "Настройка USB/IP..."
+# Шаг 3.1: Проверка установки usbip
+echo_color "blue" "[$CURRENT_STEP/$TOTAL_STEPS] Проверка и настройка USB/IP..."
+
+# Переменная для отслеживания, была ли установка компонентов, требующих перезагрузки
+KERNEL_MODULES_INSTALLED=false
+
 if ! command -v usbip &> /dev/null; then
     echo_color "yellow" "USB/IP не найден. Установка..."
     
@@ -104,37 +108,95 @@ if ! command -v usbip &> /dev/null; then
         rm -rf linux-tools-usbip
     fi
     
-    git clone https://github.com/masahir0y/linux-tools-usbip.git > /dev/null 2>&1
+    echo_color "blue" "    → Загрузка исходного кода USB/IP..."
+    git clone https://github.com/masahir0y/linux-tools-usbip.git > /dev/null 2>&1 || {
+        echo_color "red" "Не удалось загрузить исходный код USB/IP. Проверьте подключение к интернету."
+        exit 1
+    }
+    
+    echo_color "blue" "    → Компиляция USB/IP (это может занять некоторое время)..."
     cd linux-tools-usbip
-    make > /dev/null 2>&1
-    make install > /dev/null 2>&1
+    make > /dev/null 2>&1 || {
+        echo_color "red" "Ошибка при компиляции USB/IP."
+        echo_color "yellow" "Возможно, вам нужно установить дополнительные пакеты: build-essential, libnl-3-dev, libnl-genl-3-dev"
+        exit 1
+    }
+    
+    echo_color "blue" "    → Установка USB/IP..."
+    make install > /dev/null 2>&1 || {
+        echo_color "red" "Ошибка при установке USB/IP."
+        exit 1
+    }
     
     # Проверка повторно
     if ! command -v usbip &> /dev/null; then
         echo_color "red" "Не удалось установить USB/IP. Попробуйте установить вручную."
         exit 1
     fi
+    
+    KERNEL_MODULES_INSTALLED=true
 fi
 
-echo_color "green" "✓ Необходимые пакеты установлены."
+echo_color "green" "✓ USB/IP успешно установлен."
 
 # Шаг 4: Загрузка модулей ядра
 CURRENT_STEP=$((CURRENT_STEP + 1))
 progress_update $CURRENT_STEP $TOTAL_STEPS "Настройка модулей ядра для USB/IP..."
 
-modprobe usbip-core 2>/dev/null || echo_color "yellow" "Модуль usbip-core недоступен, это нормально для некоторых ядер"
-modprobe usbip-host 2>/dev/null || echo_color "yellow" "Модуль usbip-host недоступен, это нормально для некоторых ядер"
-modprobe vhci-hcd 2>/dev/null || echo_color "yellow" "Модуль vhci-hcd недоступен, это нормально для некоторых ядер"
-
 # Добавление модулей в автозагрузку
+MODULES_ADDED=false
 if ! grep -q "usbip-core" /etc/modules; then
     echo "usbip-core" >> /etc/modules
+    MODULES_ADDED=true
 fi
 if ! grep -q "usbip-host" /etc/modules; then
     echo "usbip-host" >> /etc/modules
+    MODULES_ADDED=true
 fi
 if ! grep -q "vhci-hcd" /etc/modules; then
     echo "vhci-hcd" >> /etc/modules
+    MODULES_ADDED=true
+fi
+
+# Пытаемся загрузить модули
+MODULES_LOADED=true
+echo_color "blue" "    → Загрузка модуля usbip-core..."
+modprobe usbip-core 2>/dev/null || {
+    echo_color "yellow" "    ⚠ Не удалось загрузить модуль usbip-core"
+    MODULES_LOADED=false
+}
+
+echo_color "blue" "    → Загрузка модуля usbip-host..."
+modprobe usbip-host 2>/dev/null || {
+    echo_color "yellow" "    ⚠ Не удалось загрузить модуль usbip-host"
+    MODULES_LOADED=false
+}
+
+echo_color "blue" "    → Загрузка модуля vhci-hcd..."
+modprobe vhci-hcd 2>/dev/null || {
+    echo_color "yellow" "    ⚠ Не удалось загрузить модуль vhci-hcd"
+    MODULES_LOADED=false
+}
+
+# Если модули добавлены в автозагрузку или установлены новые компоненты ядра,
+# и не все модули загружены - вероятно нужна перезагрузка
+if ([ "$MODULES_ADDED" = true ] || [ "$KERNEL_MODULES_INSTALLED" = true ]) && [ "$MODULES_LOADED" = false ]; then
+    echo_color "red" ""
+    echo_color "red" "⚠ ВНИМАНИЕ: Возможно потребуется перезагрузка системы"
+    echo_color "red" "для полной активации модулей ядра USB/IP!"
+    echo_color "yellow" ""
+    echo_color "yellow" "После перезагрузки, запустите скрипт еще раз для завершения установки."
+    echo_color "yellow" "Команда для перезагрузки: sudo reboot"
+    echo_color "yellow" ""
+    
+    echo "Продолжить установку без перезагрузки? (y/n)"
+    read -r response
+    if [[ "$response" != "y" ]]; then
+        echo_color "blue" "Установка прервана. Пожалуйста, перезагрузите систему и запустите скрипт снова."
+        exit 0
+    fi
+    
+    echo_color "yellow" "Продолжаем установку. Некоторые функции могут не работать до перезагрузки."
 fi
 
 echo_color "green" "✓ Модули USB/IP настроены."

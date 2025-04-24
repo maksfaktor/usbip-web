@@ -118,33 +118,63 @@ echo_color "green" "✓ Необходимые пакеты установлен
 CURRENT_STEP=$((CURRENT_STEP + 1))
 progress_update $CURRENT_STEP $TOTAL_STEPS "Проверка и настройка USB/IP..."
 
+# Переменная для отслеживания, была ли установка компонентов, требующих перезагрузки
+KERNEL_MODULES_INSTALLED=false
+
 # Определяем версию ядра
+echo_color "blue" "    → Определение версии ядра..."
 KERNEL_VERSION=$(uname -r)
 KERNEL_MAJOR=$(echo $KERNEL_VERSION | cut -d. -f1)
 KERNEL_MINOR=$(echo $KERNEL_VERSION | cut -d. -f2)
+echo_color "blue" "    → Обнаружена версия ядра: $KERNEL_VERSION"
 
 # Устанавливаем соответствующий пакет linux-tools для конкретной версии ядра
+echo_color "blue" "    → Установка Linux Tools для текущего ядра..."
 if apt-cache show linux-tools-$KERNEL_VERSION &> /dev/null; then
+    echo_color "blue" "    → Найден пакет linux-tools-$KERNEL_VERSION"
     apt-get install -y linux-tools-$KERNEL_VERSION > /dev/null 2>&1
+    KERNEL_MODULES_INSTALLED=true
 elif apt-cache show linux-tools-$(uname -r | cut -d- -f1) &> /dev/null; then
-    apt-get install -y linux-tools-$(uname -r | cut -d- -f1) > /dev/null 2>&1
+    KERNEL_BASE_VERSION=$(uname -r | cut -d- -f1)
+    echo_color "blue" "    → Найден пакет linux-tools-$KERNEL_BASE_VERSION"
+    apt-get install -y linux-tools-$KERNEL_BASE_VERSION > /dev/null 2>&1
+    KERNEL_MODULES_INSTALLED=true
+else
+    echo_color "yellow" "    → Не найден специфичный пакет linux-tools для вашего ядра"
+    echo_color "blue" "    → Устанавливаем общий пакет linux-tools-generic..."
+    apt-get install -y linux-tools-generic > /dev/null 2>&1
+    KERNEL_MODULES_INSTALLED=true
 fi
 
 # Создаем ссылку, если необходимо
 if ! command -v usbip &> /dev/null; then
+    echo_color "blue" "    → Поиск утилиты usbip в системе..."
     USBIP_PATH=$(find /usr/lib/linux-tools -name "usbip" | head -n 1)
     if [ -n "$USBIP_PATH" ]; then
+        echo_color "blue" "    → Создание символической ссылки на usbip..."
         ln -sf "$USBIP_PATH" /usr/local/bin/usbip
     else
-        echo_color "red" "Не удалось найти утилиту USB/IP. Это может потребовать ручной установки."
-        echo_color "yellow" "Попытка прямой установки пакета..."
+        echo_color "yellow" "    → Не удалось найти утилиту USB/IP. Пробуем другие методы..."
+        echo_color "blue" "    → Попытка прямой установки пакетов для USB/IP..."
         apt-get install -y linux-tools-generic hwdata usbip > /dev/null 2>&1
     fi
 fi
 
 # Проверяем, успешно ли установлен USB/IP
 if ! command -v usbip &> /dev/null; then
-    echo_color "red" "Не удалось установить USB/IP. Продолжение установки без USB/IP."
+    if [ "$ARCH" == "armv7"* ]; then
+        echo_color "yellow" "⚠ На ARMv7 могут потребоваться дополнительные шаги установки USB/IP."
+        echo_color "yellow" "   Рекомендуется использовать скрипт install_arm.sh для этой архитектуры."
+        
+        echo "Хотите продолжить установку без USB/IP? (y/n)"
+        read -r response
+        if [[ "$response" != "y" ]]; then
+            echo_color "blue" "Установка прервана. Используйте скрипт install_arm.sh"
+            exit 0
+        fi
+    fi
+    
+    echo_color "red" "⚠ Не удалось установить USB/IP. Продолжение установки без USB/IP."
     echo_color "yellow" "Вам потребуется установить USB/IP вручную позже."
 else
     echo_color "green" "✓ USB/IP успешно установлен."
@@ -154,19 +184,60 @@ fi
 CURRENT_STEP=$((CURRENT_STEP + 1))
 progress_update $CURRENT_STEP $TOTAL_STEPS "Настройка модулей ядра для USB/IP..."
 
-modprobe usbip-core 2>/dev/null || echo_color "yellow" "Модуль usbip-core недоступен, это нормально для некоторых ядер"
-modprobe usbip-host 2>/dev/null || echo_color "yellow" "Модуль usbip-host недоступен, это нормально для некоторых ядер"
-modprobe vhci-hcd 2>/dev/null || echo_color "yellow" "Модуль vhci-hcd недоступен, это нормально для некоторых ядер"
-
 # Добавление модулей в автозагрузку
+MODULES_ADDED=false
 if ! grep -q "usbip-core" /etc/modules; then
     echo "usbip-core" >> /etc/modules
+    MODULES_ADDED=true
 fi
 if ! grep -q "usbip-host" /etc/modules; then
     echo "usbip-host" >> /etc/modules
+    MODULES_ADDED=true
 fi
 if ! grep -q "vhci-hcd" /etc/modules; then
     echo "vhci-hcd" >> /etc/modules
+    MODULES_ADDED=true
+fi
+
+# Пытаемся загрузить модули
+MODULES_LOADED=true
+echo_color "blue" "    → Загрузка модуля usbip-core..."
+modprobe usbip-core 2>/dev/null || {
+    echo_color "yellow" "    ⚠ Не удалось загрузить модуль usbip-core"
+    MODULES_LOADED=false
+}
+
+echo_color "blue" "    → Загрузка модуля usbip-host..."
+modprobe usbip-host 2>/dev/null || {
+    echo_color "yellow" "    ⚠ Не удалось загрузить модуль usbip-host"
+    MODULES_LOADED=false
+}
+
+echo_color "blue" "    → Загрузка модуля vhci-hcd..."
+modprobe vhci-hcd 2>/dev/null || {
+    echo_color "yellow" "    ⚠ Не удалось загрузить модуль vhci-hcd"
+    MODULES_LOADED=false
+}
+
+# Если модули добавлены в автозагрузку или установлены новые компоненты ядра,
+# и не все модули загружены - вероятно нужна перезагрузка
+if ([ "$MODULES_ADDED" = true ] || [ "$KERNEL_MODULES_INSTALLED" = true ]) && [ "$MODULES_LOADED" = false ]; then
+    echo_color "red" ""
+    echo_color "red" "⚠ ВНИМАНИЕ: Возможно потребуется перезагрузка системы"
+    echo_color "red" "для полной активации модулей ядра USB/IP!"
+    echo_color "yellow" ""
+    echo_color "yellow" "После перезагрузки, запустите скрипт еще раз для завершения установки."
+    echo_color "yellow" "Команда для перезагрузки: sudo reboot"
+    echo_color "yellow" ""
+    
+    echo "Продолжить установку без перезагрузки? (y/n)"
+    read -r response
+    if [[ "$response" != "y" ]]; then
+        echo_color "blue" "Установка прервана. Пожалуйста, перезагрузите систему и запустите скрипт снова."
+        exit 0
+    fi
+    
+    echo_color "yellow" "Продолжаем установку. Некоторые функции могут не работать до перезагрузки."
 fi
 
 echo_color "green" "✓ Модули USB/IP настроены."
