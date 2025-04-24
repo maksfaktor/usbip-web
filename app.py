@@ -14,6 +14,23 @@ from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
 from translations import get_translation
 
+# Функция для добавления записей в журнал
+def add_log_entry(level, message, source):
+    """
+    Добавляет запись в журнал логов.
+    Все сообщения записываются на английском языке для обеспечения 
+    единообразия при смене языка интерфейса.
+    
+    Args:
+        level (str): Уровень логирования (INFO, WARNING, ERROR, DEBUG)
+        message (str): Сообщение для записи (на английском)
+        source (str): Источник сообщения (auth, system, usbip, etc.)
+    """
+    log_entry = LogEntry(level=level, message=message, source=source)
+    db.session.add(log_entry)
+    db.session.commit()
+    logger.debug(f"Log added: [{level}] {message} (Source: {source})")
+
 
 # Настройка логгирования
 logging.basicConfig(level=logging.DEBUG)
@@ -162,9 +179,7 @@ def login():
         if user and user.check_password(password):
             login_user(user)
             # Запись в лог
-            log_entry = LogEntry(level='INFO', message=f'Пользователь {username} вошел в систему', source='auth')
-            db.session.add(log_entry)
-            db.session.commit()
+            add_log_entry('INFO', f'User {username} logged in successfully', 'auth')
             
             # Добавляем текущее время к сообщению об успешном входе
             current_time = datetime.now().strftime('%H:%M:%S')
@@ -173,9 +188,7 @@ def login():
         else:
             # Запись в лог о неудачной попытке
             if username:
-                log_entry = LogEntry(level='WARNING', message=f'Неудачная попытка входа для пользователя {username}', source='auth')
-                db.session.add(log_entry)
-                db.session.commit()
+                add_log_entry('WARNING', f'Failed login attempt for user {username}', 'auth')
             
             # Добавляем время и подсказку о проверке раскладки/Caps Lock
             current_time = datetime.now().strftime('%H:%M:%S')
@@ -207,9 +220,7 @@ def logout():
     logout_user()
     
     # Запись в лог
-    log_entry = LogEntry(level='INFO', message=f'Пользователь {username} вышел из системы', source='auth')
-    db.session.add(log_entry)
-    db.session.commit()
+    add_log_entry('INFO', f'User {username} logged out', 'auth')
     
     # Используем функцию перевода
     lang = get_current_language()
@@ -288,9 +299,7 @@ def admin():
                 db.session.commit()
                 
                 # Запись в лог
-                log_entry = LogEntry(level='INFO', message=f'Пользователь {current_user.username} сменил пароль', source='auth')
-                db.session.add(log_entry)
-                db.session.commit()
+                add_log_entry('INFO', f'User {current_user.username} changed password', 'auth')
                 
                 flash('Пароль успешно изменен', 'success')
                 return redirect(url_for('admin'))
@@ -398,13 +407,7 @@ def bind_device_route():
     
     # Запись в лог
     level = 'INFO' if success else 'ERROR'
-    log_entry = LogEntry(
-        level=level, 
-        message=f'Публикация устройства {busid}: {message}', 
-        source='usbip'
-    )
-    db.session.add(log_entry)
-    db.session.commit()
+    add_log_entry(level, f'Published device {busid}: {message}', 'usbip')
     
     return jsonify({'success': success, 'message': message})
 
@@ -427,22 +430,18 @@ def get_remote_devices_route():
     
     # Запись в лог
     if error:
-        log_entry = LogEntry(
-            level='ERROR', 
-            message=f'Ошибка при получении списка устройств с {ip}: {error}', 
-            source='usbip'
+        add_log_entry(
+            'ERROR', 
+            f'Error getting device list from {ip}: {error}', 
+            'usbip'
         )
-        db.session.add(log_entry)
-        db.session.commit()
         return jsonify({'success': False, 'message': error})
     else:
-        log_entry = LogEntry(
-            level='INFO', 
-            message=f'Получен список устройств с сервера {ip} ({len(devices)} устройств)', 
-            source='usbip'
+        add_log_entry(
+            'INFO', 
+            f'Got device list from server {ip} ({len(devices)} devices)', 
+            'usbip'
         )
-        db.session.add(log_entry)
-        db.session.commit()
     
     # Добавляем алиасы к устройствам, если они есть
     for device in devices:
