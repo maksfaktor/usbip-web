@@ -579,9 +579,9 @@ document.addEventListener('DOMContentLoaded', function() {
             directoryList.innerHTML = `
                 <div class="text-center p-5">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Загрузка...</span>
+                        <span class="visually-hidden">{{ t('loading') }}...</span>
                     </div>
-                    <p class="mt-2">Загрузка списка папок...</p>
+                    <p class="mt-2">{{ t('loading_folders') }}...</p>
                 </div>
             `;
             
@@ -636,8 +636,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     data.directories.forEach(dir => {
                         const rowClass = dir.writable ? 'list-group-item-action' : 'text-muted';
                         const writableIcon = dir.writable 
-                            ? '<i class="fas fa-pencil-alt text-success ms-2" title="Доступно для записи"></i>' 
-                            : '<i class="fas fa-lock text-danger ms-2" title="Только чтение"></i>';
+                            ? '<i class="fas fa-pencil-alt text-success ms-2" title="{{ t('writable') }}"></i>' 
+                            : '<i class="fas fa-lock text-danger ms-2" title="{{ t('readonly') }}"></i>';
                             
                         html += `
                             <a href="#" class="list-group-item ${rowClass} d-flex align-items-center folder-item"
@@ -676,9 +676,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 })
                 .catch(error => {
-                    console.error('Ошибка загрузки директорий:', error);
+                    console.error('{{ t('error_loading_directories') }}:', error);
                     errorBlock.style.display = 'block';
-                    document.getElementById('error_message').textContent = 'Ошибка при загрузке списка директорий';
+                    document.getElementById('error_message').textContent = '{{ t('error_loading_directories_list') }}';
                 });
         }
         
