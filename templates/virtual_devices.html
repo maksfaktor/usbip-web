@@ -59,10 +59,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="row g-0 virtual-devices-container" style="width: 100vw; max-width: 100vw; padding: 0; margin: 0;">
+<div class="row g-0 virtual-devices-container">
     <!-- Колонка виртуальных устройств -->
-    <div class="col-lg-8 mb-lg-0 device-col" style="width: 60%; flex: 0 0 60%; max-width: 60%; padding: 0 !important;">
-        <div class="card h-100" style="margin: 0; border-radius: 0;">
+    <div class="col-lg-8 mb-lg-0 device-col">
+        <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="fas fa-microchip me-2"></i>{{ t('virtual_devices') }}</h4>
                 <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createDeviceModal">
@@ -168,8 +168,8 @@
     </div>
     
     <!-- Колонка виртуальных портов -->
-    <div class="col-lg-4 port-col" style="width: 40%; flex: 0 0 40%; max-width: 40%; padding: 0 !important;">
-        <div class="card h-100" style="margin: 0; border-radius: 0;">
+    <div class="col-lg-4 port-col">
+        <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="fas fa-plug me-2"></i>{{ t('virtual_ports') }}</h4>
                 <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createPortModal">
