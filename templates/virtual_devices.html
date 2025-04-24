@@ -35,7 +35,7 @@
 {% block content %}
 <div class="row">
     <!-- Колонка виртуальных устройств -->
-    <div class="col-lg-6 mb-4">
+    <div class="col-lg-7 mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="fas fa-microchip me-2"></i>{{ t('virtual_devices') }}</h4>
@@ -107,20 +107,20 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div class="btn-group btn-group-sm">
+                                    <div class="d-flex flex-wrap gap-1">
                                         {% if device.device_type == 'storage' %}
-                                            <a href="{{ url_for('storage.manage_storage', device_id=device.id) }}" class="btn btn-outline-info">
+                                            <a href="{{ url_for('storage.manage_storage', device_id=device.id) }}" class="btn btn-sm btn-outline-info">
                                                 <i class="fas fa-hdd me-1"></i>{{ t('files') }}
                                             </a>
                                         {% endif %}
-                                        <button class="btn btn-outline-primary" 
+                                        <button class="btn btn-sm btn-outline-primary" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#connectDeviceModal"
                                                 data-device-id="{{ device.id }}"
                                                 data-device-name="{{ device.name }}">
                                             <i class="fas fa-plug me-1"></i>{{ t('connect') }}
                                         </button>
-                                        <button class="btn btn-outline-danger delete-device-btn"
+                                        <button class="btn btn-sm btn-outline-danger delete-device-btn"
                                                 data-device-id="{{ device.id }}"
                                                 data-device-name="{{ device.name }}">
                                             <i class="fas fa-trash me-1"></i>{{ t('delete') }}
@@ -142,7 +142,7 @@
     </div>
     
     <!-- Колонка виртуальных портов -->
-    <div class="col-lg-6">
+    <div class="col-lg-5">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="fas fa-plug me-2"></i>{{ t('virtual_ports') }}</h4>
@@ -183,16 +183,16 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div class="btn-group btn-group-sm">
+                                    <div class="d-flex flex-wrap gap-1">
                                         {% if port.is_connected %}
                                             <form method="POST" action="{{ url_for('disconnect_virtual_device') }}" class="d-inline">
                                                 <input type="hidden" name="port_id" value="{{ port.id }}">
-                                                <button type="submit" class="btn btn-outline-warning">
+                                                <button type="submit" class="btn btn-sm btn-outline-warning">
                                                     <i class="fas fa-unlink me-1"></i>{{ t('disconnect') }}
                                                 </button>
                                             </form>
                                         {% else %}
-                                            <button class="btn btn-outline-primary"
+                                            <button class="btn btn-sm btn-outline-primary"
                                                     data-bs-toggle="modal" 
                                                     data-bs-target="#connectDeviceModal"
                                                     data-port-id="{{ port.id }}"
@@ -200,7 +200,7 @@
                                                 <i class="fas fa-link me-1"></i>{{ t('connect') }}
                                             </button>
                                         {% endif %}
-                                        <button class="btn btn-outline-danger delete-port-btn"
+                                        <button class="btn btn-sm btn-outline-danger delete-port-btn"
                                                 data-port-id="{{ port.id }}"
                                                 data-port-name="{{ port.name }}">
                                             <i class="fas fa-trash me-1"></i>{{ t('delete') }}
