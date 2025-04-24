@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}OrangeUSB - Локальные устройства{% endblock %}
+{% block title %}OrangeUSB - {{ t('local_devices') }}{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -8,9 +8,9 @@
     <div class="col-lg-7 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><i class="fas fa-hdd me-2"></i>Локальные USB устройства</h4>
+                <h4 class="mb-0"><i class="fas fa-hdd me-2"></i>{{ t('local_usb_devices') }}</h4>
                 <button class="btn btn-sm btn-outline-primary refresh-devices-btn">
-                    <i class="fas fa-sync-alt me-1"></i>Обновить
+                    <i class="fas fa-sync-alt me-1"></i>{{ t('refresh') }}
                 </button>
             </div>
             <div class="card-body p-0">
@@ -20,9 +20,9 @@
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>BUSID</th>
-                                        <th>Устройство</th>
-                                        <th>Действия</th>
+                                        <th>{{ t('busid') }}</th>
+                                        <th>{{ t('device') }}</th>
+                                        <th>{{ t('actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -31,7 +31,7 @@
                                         <td>
                                             {{ device.busid }}
                                             {% if device.is_virtual %}
-                                            <span class="badge bg-primary">Виртуальное</span>
+                                            <span class="badge bg-primary">{{ t('virtual') }}</span>
                                             {% endif %}
                                         </td>
                                         <td>
@@ -46,13 +46,13 @@
                                                         data-is-virtual="true" 
                                                         data-virtual-id="{{ device.virtual_id }}"
                                                         {% endif %}>
-                                                    <i class="fas fa-share me-1"></i>Опубликовать
+                                                    <i class="fas fa-share me-1"></i>{{ t('publish') }}
                                                 </button>
                                                 {% if not device.is_virtual %}
                                                 <button class="btn btn-outline-info set-alias-btn" 
                                                         data-busid="{{ device.busid }}" 
                                                         data-device="{{ device.device_name }}">
-                                                    <i class="fas fa-tag me-1"></i>Задать имя
+                                                    <i class="fas fa-tag me-1"></i>{{ t('set_name') }}
                                                 </button>
                                                 {% endif %}
 
@@ -65,7 +65,7 @@
                         </div>
                     {% else %}
                         <div class="alert alert-info m-3">
-                            <i class="fas fa-info-circle me-2"></i>Локальные устройства не найдены или usbip не установлен
+                            <i class="fas fa-info-circle me-2"></i>{{ t('no_local_devices') }}
                         </div>
                     {% endif %}
                 </div>
@@ -77,7 +77,7 @@
     <div class="col-lg-5">
         <div class="card mb-4">
             <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>Подключенные устройства</h4>
+                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>{{ t('attached_devices') }}</h4>
             </div>
             <div class="card-body p-0">
                 <div class="attached-devices-container">
@@ -86,9 +86,9 @@
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Порт</th>
-                                        <th>Устройство</th>
-                                        <th>Действия</th>
+                                        <th>{{ t('port') }}</th>
+                                        <th>{{ t('device') }}</th>
+                                        <th>{{ t('actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -99,7 +99,7 @@
                                             <div>{{ device.device_name }}</div>
                                             <small class="text-muted">{{ device.remote_busid }} 
                                                 {% if device.is_virtual %}
-                                                    (виртуальное)
+                                                    ({{ t('virtual') }})
                                                 {% else %}
                                                     ({{ device.remote_host }})
                                                 {% endif %}
@@ -113,12 +113,12 @@
                                                         data-is-virtual="true" 
                                                         data-virtual-port-id="{{ device.virtual_port_id }}"
                                                         {% endif %}>
-                                                    <i class="fas fa-unlink me-1"></i>Отключить
+                                                    <i class="fas fa-unlink me-1"></i>{{ t('disconnect') }}
                                                 </button>
                                                 {% if not device.is_virtual %}
                                                 <button class="btn btn-outline-info set-port-name-btn" 
                                                         data-port="{{ device.port }}">
-                                                    <i class="fas fa-tag me-1"></i>Имя порта
+                                                    <i class="fas fa-tag me-1"></i>{{ t('port_name') }}
                                                 </button>
                                                 {% endif %}
                                             </div>
@@ -130,7 +130,7 @@
                         </div>
                     {% else %}
                         <div class="alert alert-info m-3">
-                            <i class="fas fa-info-circle me-2"></i>Нет подключенных удаленных устройств
+                            <i class="fas fa-info-circle me-2"></i>{{ t('no_attached_devices') }}
                         </div>
                     {% endif %}
                 </div>
@@ -146,27 +146,27 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="setAliasModalLabel">Задать имя устройству</h5>
+                <h5 class="modal-title" id="setAliasModalLabel">{{ t('set_device_name') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('device_alias') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="busid" class="form-label">BUSID устройства</label>
+                        <label for="busid" class="form-label">{{ t('busid') }}</label>
                         <input type="text" class="form-control" id="alias_busid" name="busid" readonly>
                     </div>
                     <div class="mb-3">
-                        <label for="alias" class="form-label">Название устройства</label>
+                        <label for="alias" class="form-label">{{ t('device_name') }}</label>
                         <input type="text" class="form-control" id="alias_name" name="alias" required>
                     </div>
                     <div class="mb-3">
-                        <label for="device_info" class="form-label">Дополнительная информация (необязательно)</label>
+                        <label for="device_info" class="form-label">{{ t('additional_info') }}</label>
                         <textarea class="form-control" id="device_info" name="device_info" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ t('save') }}</button>
                 </div>
             </form>
         </div>
@@ -180,24 +180,24 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="setPortNameModalLabel">Задать имя порту</h5>
+                <h5 class="modal-title" id="setPortNameModalLabel">{{ t('set_port_name') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('port_name') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="port_number" class="form-label">Номер порта</label>
+                        <label for="port_number" class="form-label">{{ t('port_number') }}</label>
                         <input type="text" class="form-control" id="port_number_field" name="port_number" readonly>
                     </div>
                     <div class="mb-3">
-                        <label for="custom_name" class="form-label">Название порта</label>
+                        <label for="custom_name" class="form-label">{{ t('port_name') }}</label>
                         <input type="text" class="form-control" id="port_custom_name" name="custom_name" required>
-                        <div class="form-text">Например: Принтер, Сканер, Веб-камера и т.д.</div>
+                        <div class="form-text">{{ t('port_example') }}</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ t('save') }}</button>
                 </div>
             </form>
         </div>
@@ -209,7 +209,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="connectVirtualDeviceModalLabel">Подключить виртуальное устройство</h5>
+                <h5 class="modal-title" id="connectVirtualDeviceModalLabel">{{ t('connect_virtual_device') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('connect_virtual_device') }}">
@@ -217,21 +217,21 @@
                     <input type="hidden" id="virtual_device_id" name="device_id">
                     
                     <div class="mb-3">
-                        <label for="connect_virtual_port_id" class="form-label">Выберите виртуальный порт</label>
+                        <label for="connect_virtual_port_id" class="form-label">{{ t('select_virtual_port') }}</label>
                         <select class="form-select" id="connect_virtual_port_id" name="port_id" required>
-                            <option value="" selected disabled>Выберите порт...</option>
+                            <option value="" selected disabled>{{ t('select_port') }}</option>
                             {% for port in available_virtual_ports %}
-                                <option value="{{ port.id }}">{{ port.name }} ({{ port.port_number or 'Без номера' }})</option>
+                                <option value="{{ port.id }}">{{ port.name }} ({{ port.port_number or t('no_number') }})</option>
                             {% endfor %}
                         </select>
                         <div class="form-text">
-                            Если нет доступных портов, вам нужно сначала создать виртуальный порт на странице "Виртуальные устройства"
+                            {{ t('no_available_ports') }}
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Подключить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ t('connect') }}</button>
                 </div>
             </form>
         </div>
@@ -242,11 +242,20 @@
 {% block extra_js %}
 <script>
 // Обработчик для кнопки публикации устройства
+// Тексты сообщений для использования в JS
+const messages = {
+    busid_not_specified: "{{ t('busid_not_specified') }}",
+    publishing: "{{ t('publishing') }}",
+    publish_success: "{{ t('publish_success') }}",
+    error: "{{ t('error') }}",
+    port_not_specified: "{{ t('port_not_specified') }}"
+};
+
 document.querySelectorAll('.bind-device-btn').forEach(button => {
     button.addEventListener('click', function() {
         const busid = this.getAttribute('data-busid');
         if (!busid) {
-            showNotification('BUSID устройства не указан', 'danger');
+            showNotification(messages.busid_not_specified, 'danger');
             return;
         }
         
@@ -266,7 +275,7 @@ document.querySelectorAll('.bind-device-btn').forEach(button => {
         
         // Меняем состояние кнопки
         const originalText = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Публикация...';
+        this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>${messages.publishing}`;
         this.disabled = true;
         
         // Отправляем запрос на публикацию
@@ -282,13 +291,13 @@ document.querySelectorAll('.bind-device-btn').forEach(button => {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showNotification(`Устройство ${busid} успешно опубликовано`, 'success');
+                showNotification(`${messages.publish_success} ${busid}`, 'success');
             } else {
-                showNotification(`Ошибка: ${data.message}`, 'danger');
+                showNotification(`${messages.error}: ${data.message}`, 'danger');
             }
         })
         .catch(error => {
-            showNotification(`Ошибка: ${error}`, 'danger');
+            showNotification(`${messages.error}: ${error}`, 'danger');
         })
         .finally(() => {
             // Восстанавливаем состояние кнопки
@@ -303,7 +312,7 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
     button.addEventListener('click', function() {
         const port = this.getAttribute('data-port');
         if (!port) {
-            showNotification('Порт устройства не указан', 'danger');
+            showNotification(messages.port_not_specified, 'danger');
             return;
         }
         
@@ -313,13 +322,13 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
         
         if (isVirtual && virtualPortId) {
             // Для виртуальных портов отправляем запрос на отключение виртуального устройства
-            if (!confirm(`Вы уверены, что хотите отключить виртуальное устройство от порта?`)) {
+            if (!confirm(`{{ t('confirm_disconnect_virtual') }}`)) {
                 return;
             }
             
             // Меняем состояние кнопки
             const originalText = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Отключение...';
+            this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>{{ t('disconnecting') }}`;
             this.disabled = true;
             
             // Отправляем форму на отключение виртуального устройства
@@ -334,18 +343,18 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
             })
             .then(response => {
                 if (response.ok) {
-                    showNotification('Виртуальное устройство успешно отключено', 'success');
+                    showNotification('{{ t('virtual_device_disconnected') }}', 'success');
                     // Перезагружаем страницу для обновления списка
                     window.location.reload();
                 } else {
-                    showNotification('Ошибка при отключении виртуального устройства', 'danger');
+                    showNotification('{{ t('virtual_device_disconnect_error') }}', 'danger');
                     // Восстанавливаем состояние кнопки
                     this.innerHTML = originalText;
                     this.disabled = false;
                 }
             })
             .catch(error => {
-                showNotification(`Ошибка: ${error}`, 'danger');
+                showNotification(`${messages.error}: ${error}`, 'danger');
                 // Восстанавливаем состояние кнопки
                 this.innerHTML = originalText;
                 this.disabled = false;
@@ -355,13 +364,13 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
         }
         
         // Для реальных устройств выполняем обычное отключение через USBIP
-        if (!confirm(`Вы уверены, что хотите отключить устройство на порту ${port}?`)) {
+        if (!confirm(`{{ t('confirm_disconnect') }} ${port}?`)) {
             return;
         }
         
         // Меняем состояние кнопки
         const originalText = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Отключение...';
+        this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>{{ t('disconnecting') }}`;
         this.disabled = true;
         
         // Отправляем запрос на отключение
@@ -377,23 +386,23 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showNotification(`Устройство на порту ${port} успешно отключено`, 'success');
+                showNotification(`{{ t('device_disconnected') }} ${port}`, 'success');
                 // Удаляем строку из таблицы
                 this.closest('tr').remove();
                 // Если таблица пуста, показываем сообщение
                 if (document.querySelectorAll('.attached-devices-container tbody tr').length === 0) {
                     document.querySelector('.attached-devices-container').innerHTML = `
                         <div class="alert alert-info m-3">
-                            <i class="fas fa-info-circle me-2"></i>Нет подключенных удаленных устройств
+                            <i class="fas fa-info-circle me-2"></i>{{ t('no_attached_devices') }}
                         </div>
                     `;
                 }
             } else {
-                showNotification(`Ошибка: ${data.message}`, 'danger');
+                showNotification(`${messages.error}: ${data.message}`, 'danger');
             }
         })
         .catch(error => {
-            showNotification(`Ошибка: ${error}`, 'danger');
+            showNotification(`${messages.error}: ${error}`, 'danger');
         })
         .finally(() => {
             // Восстанавливаем состояние кнопки
