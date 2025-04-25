@@ -221,6 +221,12 @@ translations = {
         'folder_name': 'Folder Name',
         'folder_name_constraints': 'Specify name for the new folder (without characters /, \\, :, *, ?, ", <, >, |)',
         'folder_name_error': 'Folder name contains invalid characters',
+        'folder': 'folder',
+        'file': 'file',
+        'confirm_delete_item': 'Are you sure you want to delete',
+        'folder_name_empty': 'Folder name cannot be empty',
+        'folder_name_invalid_chars': 'Folder name contains invalid characters: \\ / : * ? " < > |',
+        'folder_name_starts_with_dot': 'Folder name should not start with a dot',
         
         # Выбор языка
         'language': 'Language',

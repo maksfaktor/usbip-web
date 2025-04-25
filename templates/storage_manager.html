@@ -165,7 +165,7 @@
                     <a href="{{ url_for('storage.manage_storage', device_id=device.id, path=parent_path) }}" class="text-decoration-none d-flex align-items-center w-100">
                     {% endif %}
                         <i class="bi bi-arrow-up-circle me-3 fs-5"></i>
-                        <span>Вверх</span>
+                        <span>{{ t('up') }}</span>
                     </a>
                 </div>
                 {% endif %}
@@ -196,7 +196,7 @@
                                     <div>
                                         {{ item.name }}
                                         {% if not stats.storage_available or not item.available %}
-                                            <span class="badge bg-secondary ms-1">Недоступен</span>
+                                            <span class="badge bg-secondary ms-1">{{ t('unavailable_file') }}</span>
                                         {% endif %}
                                     </div>
                                     <small class="text-muted">{{ (item.size / 1024)|round(1) }} КБ</small>
@@ -209,7 +209,7 @@
                                     <i class="bi bi-download"></i>
                                 </a>
                                 {% else %}
-                                <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Файл недоступен для скачивания">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="{{ t('file_unavailable_download') }}">
                                     <i class="bi bi-download"></i>
                                 </button>
                                 {% endif %}
@@ -227,8 +227,8 @@
                 {% else %}
                 <div class="text-center p-5">
                     <i class="bi bi-folder2-open display-4 text-muted"></i>
-                    <p class="mt-3">Эта папка пуста.</p>
-                    <p class="text-muted">Загрузите файлы или создайте папки с помощью кнопок выше.</p>
+                    <p class="mt-3">{{ t('folder_empty') }}</p>
+                    <p class="text-muted">{{ t('upload_files_create_folders') }}</p>
                 </div>
                 {% endif %}
             </div>
@@ -241,28 +241,28 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createDirModalLabel">Создать новую папку</h5>
+                <h5 class="modal-title" id="createDirModalLabel">{{ t('create_new_folder') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('storage.create_storage_directory', device_id=device.id) }}" id="createDirForm" onsubmit="return validateDirName();">
                 <div class="modal-body">
                     <input type="hidden" name="current_path" value="{{ current_path }}">
                     <div class="mb-3">
-                        <label for="directory_name" class="form-label">Название папки</label>
+                        <label for="directory_name" class="form-label">{{ t('folder_name') }}</label>
                         <input type="text" class="form-control" id="directory_name" name="directory_name" required
                                oninput="validateInputRealtime(this)" maxlength="255">
                         <div id="dirNameFeedback" class="form-text text-muted">
-                            Укажите имя для новой папки (без символов /, \, :, *, ?, ", <, >, |)
+                            {{ t('folder_name_constraints') }}
                         </div>
                     </div>
                     <div class="alert alert-danger" id="dirNameError" style="display: none;">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i> 
-                        <span id="dirNameErrorText">Имя папки содержит недопустимые символы</span>
+                        <span id="dirNameErrorText">{{ t('folder_name_error') }}</span>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary" id="createDirBtn">Создать</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                    <button type="submit" class="btn btn-primary" id="createDirBtn">{{ t('create') }}</button>
                 </div>
             </form>
         </div>
@@ -274,14 +274,14 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="uploadFileModalLabel">Загрузить файл</h5>
+                <h5 class="modal-title" id="uploadFileModalLabel">{{ t('upload_file') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('storage.upload_storage_file', device_id=device.id) }}" enctype="multipart/form-data">
                 <div class="modal-body">
                     <input type="hidden" name="current_path" value="{{ current_path }}">
                     <div class="mb-3">
-                        <label for="file" class="form-label">Выберите файл</label>
+                        <label for="file" class="form-label">{{ t('select_files') }}</label>
                         <input type="file" class="form-control" id="file" name="file" required>
                     </div>
                     
@@ -291,12 +291,12 @@
                     
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle-fill me-2"></i>
-                        <small>Максимальный размер файла: {{ (stats.free_space_mb)|int }} МБ</small>
+                        <small>{{ t('file_size') }}: {{ (stats.free_space_mb)|int }} {{ t('mb_unit') }}</small>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Загрузить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ t('upload_file') }}</button>
                 </div>
             </form>
         </div>
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemName = this.getAttribute('data-item-name');
             const itemType = this.getAttribute('data-item-type');
             
-            if (confirm(`Вы уверены, что хотите удалить ${itemType === 'directory' ? 'папку' : 'файл'} "${itemName}"?`)) {
+            if (confirm(`{{ t('confirm_delete_item') }} ${itemType === 'directory' ? '{{ t("folder") }}' : '{{ t("file") }}'} "${itemName}"?`)) {
                 document.getElementById('delete_item_path').value = itemPath;
                 document.getElementById('deleteItemForm').submit();
             }
@@ -380,17 +380,17 @@ function validateInputRealtime(input) {
     // Проверяем разные условия
     if (isEmpty) {
         errorElement.style.display = 'block';
-        errorTextElement.innerText = 'Имя папки не может быть пустым';
+        errorTextElement.innerText = '{{ t("folder_name_empty") }}';
         input.classList.add('is-invalid');
         submitButton.disabled = true;
     } else if (hasInvalidChars) {
         errorElement.style.display = 'block';
-        errorTextElement.innerText = 'Имя папки содержит недопустимые символы: \\ / : * ? " < > |';
+        errorTextElement.innerText = '{{ t("folder_name_invalid_chars") }}';
         input.classList.add('is-invalid');
         submitButton.disabled = true;
     } else if (startsWithDot) {
         errorElement.style.display = 'block';
-        errorTextElement.innerText = 'Имя папки не должно начинаться с точки';
+        errorTextElement.innerText = '{{ t("folder_name_starts_with_dot") }}';
         input.classList.add('is-invalid');
         submitButton.disabled = true;
     } else {
