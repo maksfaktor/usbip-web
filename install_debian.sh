@@ -363,14 +363,26 @@ if [ ! -d "venv" ]; then
 fi
 
 # Install dependencies using uv or pip
-if command -v uv &> /dev/null; then
+if command -v uv &> /dev/null || [ -f "$HOME/.cargo/bin/uv" ]; then
+    # Make sure uv is in PATH for the installation process
+    export PATH="$HOME/.cargo/bin:$PATH"
     echo_color "blue" "Using uv for fast dependency installation..."
     sudo -u $REAL_USER bash -c "
     source venv/bin/activate
+    # Ensure uv is in PATH for the user as well
+    export PATH=\"$HOME/.cargo/bin:\$PATH\"
     uv pip install --upgrade pip
     uv pip install -r requirements-deploy.txt
     deactivate
-    "
+    " || {
+        echo_color "yellow" "  ⚠ uv installation failed, falling back to standard pip..."
+        sudo -u $REAL_USER bash -c "
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements-deploy.txt
+        deactivate
+        "
+    }
 else
     echo_color "yellow" "Using standard pip for dependency installation..."
     sudo -u $REAL_USER bash -c "
