@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Orange USBIP - Скрипт автоматической установки для ARM-устройств (Raspberry Pi, Orange Pi)
-# Создан: $(date +%Y-%m-%d)
+# Orange USBIP - Automatic installation script for ARM devices (Raspberry Pi, Orange Pi)
+# Created: $(date +%Y-%m-%d)
 
-set -e  # Прерывать выполнение при ошибках
+set -e  # Stop execution on errors
 
-# Функция для отображения цветного текста
+# Function for displaying colored text
 echo_color() {
     local color=$1
     local message=$2
@@ -18,7 +18,7 @@ echo_color() {
     esac
 }
 
-# Функция для отображения прогресса
+# Function for displaying progress
 progress_update() {
     local step=$1
     local total=$2
@@ -26,14 +26,14 @@ progress_update() {
     echo_color "blue" "[$step/$total] $message"
 }
 
-# Проверка запуска от имени root
+# Check if script is run with root privileges
 if [ "$EUID" -ne 0 ]; then
-    echo_color "red" "Ошибка: скрипт должен быть запущен с правами суперпользователя (sudo)."
-    echo "Запустите: sudo $0"
+    echo_color "red" "Error: this script must be run with superuser privileges (sudo)."
+    echo "Run: sudo $0"
     exit 1
 fi
 
-# Определяем реального пользователя (не sudo)
+# Determine the real user (not sudo)
 if [ -n "$SUDO_USER" ]; then
     REAL_USER=$SUDO_USER
 else
@@ -42,108 +42,108 @@ fi
 USER_HOME=$(eval echo ~$REAL_USER)
 
 echo_color "green" "===================================================="
-echo_color "green" "  Автоматическая установка Orange USBIP для ARM     "
+echo_color "green" "  Orange USBIP Automatic Installation for ARM       "
 echo_color "green" "===================================================="
 echo ""
-echo_color "yellow" "Этот скрипт настроит USB/IP сервер и клиент на вашем устройстве."
+echo_color "yellow" "This script will set up the USB/IP server and client on your device."
 echo ""
 
 TOTAL_STEPS=10
 CURRENT_STEP=0
 
-# Шаг 1: Проверка архитектуры
+# Step 1: Check architecture
 CURRENT_STEP=$((CURRENT_STEP + 1))
-progress_update $CURRENT_STEP $TOTAL_STEPS "Проверка архитектуры системы..."
+progress_update $CURRENT_STEP $TOTAL_STEPS "Checking system architecture..."
 
 ARCH=$(uname -m)
 if [[ "$ARCH" != arm* ]] && [[ "$ARCH" != "aarch"* ]]; then
-    echo_color "red" "Архитектура $ARCH не является ARM. Используйте скрипт install_debian.sh для других архитектур."
+    echo_color "red" "Architecture $ARCH is not ARM. Use the install_debian.sh script for other architectures."
     exit 1
 fi
 
-echo_color "green" "✓ Архитектура $ARCH совместима."
+echo_color "green" "✓ Architecture $ARCH is compatible."
 
-# Шаг 2: Обновление системы
+# Step 2: Update system
 CURRENT_STEP=$((CURRENT_STEP + 1))
-progress_update $CURRENT_STEP $TOTAL_STEPS "Обновление списка пакетов..."
+progress_update $CURRENT_STEP $TOTAL_STEPS "Updating package list..."
 
 apt-get update -qq
-echo_color "green" "✓ Репозитории обновлены."
+echo_color "green" "✓ Repositories updated."
 
-# Шаг 3: Установка необходимых зависимостей
+# Step 3: Install required dependencies
 CURRENT_STEP=$((CURRENT_STEP + 1))
-progress_update $CURRENT_STEP $TOTAL_STEPS "Установка необходимых пакетов..."
+progress_update $CURRENT_STEP $TOTAL_STEPS "Installing required packages..."
 
 apt-get install -y git python3 python3-pip python3-venv usbutils linux-tools-generic build-essential libnl-3-dev libnl-genl-3-dev curl > /dev/null 2>&1
 
-# Установка uv - современного пакетного менеджера Python
-echo_color "yellow" "Установка uv - современного пакетного менеджера Python..."
+# Install uv - modern Python package manager
+echo_color "yellow" "Installing uv - modern Python package manager..."
 curl -sSf https://astral.sh/uv/install.sh | sh > /dev/null 2>&1 || {
-    echo_color "yellow" "Не удалось установить uv через скрипт, попробуем через pip..."
+    echo_color "yellow" "Failed to install uv via script, trying pip instead..."
     pip3 install -q --break-system-packages uv
 }
 
-# Добавляем uv в PATH, если необходимо
+# Add uv to PATH if necessary
 export PATH="$HOME/.cargo/bin:$PATH"
 
-# Проверка установки uv
+# Check uv installation
 if ! command -v uv &> /dev/null; then
-    echo_color "yellow" "Не удалось установить uv. Будем использовать стандартный pip."
+    echo_color "yellow" "Failed to install uv. Will use standard pip."
 else
-    echo_color "green" "✓ uv успешно установлен."
+    echo_color "green" "✓ uv successfully installed."
 fi
 
-# Шаг 3.1: Проверка установки usbip
-echo_color "blue" "[$CURRENT_STEP/$TOTAL_STEPS] Проверка и настройка USB/IP..."
+# Step 3.1: Check USB/IP installation
+echo_color "blue" "[$CURRENT_STEP/$TOTAL_STEPS] Checking and configuring USB/IP..."
 
-# Переменная для отслеживания, была ли установка компонентов, требующих перезагрузки
+# Variable to track if components requiring reboot were installed
 KERNEL_MODULES_INSTALLED=false
 
 if ! command -v usbip &> /dev/null; then
-    echo_color "yellow" "USB/IP не найден. Установка..."
+    echo_color "yellow" "USB/IP not found. Installing..."
     
-    # Клонирование репозитория с USB/IP инструментами (для совместимости с ARM)
+    # Clone USB/IP tools repository (for ARM compatibility)
     cd /tmp
     if [ -d "linux-tools-usbip" ]; then
         rm -rf linux-tools-usbip
     fi
     
-    echo_color "blue" "    → Загрузка исходного кода USB/IP..."
+    echo_color "blue" "    → Downloading USB/IP source code..."
     git clone https://github.com/masahir0y/linux-tools-usbip.git > /dev/null 2>&1 || {
-        echo_color "red" "Не удалось загрузить исходный код USB/IP. Проверьте подключение к интернету."
+        echo_color "red" "Failed to download USB/IP source code. Check your internet connection."
         exit 1
     }
     
-    echo_color "blue" "    → Компиляция USB/IP (это может занять некоторое время)..."
+    echo_color "blue" "    → Compiling USB/IP (this may take some time)..."
     cd linux-tools-usbip
     make > /dev/null 2>&1 || {
-        echo_color "red" "Ошибка при компиляции USB/IP."
-        echo_color "yellow" "Возможно, вам нужно установить дополнительные пакеты: build-essential, libnl-3-dev, libnl-genl-3-dev"
+        echo_color "red" "Error compiling USB/IP."
+        echo_color "yellow" "You may need to install additional packages: build-essential, libnl-3-dev, libnl-genl-3-dev"
         exit 1
     }
     
-    echo_color "blue" "    → Установка USB/IP..."
+    echo_color "blue" "    → Installing USB/IP..."
     make install > /dev/null 2>&1 || {
-        echo_color "red" "Ошибка при установке USB/IP."
+        echo_color "red" "Error installing USB/IP."
         exit 1
     }
     
-    # Проверка повторно
+    # Check again
     if ! command -v usbip &> /dev/null; then
-        echo_color "red" "Не удалось установить USB/IP. Попробуйте установить вручную."
+        echo_color "red" "Failed to install USB/IP. Try installing manually."
         exit 1
     fi
     
     KERNEL_MODULES_INSTALLED=true
 fi
 
-echo_color "green" "✓ USB/IP успешно установлен."
+echo_color "green" "✓ USB/IP successfully installed."
 
-# Шаг 4: Загрузка модулей ядра
+# Step 4: Load kernel modules
 CURRENT_STEP=$((CURRENT_STEP + 1))
-progress_update $CURRENT_STEP $TOTAL_STEPS "Настройка модулей ядра для USB/IP..."
+progress_update $CURRENT_STEP $TOTAL_STEPS "Configuring kernel modules for USB/IP..."
 
-# Добавление модулей в автозагрузку
+# Add modules to autoload
 MODULES_ADDED=false
 if ! grep -q "usbip-core" /etc/modules; then
     echo "usbip-core" >> /etc/modules
@@ -158,54 +158,54 @@ if ! grep -q "vhci-hcd" /etc/modules; then
     MODULES_ADDED=true
 fi
 
-# Пытаемся загрузить модули
+# Try loading modules
 MODULES_LOADED=true
-echo_color "blue" "    → Загрузка модуля usbip-core..."
+echo_color "blue" "    → Loading module usbip-core..."
 modprobe usbip-core 2>/dev/null || {
-    echo_color "yellow" "    ⚠ Не удалось загрузить модуль usbip-core"
+    echo_color "yellow" "    ⚠ Failed to load module usbip-core"
     MODULES_LOADED=false
 }
 
-echo_color "blue" "    → Загрузка модуля usbip-host..."
+echo_color "blue" "    → Loading module usbip-host..."
 modprobe usbip-host 2>/dev/null || {
-    echo_color "yellow" "    ⚠ Не удалось загрузить модуль usbip-host"
+    echo_color "yellow" "    ⚠ Failed to load module usbip-host"
     MODULES_LOADED=false
 }
 
-echo_color "blue" "    → Загрузка модуля vhci-hcd..."
+echo_color "blue" "    → Loading module vhci-hcd..."
 modprobe vhci-hcd 2>/dev/null || {
-    echo_color "yellow" "    ⚠ Не удалось загрузить модуль vhci-hcd"
+    echo_color "yellow" "    ⚠ Failed to load module vhci-hcd"
     MODULES_LOADED=false
 }
 
-# Если модули добавлены в автозагрузку или установлены новые компоненты ядра,
-# и не все модули загружены - вероятно нужна перезагрузка
+# If modules were added to autoload or new kernel components installed,
+# and not all modules loaded - a reboot is likely needed
 if ([ "$MODULES_ADDED" = true ] || [ "$KERNEL_MODULES_INSTALLED" = true ]) && [ "$MODULES_LOADED" = false ]; then
     echo_color "red" ""
-    echo_color "red" "⚠ ВНИМАНИЕ: Возможно потребуется перезагрузка системы"
-    echo_color "red" "для полной активации модулей ядра USB/IP!"
+    echo_color "red" "⚠ WARNING: System reboot may be required"
+    echo_color "red" "to fully activate USB/IP kernel modules!"
     echo_color "yellow" ""
-    echo_color "yellow" "После перезагрузки, запустите скрипт еще раз для завершения установки."
-    echo_color "yellow" "Команда для перезагрузки: sudo reboot"
+    echo_color "yellow" "After reboot, run this script again to complete installation."
+    echo_color "yellow" "Reboot command: sudo reboot"
     echo_color "yellow" ""
     
-    echo "Продолжить установку без перезагрузки? (y/n)"
+    echo "Continue installation without rebooting? (y/n)"
     read -r response
     if [[ "$response" != "y" ]]; then
-        echo_color "blue" "Установка прервана. Пожалуйста, перезагрузите систему и запустите скрипт снова."
+        echo_color "blue" "Installation paused. Please reboot the system and run the script again."
         exit 0
     fi
     
-    echo_color "yellow" "Продолжаем установку. Некоторые функции могут не работать до перезагрузки."
+    echo_color "yellow" "Continuing installation. Some features may not work until reboot."
 fi
 
-echo_color "green" "✓ Модули USB/IP настроены."
+echo_color "green" "✓ USB/IP modules configured."
 
-# Шаг 5: Настройка демона USB/IP
+# Step 5: Configure USB/IP daemon
 CURRENT_STEP=$((CURRENT_STEP + 1))
-progress_update $CURRENT_STEP $TOTAL_STEPS "Настройка демона USB/IP..."
+progress_update $CURRENT_STEP $TOTAL_STEPS "Configuring USB/IP daemon..."
 
-# Создаем systemd сервис для usbipd, если он не существует
+# Create systemd service for usbipd if it doesn't exist
 if [ ! -f "/etc/systemd/system/usbipd.service" ]; then
     cat > /etc/systemd/system/usbipd.service << 'EOF'
 [Unit]
@@ -226,11 +226,11 @@ EOF
     systemctl start usbipd
 fi
 
-echo_color "green" "✓ Демон USB/IP настроен и запущен."
+echo_color "green" "✓ USB/IP daemon configured and started."
 
-# Шаг 6: Настройка каталога приложения
+# Step 6: Set up application directory
 CURRENT_STEP=$((CURRENT_STEP + 1))
-progress_update $CURRENT_STEP $TOTAL_STEPS "Создание каталога для приложения..."
+progress_update $CURRENT_STEP $TOTAL_STEPS "Creating application directory..."
 
 APP_DIR="$USER_HOME/orange-usbip"
 if [ ! -d "$APP_DIR" ]; then
@@ -238,30 +238,30 @@ if [ ! -d "$APP_DIR" ]; then
     chown $REAL_USER:$REAL_USER "$APP_DIR"
 fi
 
-# Клонирование репозитория
+# Clone repository
 cd "$APP_DIR"
 if [ -d ".git" ]; then
-    echo "Обновление существующего репозитория..."
+    echo "Updating existing repository..."
     sudo -u $REAL_USER git pull
 else
-    echo "Клонирование репозитория..."
+    echo "Cloning repository..."
     sudo -u $REAL_USER git clone https://github.com/maksfaktor/usbip-web.git .
 fi
 
-echo_color "green" "✓ Репозиторий успешно скачан в $APP_DIR."
+echo_color "green" "✓ Repository successfully downloaded to $APP_DIR."
 
-# Шаг 7: Настройка виртуальной среды Python
+# Step 7: Set up Python virtual environment
 CURRENT_STEP=$((CURRENT_STEP + 1))
-progress_update $CURRENT_STEP $TOTAL_STEPS "Настройка виртуальной среды Python..."
+progress_update $CURRENT_STEP $TOTAL_STEPS "Setting up Python virtual environment..."
 
 cd "$APP_DIR"
 if [ ! -d "venv" ]; then
     sudo -u $REAL_USER python3 -m venv venv
 fi
 
-# Установка зависимостей через uv или pip
+# Install dependencies using uv or pip
 if command -v uv &> /dev/null; then
-    echo_color "blue" "Используем uv для быстрой установки зависимостей..."
+    echo_color "blue" "Using uv for fast dependency installation..."
     sudo -u $REAL_USER bash -c "
     source venv/bin/activate
     uv pip install --upgrade pip
@@ -269,7 +269,7 @@ if command -v uv &> /dev/null; then
     deactivate
     "
 else
-    echo_color "yellow" "Используем стандартный pip для установки зависимостей..."
+    echo_color "yellow" "Using standard pip for dependency installation..."
     sudo -u $REAL_USER bash -c "
     source venv/bin/activate
     pip install --upgrade pip
@@ -278,17 +278,17 @@ else
     "
 fi
 
-echo_color "green" "✓ Виртуальная среда Python настроена."
+echo_color "green" "✓ Python virtual environment configured."
 
-# Шаг 8: Создание пользователя для запуска сервиса (если не существует)
+# Step 8: Create user for running the service (if it doesn't exist)
 CURRENT_STEP=$((CURRENT_STEP + 1))
-progress_update $CURRENT_STEP $TOTAL_STEPS "Настройка пользователя для сервиса..."
+progress_update $CURRENT_STEP $TOTAL_STEPS "Configuring service user..."
 
 if ! id "usbip" &>/dev/null; then
     useradd -r -s /bin/false -d /nonexistent usbip
 fi
 
-# Настройка sudo для пользователя usbip
+# Configure sudo for usbip user
 if [ ! -f "/etc/sudoers.d/usbip" ]; then
     cat > /etc/sudoers.d/usbip << 'EOF'
 usbip ALL=(ALL) NOPASSWD: /usr/sbin/usbip
@@ -297,11 +297,11 @@ EOF
     chmod 440 /etc/sudoers.d/usbip
 fi
 
-echo_color "green" "✓ Пользователь и права доступа настроены."
+echo_color "green" "✓ User and access rights configured."
 
-# Шаг 9: Создание systemd сервиса
+# Step 9: Create systemd service
 CURRENT_STEP=$((CURRENT_STEP + 1))
-progress_update $CURRENT_STEP $TOTAL_STEPS "Создание systemd сервиса..."
+progress_update $CURRENT_STEP $TOTAL_STEPS "Creating systemd service..."
 
 cat > /etc/systemd/system/orange-usbip.service << EOF
 [Unit]
@@ -324,38 +324,38 @@ systemctl daemon-reload
 systemctl enable orange-usbip
 systemctl start orange-usbip
 
-echo_color "green" "✓ Systemd сервис создан и запущен."
+echo_color "green" "✓ Systemd service created and started."
 
-# Шаг 10: Финализация установки
+# Step 10: Finalize installation
 CURRENT_STEP=$((CURRENT_STEP + 1))
-progress_update $CURRENT_STEP $TOTAL_STEPS "Проверка работоспособности..."
+progress_update $CURRENT_STEP $TOTAL_STEPS "Checking functionality..."
 
-# Подождем несколько секунд для запуска сервиса
+# Wait a few seconds for the service to start
 sleep 5
 
-# Проверка запуска сервиса
+# Check if service started
 if systemctl is-active --quiet orange-usbip; then
-    # Получаем IP-адрес
+    # Get IP address
     IP_ADDR=$(hostname -I | awk '{print $1}')
     
     echo_color "green" "===================================================="
-    echo_color "green" "  Установка Orange USBIP успешно завершена!     "
+    echo_color "green" "  Orange USBIP Installation Successfully Completed! "
     echo_color "green" "===================================================="
     echo ""
-    echo_color "yellow" "Сервис доступен по адресу: http://$IP_ADDR:5000"
-    echo_color "yellow" "Логин: admin"
-    echo_color "yellow" "Пароль: admin"
+    echo_color "yellow" "Service available at: http://$IP_ADDR:5000"
+    echo_color "yellow" "Login: admin"
+    echo_color "yellow" "Password: admin"
     echo ""
-    echo_color "red" "ВНИМАНИЕ: Обязательно смените пароль после первого входа!"
+    echo_color "red" "IMPORTANT: Change your password after first login!"
     echo ""
-    echo_color "blue" "Управление сервисом:"
-    echo " - Перезапуск:   sudo systemctl restart orange-usbip"
-    echo " - Остановка:    sudo systemctl stop orange-usbip"
-    echo " - Статус:       sudo systemctl status orange-usbip"
-    echo " - Логи:         sudo journalctl -u orange-usbip"
+    echo_color "blue" "Service management:"
+    echo " - Restart:      sudo systemctl restart orange-usbip"
+    echo " - Stop:         sudo systemctl stop orange-usbip"
+    echo " - Status:       sudo systemctl status orange-usbip"
+    echo " - Logs:         sudo journalctl -u orange-usbip"
     echo ""
 else
-    echo_color "red" "Сервис не запустился. Проверьте логи: sudo journalctl -u orange-usbip"
+    echo_color "red" "Service failed to start. Check logs: sudo journalctl -u orange-usbip"
     exit 1
 fi
 
