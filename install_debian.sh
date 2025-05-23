@@ -95,21 +95,83 @@ progress_update $CURRENT_STEP $TOTAL_STEPS "Installing required packages..."
 
 apt-get install -y git python3 python3-pip python3-venv linux-tools-generic usbutils curl > /dev/null 2>&1
 
-# Install uv - modern Python package manager
-echo_color "yellow" "Installing uv - modern Python package manager..."
-curl -sSf https://astral.sh/uv/install.sh | sh > /dev/null 2>&1 || {
-    echo_color "yellow" "Failed to install uv via script, trying pip instead..."
-    pip3 install -q --break-system-packages uv
-}
+# Install uv - modern Python package manager (priority installation)
+echo_color "blue" "Installing uv - modern Python package manager..."
 
-# Add uv to PATH if necessary
-export PATH="$HOME/.cargo/bin:$PATH"
+# Initialize variables to track installation attempts
+UV_INSTALLED=false
+INSTALL_METHODS_TRIED=0
+INSTALL_METHODS_TOTAL=3
 
-# Check uv installation
-if ! command -v uv &> /dev/null; then
-    echo_color "yellow" "Failed to install uv. Will use standard pip."
+# Method 1: Try installing via official installer script (recommended)
+echo_color "blue" "  → Method 1/3: Using official installer script..."
+curl -sSf https://astral.sh/uv/install.sh | sh > /dev/null 2>&1
+if command -v uv &> /dev/null || [ -f "$HOME/.cargo/bin/uv" ]; then
+    echo_color "green" "  ✓ uv successfully installed via official script."
+    UV_INSTALLED=true
+    # Add uv to PATH
+    export PATH="$HOME/.cargo/bin:$PATH"
 else
-    echo_color "green" "✓ uv successfully installed."
+    echo_color "yellow" "  ✗ Official installer failed."
+    INSTALL_METHODS_TRIED=$((INSTALL_METHODS_TRIED + 1))
+fi
+
+# Method 2: Try installing via pip if method 1 failed
+if [ "$UV_INSTALLED" = false ]; then
+    echo_color "blue" "  → Method 2/3: Trying installation via pip..."
+    pip3 install -q --break-system-packages uv > /dev/null 2>&1
+    if command -v uv &> /dev/null; then
+        echo_color "green" "  ✓ uv successfully installed via pip."
+        UV_INSTALLED=true
+    else
+        echo_color "yellow" "  ✗ pip installation failed."
+        INSTALL_METHODS_TRIED=$((INSTALL_METHODS_TRIED + 1))
+    fi
+fi
+
+# Method 3: Try installing via pipx if methods 1 and 2 failed
+if [ "$UV_INSTALLED" = false ]; then
+    echo_color "blue" "  → Method 3/3: Trying installation via pipx..."
+    # Check if pipx is installed, otherwise install it
+    if ! command -v pipx &> /dev/null; then
+        echo_color "blue" "    → pipx not found, installing pipx first..."
+        pip3 install -q --break-system-packages pipx > /dev/null 2>&1
+        python3 -m pipx ensurepath > /dev/null 2>&1
+    fi
+    
+    # Try installing uv via pipx
+    if command -v pipx &> /dev/null; then
+        pipx install uv > /dev/null 2>&1
+        if command -v uv &> /dev/null; then
+            echo_color "green" "  ✓ uv successfully installed via pipx."
+            UV_INSTALLED=true
+        else
+            echo_color "yellow" "  ✗ pipx installation failed."
+            INSTALL_METHODS_TRIED=$((INSTALL_METHODS_TRIED + 1))
+        fi
+    else
+        echo_color "yellow" "  ✗ Could not install pipx."
+        INSTALL_METHODS_TRIED=$((INSTALL_METHODS_TRIED + 1))
+    fi
+fi
+
+# Final check and user prompt if all methods failed
+if [ "$UV_INSTALLED" = false ]; then
+    echo_color "red" "All uv installation methods failed ($INSTALL_METHODS_TRIED/$INSTALL_METHODS_TOTAL)."
+    echo_color "yellow" "Potential reasons:"
+    echo_color "yellow" "  - Network connectivity issues"
+    echo_color "yellow" "  - Missing build dependencies (rustc, cargo)"
+    echo_color "yellow" "  - Insufficient permissions"
+    
+    echo "Do you want to continue installation using standard pip? (y/n)"
+    read -r response
+    if [[ "$response" != "y" ]]; then
+        echo_color "red" "Installation aborted by user."
+        exit 1
+    fi
+    echo_color "yellow" "Continuing installation with standard pip..."
+else
+    echo_color "green" "✓ uv package manager is ready to use."
 fi
 
 echo_color "green" "✓ Required packages installed."
