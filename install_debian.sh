@@ -105,6 +105,25 @@ INSTALL_METHODS_TOTAL=3
 
 # Method 1: Try installing via official installer script (recommended)
 echo_color "blue" "  → Method 1/3: Using official installer script..."
+
+# Check if Rust/Cargo is installed
+if ! command -v cargo &> /dev/null; then
+    echo_color "blue" "    → Rust not found, installing Rust first..."
+    # Install Rust using rustup (quiet installation)
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y > /dev/null 2>&1
+    
+    # Set up the environment for Rust
+    source "$HOME/.cargo/env" 2>/dev/null || true
+    export PATH="$HOME/.cargo/bin:$PATH"
+    
+    if command -v cargo &> /dev/null; then
+        echo_color "green" "    ✓ Rust successfully installed."
+    else
+        echo_color "yellow" "    ✗ Failed to install Rust."
+    fi
+fi
+
+# Now try to install uv with the official installer
 curl -sSf https://astral.sh/uv/install.sh | sh > /dev/null 2>&1
 if command -v uv &> /dev/null || [ -f "$HOME/.cargo/bin/uv" ]; then
     echo_color "green" "  ✓ uv successfully installed via official script."
