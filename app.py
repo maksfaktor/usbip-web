@@ -229,6 +229,25 @@ def get_local_devices_api():
         # Получаем реальные USB устройства через usbip
         local_devices = get_local_usb_devices()
         
+        # Получаем список опубликованных устройств
+        published_busids = get_published_devices()
+        add_log_entry('DEBUG', f'API: Published devices: {published_busids}', 'usbip')
+        
+        # Помечаем опубликованные устройства
+        for device in local_devices:
+            # Нормализуем busid устройства для правильного сравнения
+            if 'busid' in device:
+                from usbip_utils import normalize_busid
+                device_busid = normalize_busid(device['busid'])
+                if device_busid in published_busids:
+                    device['is_published'] = True
+                    add_log_entry('DEBUG', f'API: Device {device["busid"]} marked as published', 'usbip')
+                else:
+                    device['is_published'] = False
+                    add_log_entry('DEBUG', f'API: Device {device["busid"]} NOT marked as published', 'usbip')
+            else:
+                device['is_published'] = False
+        
         # Добавляем виртуальные устройства в список локальных устройств
         virtual_devices = VirtualUsbDevice.query.filter_by(is_active=False).all()
         
@@ -239,7 +258,8 @@ def get_local_devices_api():
                 'idVendor': device.vendor_id,
                 'idProduct': device.product_id,
                 'is_virtual': True,
-                'virtual_id': device.id
+                'virtual_id': device.id,
+                'is_published': False  # Виртуальные устройства не публикуются
             })
         
         # Запись в лог
