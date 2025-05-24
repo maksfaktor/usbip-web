@@ -473,7 +473,13 @@ function refreshDevicesList() {
     
     // Запрашиваем список устройств через API
     fetch('/api/local_devices')
-        .then(response => response.json())
+        .then(response => {
+            // Проверяем, успешен ли ответ
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 // Обновляем содержимое таблицы
