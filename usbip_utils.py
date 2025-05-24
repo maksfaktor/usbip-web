@@ -380,72 +380,24 @@ def get_local_usb_devices():
         list: Список устройств
     """
     try:
-        # Сначала пробуем получить данные через doctor.sh
-        logger.debug("Запускаем doctor.sh для получения списка устройств")
-        
-        # Запускаем doctor.sh напрямую (доктор сам использует sudo)
-        doctor_stdout, doctor_stderr, doctor_return_code = run_command(['bash', 'doctor.sh'], use_sudo=False)
-        
-        # Логируем результаты выполнения команды
-        logger.debug(f"doctor.sh завершен с кодом: {doctor_return_code}")
-        if doctor_stderr:
-            logger.debug(f"doctor.sh STDERR: {doctor_stderr}")
-        
-        try:
-            from app import add_log_entry
-            add_log_entry("DEBUG", f"doctor.sh завершен с кодом: {doctor_return_code}", "usbip")
-            
-            if doctor_stderr:
-                add_log_entry("DEBUG", f"doctor.sh STDERR: {doctor_stderr}", "usbip")
-                
-            # Добавляем первые 1000 символов вывода в лог
-            if doctor_stdout:
-                add_log_entry("DEBUG", f"doctor.sh STDOUT: {doctor_stdout[:1000]}", "usbip")
-        except Exception as e:
-            logger.error(f"Ошибка при добавлении лога: {str(e)}")
-        
-        # Если doctor.sh успешно выполнился, парсим его вывод
-        if doctor_return_code == 0 and doctor_stdout:
-            devices = parse_doctor_output(doctor_stdout)
-            if devices:
-                logger.debug(f"Успешно получено {len(devices)} устройств из doctor.sh")
-                return devices
-        
-        # Если doctor.sh не помог, пробуем другие методы
-        logger.debug("Пробуем другие методы получения списка устройств")
-        
-        # Получаем список устройств через lsusb для отладки
+        # Сначала пробуем получить список через lsusb - самый надежный метод
+        logger.debug("Пробуем получить список через lsusb")
         lsusb_stdout, lsusb_stderr, lsusb_return_code = run_command(['lsusb'], use_sudo=False)
         
-        if lsusb_return_code == 0 and lsusb_stdout:
-            try:
-                from app import add_log_entry
-                add_log_entry("DEBUG", f"lsusb вывод: {lsusb_stdout}", "usbip")
-            except Exception as e:
-                logger.error(f"Ошибка при добавлении лога lsusb: {str(e)}")
-        
-        # Пробуем получить список через usbip list -l
-        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-l'], use_sudo=False)
-        
-        # Если не получилось без sudo, пробуем с sudo -n
-        if return_code != 0 or not stdout:
-            stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-l'])
-        
-        # Логируем результаты
         try:
             from app import add_log_entry
-            add_log_entry("DEBUG", f"usbip list -l завершен с кодом: {return_code}", "usbip")
+            add_log_entry("DEBUG", "Получаем список устройств через lsusb", "usbip")
             
-            if stderr:
-                add_log_entry("DEBUG", f"usbip list -l STDERR: {stderr}", "usbip")
+            if lsusb_stderr:
+                add_log_entry("DEBUG", f"lsusb STDERR: {lsusb_stderr}", "usbip")
                 
-            if stdout:
-                add_log_entry("DEBUG", f"usbip list -l STDOUT: {stdout[:500]}", "usbip")
+            if lsusb_stdout:
+                add_log_entry("DEBUG", f"lsusb STDOUT: {lsusb_stdout[:500]}", "usbip")
         except Exception as e:
             logger.error(f"Ошибка при добавлении лога: {str(e)}")
         
-        # Если не получилось через usbip, используем lsusb
-        if (return_code != 0 or not stdout) and lsusb_return_code == 0 and lsusb_stdout:
+        # Создаем устройства из вывода lsusb
+        if lsusb_return_code == 0 and lsusb_stdout:
             logger.debug("Создаем устройства из вывода lsusb")
             try:
                 devices = []
@@ -471,16 +423,56 @@ def get_local_usb_devices():
                 
                 if devices:
                     logger.debug(f"Создано {len(devices)} устройств из вывода lsusb")
+                    try:
+                        from app import add_log_entry
+                        add_log_entry("INFO", f"Обнаружено {len(devices)} USB устройств через lsusb", "usbip")
+                    except Exception as e:
+                        logger.error(f"Ошибка при добавлении лога: {str(e)}")
                     return devices
             except Exception as e:
                 logger.error(f"Ошибка при обработке вывода lsusb: {str(e)}")
         
-        # Если получили вывод usbip list -l, парсим его
-        if return_code == 0 and stdout:
-            devices = parse_local_usb_devices(stdout)
-            if devices:
-                logger.debug(f"Распознано {len(devices)} устройств из usbip list -l")
-                return devices
+        # Если lsusb не помог, пробуем запустить usbip list -l с таймаутом
+        # Это может быть полезно, если команда зависает
+        logger.debug("Пробуем получить список через usbip list -l")
+        try:
+            import subprocess
+            import time
+            
+            # Создаем процесс с таймаутом
+            process = subprocess.Popen(
+                ['sudo', '-n', '/usr/bin/usbip', 'list', '-l'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            
+            # Ждем с таймаутом
+            try:
+                stdout, stderr = process.communicate(timeout=5)  # 5 секунд таймаут
+                return_code = process.returncode
+                
+                # Если получили успешный вывод, парсим его
+                if return_code == 0 and stdout:
+                    devices = parse_local_usb_devices(stdout)
+                    if devices:
+                        logger.debug(f"Распознано {len(devices)} устройств из usbip list -l")
+                        return devices
+            except subprocess.TimeoutExpired:
+                # Процесс завис, убиваем его
+                process.kill()
+                logger.error("Команда usbip list -l зависла, прервана по таймауту")
+                try:
+                    from app import add_log_entry
+                    add_log_entry("ERROR", "Команда usbip list -l зависла, прервана по таймауту", "usbip")
+                except Exception as e:
+                    logger.error(f"Ошибка при добавлении лога: {str(e)}")
+        except Exception as e:
+            logger.error(f"Ошибка при выполнении usbip list -l: {str(e)}")
+            try:
+                add_log_entry("ERROR", f"Ошибка при выполнении usbip list -l: {str(e)}", "usbip")
+            except:
+                pass
                 
         # Если ничего не сработало, возвращаем ошибку
         error_device = {
