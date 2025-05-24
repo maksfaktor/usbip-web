@@ -262,6 +262,34 @@ def index():
                           available_virtual_ports=available_virtual_ports,
                           network_interfaces=network_interfaces)
 
+@app.route('/usb-devices')
+@login_required
+def usb_devices():
+    """
+    Страница для просмотра и управления USB-устройствами.
+    Позволяет видеть все подключенные устройства и публиковать (bind) их.
+    """
+    # Получаем список локальных USB-устройств
+    local_devices = get_local_usb_devices()
+    
+    # Получаем список алиасов устройств для отображения пользовательских имен
+    device_aliases = DeviceAlias.query.all()
+    aliases_dict = {alias.busid: alias.alias for alias in device_aliases}
+    
+    # Добавляем информацию об алиасах и проверяем, опубликовано ли устройство
+    for device in local_devices:
+        if device.get('busid') in aliases_dict:
+            device['alias'] = aliases_dict[device['busid']]
+        else:
+            device['alias'] = None
+    
+    # Получаем информацию о сетевых интерфейсах
+    network_interfaces = get_network_interfaces()
+    
+    return render_template('usb_devices.html', 
+                          local_devices=local_devices,
+                          network_interfaces=network_interfaces)
+
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin():
