@@ -648,29 +648,35 @@ if systemctl is-active --quiet orange-usbip; then
     # Try to open the web interface in the default browser
     echo_color "blue" "Attempting to open web interface in your default browser..."
     
-    # Check which browsers or commands are available
-    if command -v xdg-open >/dev/null 2>&1; then
-        # Linux with desktop environment
-        xdg-open "$APP_URL" >/dev/null 2>&1 &
-        echo_color "green" "✓ Browser launched with xdg-open"
-    elif command -v sensible-browser >/dev/null 2>&1; then
-        # Debian/Ubuntu systems
-        sensible-browser "$APP_URL" >/dev/null 2>&1 &
-        echo_color "green" "✓ Browser launched with sensible-browser"
-    elif command -v firefox >/dev/null 2>&1; then
-        # Try firefox directly
-        firefox "$APP_URL" >/dev/null 2>&1 &
-        echo_color "green" "✓ Browser launched with firefox"
-    elif command -v chromium-browser >/dev/null 2>&1; then
-        # Try chromium
-        chromium-browser "$APP_URL" >/dev/null 2>&1 &
-        echo_color "green" "✓ Browser launched with chromium"
-    elif command -v google-chrome >/dev/null 2>&1; then
-        # Try chrome
-        google-chrome "$APP_URL" >/dev/null 2>&1 &
-        echo_color "green" "✓ Browser launched with chrome"
+    # Проверяем, является ли окружение графическим (есть ли DISPLAY)
+    if [ -n "$DISPLAY" ]; then
+        # Check which browsers or commands are available
+        if command -v xdg-open >/dev/null 2>&1; then
+            # Linux with desktop environment
+            xdg-open "$APP_URL" >/dev/null 2>&1 &
+            echo_color "green" "✓ Browser launched with xdg-open"
+        elif command -v sensible-browser >/dev/null 2>&1; then
+            # Debian/Ubuntu systems
+            sensible-browser "$APP_URL" >/dev/null 2>&1 &
+            echo_color "green" "✓ Browser launched with sensible-browser"
+        elif command -v firefox >/dev/null 2>&1; then
+            # Try firefox directly
+            firefox "$APP_URL" >/dev/null 2>&1 &
+            echo_color "green" "✓ Browser launched with firefox"
+        elif command -v chromium-browser >/dev/null 2>&1; then
+            # Try chromium
+            chromium-browser "$APP_URL" >/dev/null 2>&1 &
+            echo_color "green" "✓ Browser launched with chromium"
+        elif command -v google-chrome >/dev/null 2>&1; then
+            # Try chrome
+            google-chrome "$APP_URL" >/dev/null 2>&1 &
+            echo_color "green" "✓ Browser launched with chrome"
+        else
+            echo_color "yellow" "⚠ Could not detect a browser to launch automatically."
+            echo_color "yellow" "Please open the URL manually in your browser."
+        fi
     else
-        echo_color "yellow" "⚠ Could not detect a browser to launch automatically."
+        echo_color "yellow" "⚠ No graphical environment detected (DISPLAY variable not set)."
         echo_color "yellow" "Please open the URL manually in your browser."
     fi
     echo ""
@@ -681,7 +687,8 @@ if systemctl is-active --quiet orange-usbip; then
     echo " - Logs:         sudo journalctl -u orange-usbip"
     echo ""
     echo_color "blue" "Diagnostic tool:"
-    echo " - Run diagnostic: sudo $APP_DIR/doctor.sh"
+    echo " - Run diagnostic: sudo ./doctor.sh"
+    echo " - From anywhere: sudo $(realpath $APP_DIR)/doctor.sh"
     echo ""
     
     # Make diagnostic and uninstall scripts executable
