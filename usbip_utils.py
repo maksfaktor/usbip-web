@@ -4,20 +4,25 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def run_command(command, use_sudo=True):
+def run_command(command, use_sudo=True, no_interactive=True):
     """
     Выполняет команду shell с поддержкой sudo
     
     Args:
         command (list): Список аргументов команды
         use_sudo (bool): Использовать sudo или нет
+        no_interactive (bool): Использовать -n для sudo (неинтерактивный режим)
         
     Returns:
         tuple: (stdout, stderr, return_code)
     """
     try:
         if use_sudo:
-            cmd = ['sudo'] + command
+            # Для неинтерактивного режима добавляем опцию -n, чтобы sudo не запрашивал пароль
+            if no_interactive:
+                cmd = ['sudo', '-n'] + command
+            else:
+                cmd = ['sudo'] + command
         else:
             cmd = command
             
@@ -34,7 +39,7 @@ def run_command(command, use_sudo=True):
         
         logger.debug(f"Результат команды: код {return_code}")
         if stdout:
-            logger.debug(f"STDOUT: {stdout}")
+            logger.debug(f"STDOUT длина: {len(stdout)} символов")
         if stderr:
             logger.debug(f"STDERR: {stderr}")
             
@@ -289,88 +294,94 @@ def get_local_usb_devices():
         list: Список устройств
     """
     try:
-        # Сначала пробуем doctor.sh, так как он работает надежнее
-        logger.debug("Запускаем doctor.sh для получения списка устройств")
-        doctor_stdout, doctor_stderr, doctor_return_code = run_command(['bash', 'doctor.sh', '--local-devices'])
+        # Получаем список устройств через lsusb для отладки
+        logger.debug("Запускаем lsusb для получения списка всех USB устройств")
+        lsusb_stdout, lsusb_stderr, lsusb_return_code = run_command(['lsusb'], use_sudo=False)
         
-        # Детальное логирование для отладки
-        logger.debug(f"doctor.sh завершен с кодом: {doctor_return_code}")
-        logger.debug(f"doctor.sh STDOUT: {doctor_stdout}")
-        logger.debug(f"doctor.sh STDERR: {doctor_stderr}")
+        if lsusb_return_code == 0 and lsusb_stdout:
+            try:
+                from app import add_log_entry
+                add_log_entry("DEBUG", f"lsusb вывод: {lsusb_stdout}", "usbip")
+            except Exception as e:
+                logger.error(f"Ошибка при добавлении лога lsusb: {str(e)}")
         
-        # Добавляем запись в базу данных логов для отображения в веб-интерфейсе
+        # Пробуем напрямую выполнить usbip list -l без sudo
+        logger.debug("Запускаем usbip list -l без sudo")
+        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-l'], use_sudo=False)
+        
+        # Если не получилось без sudo, пробуем с sudo -n (неинтерактивный режим)
+        if return_code != 0 or not stdout:
+            logger.debug("Команда без sudo не сработала, пробуем с sudo -n")
+            stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-l'])
+        
+        # Логируем результаты выполнения команды
         try:
             from app import add_log_entry
-            add_log_entry("DEBUG", f"doctor.sh завершен с кодом: {doctor_return_code}", "usbip")
+            add_log_entry("DEBUG", f"usbip list -l завершен с кодом: {return_code}", "usbip")
             
-            # Разбиваем длинный вывод на части для логирования
-            max_log_length = 500
-            stdout_parts = [doctor_stdout[i:i+max_log_length] for i in range(0, len(doctor_stdout), max_log_length)]
-            for i, part in enumerate(stdout_parts):
-                add_log_entry("DEBUG", f"doctor.sh STDOUT (часть {i+1}/{len(stdout_parts)}): {part}", "usbip")
-                
-            if doctor_stderr:
-                add_log_entry("DEBUG", f"doctor.sh STDERR: {doctor_stderr}", "usbip")
+            if stdout:
+                max_log_length = 500
+                stdout_parts = [stdout[i:i+max_log_length] for i in range(0, min(len(stdout), 2000), max_log_length)]
+                for i, part in enumerate(stdout_parts):
+                    add_log_entry("DEBUG", f"usbip list -l STDOUT (часть {i+1}/{len(stdout_parts)}): {part}", "usbip")
+            
+            if stderr:
+                add_log_entry("DEBUG", f"usbip list -l STDERR: {stderr}", "usbip")
         except Exception as e:
             logger.error(f"Ошибка при добавлении лога: {str(e)}")
         
-        if doctor_return_code == 0:
-            # Пытаемся найти секцию с устройствами в выводе doctor.sh
-            devices_section = ""
-            if "Local USB devices:" in doctor_stdout:
+        # Если не получилось получить данные через usbip, попробуем использовать lsusb
+        if return_code != 0 or not stdout:
+            if lsusb_return_code == 0 and lsusb_stdout:
+                logger.debug("Парсим вывод lsusb для создания списка устройств")
                 try:
-                    # Извлекаем секцию с устройствами между "Local USB devices:" и следующей секцией
-                    start_idx = doctor_stdout.find("Local USB devices:")
-                    next_section_idx = doctor_stdout.find("===", start_idx + 1)
-                    if next_section_idx > 0:
-                        devices_section = doctor_stdout[start_idx:next_section_idx]
-                    else:
-                        devices_section = doctor_stdout[start_idx:]
+                    devices = []
+                    for line in lsusb_stdout.strip().split('\n'):
+                        # Формат строки: 'Bus 001 Device 002: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse'
+                        match = re.match(r'Bus (\d+) Device (\d+): ID ([0-9a-f]+):([0-9a-f]+)(.+)', line)
+                        if match:
+                            bus, device, vendor_id, product_id, desc = match.groups()
+                            busid = f"{bus}-{device}"
+                            
+                            desc = desc.strip()
+                            if not desc:
+                                desc = "Unknown device"
+                            
+                            device_data = {
+                                'busid': busid,
+                                'vendor_id': vendor_id,
+                                'product_id': product_id,
+                                'device_name': desc,
+                                'info': f"{desc} ({vendor_id}:{product_id})"
+                            }
+                            devices.append(device_data)
                     
-                    logger.debug(f"Извлеченная секция устройств: {devices_section}")
+                    if devices:
+                        logger.debug(f"Создано {len(devices)} устройств из вывода lsusb")
+                        try:
+                            from app import add_log_entry
+                            add_log_entry("DEBUG", f"Создано {len(devices)} устройств из вывода lsusb", "usbip")
+                            
+                            for i, device in enumerate(devices):
+                                add_log_entry("DEBUG", f"Устройство lsusb {i+1}: {str(device)[:500]}", "usbip")
+                        except Exception as e:
+                            logger.error(f"Ошибка при добавлении лога устройств lsusb: {str(e)}")
+                        
+                        return devices
                 except Exception as e:
-                    logger.error(f"Ошибка при извлечении секции устройств: {str(e)}")
+                    logger.error(f"Ошибка при обработке вывода lsusb: {str(e)}")
             
-            # Если нашли секцию с устройствами, парсим ее
-            if devices_section:
-                try:
-                    from app import add_log_entry
-                    add_log_entry("DEBUG", f"Извлеченная секция устройств: {devices_section[:500]}", "usbip")
-                except Exception as e:
-                    logger.error(f"Ошибка при добавлении лога секции устройств: {str(e)}")
-                
-                devices = parse_local_usb_devices(devices_section)
-                logger.debug(f"Распознано {len(devices)} устройств из вывода doctor.sh")
-                
-                try:
-                    from app import add_log_entry
-                    add_log_entry("DEBUG", f"Распознано {len(devices)} устройств из вывода doctor.sh", "usbip")
-                    
-                    # Подробный лог каждого устройства
-                    for i, device in enumerate(devices):
-                        logger.debug(f"Устройство {i+1}: {device}")
-                        add_log_entry("DEBUG", f"Устройство {i+1}: {str(device)[:500]}", "usbip")
-                except Exception as e:
-                    logger.error(f"Ошибка при добавлении лога устройств: {str(e)}")
-                
-                if devices:
-                    return devices
-                
-        # Если doctor.sh не нашел устройства, пробуем стандартную команду
-        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-l'])
-        
-        if return_code != 0:
+            # Если ничего не сработало, возвращаем ошибку
             error_msg = f"Ошибка получения списка локальных устройств: {stderr}"
             logger.error(error_msg)
             
-            # Если usbip list -l не сработал, и doctor.sh тоже не нашел устройства,
-            # показываем ошибку и рекомендации
             error_device = {
                 'busid': 'error',
                 'info': 'Ошибка: Служба USB/IP не запущена или не настроена',
                 'details': [
                     'Запустите doctor.sh для диагностики и устранения проблем.',
-                    f'Детали ошибки: {stderr}'
+                    f'Детали ошибки: {stderr}',
+                    'Убедитесь, что пользователь веб-сервера имеет права на выполнение команд usbip без пароля.'
                 ],
                 'device_name': 'Ошибка USB/IP',
                 'vendor_id': '0000',
@@ -380,7 +391,7 @@ def get_local_usb_devices():
             
             return [error_device]
         
-        # Получаем список устройств из вывода стандартной команды
+        # Если получили вывод usbip list -l, парсим его
         devices = parse_local_usb_devices(stdout)
         logger.debug(f"Распознано {len(devices)} устройств из вывода usbip list -l")
         
