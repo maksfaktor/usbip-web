@@ -108,6 +108,16 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
+# Обработчик для неавторизованных запросов к API
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'success': False,
+            'message': 'Unauthorized access. Please login.'
+        }), 401
+    return redirect(url_for('login'))
+
 # Helper function to get current language
 def get_current_language():
     """
