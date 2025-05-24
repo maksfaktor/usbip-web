@@ -20,17 +20,27 @@ def normalize_busid(busid):
     if not busid:
         return busid
         
-    match = re.match(r'^(\d+)-(\d+)$', str(busid))
+    # Убедимся, что работаем со строкой
+    busid_str = str(busid)
+    
+    # Используем регулярное выражение для извлечения чисел из busid
+    match = re.match(r'^(\d+)-(\d+)$', busid_str)
     if match:
         try:
+            # Извлекаем и конвертируем числа, чтобы убрать ведущие нули
             bus = int(match.group(1))
             device = int(match.group(2))
             normalized = f"{bus}-{device}"
-            if normalized != busid:
-                logger.debug(f"Нормализация busid: {busid} -> {normalized}")
+            
+            # Логируем изменение только если что-то реально изменилось
+            if normalized != busid_str:
+                logger.debug(f"Нормализация busid: {busid_str} -> {normalized}")
+            
             return normalized
-        except (ValueError, IndexError):
-            logger.warning(f"Не удалось нормализовать busid: {busid}")
+        except (ValueError, IndexError) as e:
+            logger.warning(f"Не удалось нормализовать busid: {busid_str}, ошибка: {e}")
+    
+    # Если формат не соответствует ожидаемому, возвращаем исходное значение
     return busid
 
 def run_command(command, use_sudo=True, no_interactive=True):
@@ -639,12 +649,9 @@ def bind_device(busid):
         
         # Преобразуем формат busid, если нужно
         orig_busid = busid
-        # Проверяем, если busid в формате 1-2 или в формате 001-002
-        if re.match(r'^(\d+)-(\d+)$', busid):
-            match = re.match(r'^(\d+)-(\d+)$', busid)
-            bus, device = match.groups()
-            # Нормализуем к формату 1-2 (без ведущих нулей)
-            busid = f"{int(bus)}-{int(device)}"
+        # Используем функцию normalize_busid для стандартизации формата
+        busid = normalize_busid(busid)
+        if busid != orig_busid:
             logger.debug(f"Нормализован busid из {orig_busid} в {busid}")
             
         # Проверяем существование устройства в системе
