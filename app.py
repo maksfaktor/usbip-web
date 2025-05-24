@@ -262,6 +262,8 @@ def index():
                           available_virtual_ports=available_virtual_ports,
                           network_interfaces=network_interfaces)
 
+
+
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin():
