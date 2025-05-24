@@ -84,10 +84,11 @@ def update_file(file_path, message):
 # Основная функция
 def main():
     files_to_update = [
+        "usbip_utils.py",
         "templates/index.html"
     ]
     
-    commit_message = "Добавлена интеграция doctor.sh в веб-интерфейс для диагностики"
+    commit_message = "Улучшен парсинг USB устройств для поддержки разных форматов вывода"
     
     print("Отправляем изменения в GitHub...")
     
