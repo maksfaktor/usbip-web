@@ -18,22 +18,67 @@ def run_command(command, use_sudo=True, no_interactive=True):
     """
     try:
         if use_sudo:
-            # Для неинтерактивного режима добавляем опцию -n, чтобы sudo не запрашивал пароль
-            if no_interactive:
-                cmd = ['sudo', '-n'] + command
-            else:
-                cmd = ['sudo'] + command
+            # Проверяем наличие NOPASSWD в sudoers
+            # Сначала пробуем с опцией -n (неинтерактивный режим)
+            cmd = ['sudo', '-n'] + command
+            
+            # Логируем команду для отладки
+            logger.debug(f"Выполнение команды: {' '.join(cmd)}")
+            
+            try:
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                stdout, stderr = process.communicate(timeout=5)
+                return_code = process.returncode
+                
+                # Если команда выполнилась успешно, возвращаем результат
+                if return_code == 0 or "password is required" not in stderr:
+                    return stdout, stderr, return_code
+                
+                # Если требуется пароль, пробуем с pkexec
+                logger.debug("Sudo с -n не сработал, пробуем использовать pkexec")
+                pkexec_cmd = ['pkexec'] + command
+                logger.debug(f"Выполнение команды: {' '.join(pkexec_cmd)}")
+                
+                pkexec_process = subprocess.Popen(
+                    pkexec_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                stdout, stderr = pkexec_process.communicate(timeout=5)
+                return_code = pkexec_process.returncode
+                return stdout, stderr, return_code
+                
+            except subprocess.TimeoutExpired as timeout_error:
+                # Обрабатываем случай таймаута
+                error_msg = "Команда выполнялась слишком долго и была прервана"
+                logger.error(f"{error_msg}: {str(timeout_error)}")
+                
+                # Безопасное завершение процесса
+                try:
+                    if 'process' in locals():
+                        process.kill()
+                    if 'pkexec_process' in locals():
+                        pkexec_process.kill()
+                except Exception as kill_error:
+                    logger.error(f"Ошибка при завершении процесса: {str(kill_error)}")
+                
+                return "", error_msg, 1
         else:
             cmd = command
+            logger.debug(f"Выполнение команды без sudo: {' '.join(cmd)}")
             
-        logger.debug(f"Выполнение команды: {' '.join(cmd)}")
-        
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
         stdout, stderr = process.communicate()
         return_code = process.returncode
         
@@ -476,12 +521,13 @@ def get_local_usb_devices():
                 logger.error(f"Ошибка при добавлении лога: {str(ex)}")
                 
         # Если ничего не сработало, возвращаем ошибку
+        error_message = "Не удалось получить список устройств"
         error_device = {
             'busid': 'error',
             'info': 'Ошибка: Служба USB/IP не запущена или не настроена',
             'details': [
                 'Запустите doctor.sh для диагностики и устранения проблем.',
-                f'Детали ошибки: {stderr if stderr else "Не удалось получить список устройств"}',
+                f'Детали ошибки: {error_message}',
                 'Убедитесь, что пользователь веб-сервера имеет права на выполнение команд без пароля.'
             ],
             'device_name': 'Ошибка USB/IP',
@@ -504,54 +550,6 @@ def get_local_usb_devices():
                 'Проверьте журнал отладки для получения дополнительной информации.'
             ],
             'device_name': 'Ошибка',
-            'vendor_id': '0000',
-            'product_id': '0000',
-            'is_error': True
-        }
-        
-        return [error_device]
-        
-        # Дополнительно обрабатываем каждое устройство, добавляя vendor_id, product_id и device_name
-        for device in devices:
-            # Пропускаем если уже извлечены vendor_id и product_id
-            if 'vendor_id' in device and 'product_id' in device:
-                continue
-                
-            # Извлекаем vendor_id и product_id из строки info
-            # Пример: "1-1: LogiLink : UDisk flash drive (abcd:1234)"
-            ids_match = re.search(r'\(([0-9a-f]{4}):([0-9a-f]{4})\)', device['info'])
-            if ids_match:
-                device['vendor_id'] = ids_match.group(1)
-                device['product_id'] = ids_match.group(2)
-            else:
-                device['vendor_id'] = '0000'
-                device['product_id'] = '0000'
-            
-            # Пропускаем если уже есть device_name
-            if 'device_name' in device:
-                continue
-                
-            # Извлекаем имя устройства из строки info
-            name_match = re.search(r':\s+(.*?)\s+\(', device['info'])
-            if name_match:
-                device['device_name'] = name_match.group(1).strip()
-            else:
-                device['device_name'] = f"Устройство {device['busid']}"
-        
-        return devices
-    except Exception as e:
-        error_msg = f"Ошибка при выполнении get_local_usb_devices: {str(e)}"
-        logger.error(error_msg)
-        
-        # Создаем специальное "устройство-уведомление" с информацией об ошибке
-        error_device = {
-            'busid': 'error',
-            'info': 'Ошибка при получении списка USB устройств',
-            'details': [
-                'Запустите doctor.sh для диагностики и устранения проблем.',
-                f'Детали ошибки: {str(e)}'
-            ],
-            'device_name': 'Ошибка USB/IP',
             'vendor_id': '0000',
             'product_id': '0000',
             'is_error': True
