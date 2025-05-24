@@ -157,59 +157,7 @@ def parse_attached_devices(output):
         
     return devices
 
-def get_demo_usb_devices():
-    """
-    Возвращает список демонстрационных USB-устройств для тестирования интерфейса
-    в среде Replit, где нет реальных USB устройств.
-    
-    Использует тот же формат, что и parse_local_usb_devices()
-    
-    Returns:
-        list: Список демонстрационных устройств
-    """
-    # Копируем устройства, которые показывает doctor.sh для согласованности
-    return [
-        {
-            'busid': '1-1',
-            'info': '1-1: LogiLink : UDisk flash drive (abcd:1234)',
-            'details': ['  1-1:1.0: USB Mass Storage Interface'],
-            'vendor_id': 'abcd',
-            'product_id': '1234',
-            'device_name': 'LogiLink UDisk flash drive'
-        },
-        {
-            'busid': '1-3',
-            'info': '1-3: MosArt Semiconductor Corp. : Wireless Keyboard/Mouse (062a:4101)',
-            'details': ['  1-3:1.0: USB HID Interface'],
-            'vendor_id': '062a',
-            'product_id': '4101',
-            'device_name': 'MosArt Semiconductor Corp. Wireless Keyboard/Mouse'
-        },
-        {
-            'busid': '1-6',
-            'info': '1-6: Elan Microelectronics Corp. : unknown product (04f3:22e8)',
-            'details': ['  1-6:1.0: USB HID Interface'],
-            'vendor_id': '04f3',
-            'product_id': '22e8',
-            'device_name': 'Elan Microelectronics Corp. Touchpad'
-        },
-        {
-            'busid': '1-7',
-            'info': '1-7: Intel Corp. : Bluetooth wireless interface (8087:0a2a)',
-            'details': ['  1-7:1.0: USB Bluetooth Interface'],
-            'vendor_id': '8087',
-            'product_id': '0a2a',
-            'device_name': 'Intel Corp. Bluetooth wireless interface'
-        },
-        {
-            'busid': '1-8',
-            'info': '1-8: Chicony Electronics Co., Ltd : unknown product (04f2:b5d8)',
-            'details': ['  1-8:1.0: USB Video Interface'],
-            'vendor_id': '04f2',
-            'product_id': 'b5d8',
-            'device_name': 'Chicony Electronics Co., Ltd Webcam'
-        }
-    ]
+# Функция удалена по запросу пользователя
 
 def get_local_usb_devices():
     """
@@ -223,17 +171,43 @@ def get_local_usb_devices():
         stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-l'])
         
         if return_code != 0:
-            logger.error(f"Ошибка получения списка локальных устройств: {stderr}")
+            error_msg = f"Ошибка получения списка локальных устройств: {stderr}"
+            logger.error(error_msg)
             
-            # Проверяем, вызвана ли ошибка отсутствием команды usbip
-            if "No such file or directory" in stderr or return_code == 127:
-                logger.warning("Команда usbip не найдена, возвращаем демонстрационные устройства для тестирования")
-                return get_demo_usb_devices()
+            # Создаем специальное "устройство-уведомление", информирующее о проблеме
+            error_device = {
+                'busid': 'error',
+                'info': 'Ошибка: Служба USB/IP не запущена или не настроена',
+                'details': [
+                    'Запустите doctor.sh для диагностики и устранения проблем.',
+                    f'Детали ошибки: {stderr}'
+                ],
+                'device_name': 'Ошибка USB/IP',
+                'vendor_id': '0000',
+                'product_id': '0000',
+                'is_error': True  # Специальный флаг для обработки в интерфейсе
+            }
             
-            return []
+            return [error_device]
         
         # Получаем список устройств из вывода команды
         devices = parse_local_usb_devices(stdout)
+        
+        # Если список пуст, добавляем информационное "устройство"
+        if not devices:
+            info_device = {
+                'busid': 'info',
+                'info': 'USB устройства не обнаружены',
+                'details': [
+                    'Проверьте подключение USB устройств к компьютеру',
+                    'Убедитесь, что служба USB/IP запущена: sudo systemctl start usbipd'
+                ],
+                'device_name': 'Нет устройств',
+                'vendor_id': '0000',
+                'product_id': '0000',
+                'is_info': True  # Специальный флаг для обработки в интерфейсе
+            }
+            return [info_device]
         
         # Дополнительно обрабатываем каждое устройство, добавляя vendor_id, product_id и device_name
         for device in devices:
@@ -243,6 +217,9 @@ def get_local_usb_devices():
             if ids_match:
                 device['vendor_id'] = ids_match.group(1)
                 device['product_id'] = ids_match.group(2)
+            else:
+                device['vendor_id'] = '0000'
+                device['product_id'] = '0000'
             
             # Извлекаем имя устройства из строки info
             name_match = re.search(r':\s+(.*?)\s+\(', device['info'])
@@ -253,9 +230,24 @@ def get_local_usb_devices():
         
         return devices
     except Exception as e:
-        logger.error(f"Ошибка при выполнении get_local_usb_devices: {str(e)}")
-        # В случае любой ошибки возвращаем демо-устройства
-        return get_demo_usb_devices()
+        error_msg = f"Ошибка при выполнении get_local_usb_devices: {str(e)}"
+        logger.error(error_msg)
+        
+        # Создаем специальное "устройство-уведомление" с информацией об ошибке
+        error_device = {
+            'busid': 'error',
+            'info': 'Ошибка при получении списка USB устройств',
+            'details': [
+                'Запустите doctor.sh для диагностики и устранения проблем.',
+                f'Детали ошибки: {str(e)}'
+            ],
+            'device_name': 'Ошибка USB/IP',
+            'vendor_id': '0000',
+            'product_id': '0000',
+            'is_error': True
+        }
+        
+        return [error_device]
 
 def bind_device(busid):
     """

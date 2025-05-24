@@ -27,35 +27,56 @@
                                 </thead>
                                 <tbody>
                                     {% for device in local_devices %}
-                                    <tr {% if device.is_virtual %}class="table-primary"{% endif %}>
+                                    <tr 
+                                        {% if device.is_virtual %}class="table-primary"{% endif %}
+                                        {% if device.is_error %}class="table-danger"{% endif %}
+                                        {% if device.is_info %}class="table-warning"{% endif %}
+                                    >
                                         <td>
-                                            {{ device.busid }}
-                                            {% if device.is_virtual %}
-                                            <span class="badge bg-primary">{{ t('virtual') }}</span>
+                                            {% if device.is_error %}
+                                                <i class="fas fa-exclamation-triangle text-danger"></i>
+                                            {% elif device.is_info %}
+                                                <i class="fas fa-info-circle text-warning"></i>
+                                            {% else %}
+                                                {{ device.busid }}
+                                                {% if device.is_virtual %}
+                                                <span class="badge bg-primary">{{ t('virtual') }}</span>
+                                                {% endif %}
                                             {% endif %}
                                         </td>
                                         <td>
                                             <div>{{ device.device_name }}</div>
-                                            <small class="text-muted">{{ device.vendor_id }}:{{ device.product_id }}</small>
+                                            {% if device.is_error or device.is_info %}
+                                                {% for detail in device.details %}
+                                                    <small class="d-block">{{ detail }}</small>
+                                                {% endfor %}
+                                            {% else %}
+                                                <small class="text-muted">{{ device.vendor_id }}:{{ device.product_id }}</small>
+                                            {% endif %}
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-primary bind-device-btn" 
-                                                        data-busid="{{ device.busid }}"
-                                                        {% if device.is_virtual %}
-                                                        data-is-virtual="true" 
-                                                        data-virtual-id="{{ device.virtual_id }}"
-                                                        {% endif %}>
-                                                    <i class="fas fa-share me-1"></i>{{ t('publish') }}
-                                                </button>
-                                                {% if not device.is_virtual %}
-                                                <button class="btn btn-outline-info set-alias-btn" 
-                                                        data-busid="{{ device.busid }}" 
-                                                        data-device="{{ device.device_name }}">
-                                                    <i class="fas fa-tag me-1"></i>{{ t('set_name') }}
-                                                </button>
+                                                {% if device.is_error or device.is_info %}
+                                                    <button class="btn btn-warning run-doctor-btn">
+                                                        <i class="fas fa-stethoscope me-1"></i>Запустить doctor.sh
+                                                    </button>
+                                                {% else %}
+                                                    <button class="btn btn-primary bind-device-btn" 
+                                                            data-busid="{{ device.busid }}"
+                                                            {% if device.is_virtual %}
+                                                            data-is-virtual="true" 
+                                                            data-virtual-id="{{ device.virtual_id }}"
+                                                            {% endif %}>
+                                                        <i class="fas fa-share me-1"></i>{{ t('publish') }}
+                                                    </button>
+                                                    {% if not device.is_virtual %}
+                                                    <button class="btn btn-outline-info set-alias-btn" 
+                                                            data-busid="{{ device.busid }}" 
+                                                            data-device="{{ device.device_name }}">
+                                                        <i class="fas fa-tag me-1"></i>{{ t('set_name') }}
+                                                    </button>
+                                                    {% endif %}
                                                 {% endif %}
-
                                             </div>
                                         </td>
                                     </tr>
