@@ -1,6 +1,7 @@
 import subprocess
 import re
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -571,8 +572,35 @@ def bind_device(busid):
         # Добавляем подробное логирование
         logger.debug(f"Публикуем устройство с busid: {busid}")
         
-        # Вызываем usbip bind с правильными параметрами, используя sudo принудительно
-        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'bind', '-b', busid], use_sudo=True, no_interactive=True)
+        # Сначала проверяем существование устройства
+        check_stdout, check_stderr, check_return_code = run_command(['lsusb', '-d', busid.replace('-', ':')], use_sudo=False)
+        
+        # Если устройство не найдено через lsusb, проверяем через системные файлы
+        if check_return_code != 0:
+            logger.debug(f"Устройство {busid} не найдено через lsusb, проверяем наличие в системе")
+            # Проверяем наличие устройства в /sys/bus/usb/devices/
+            check_stdout, check_stderr, check_return_code = run_command(['ls', f'/sys/bus/usb/devices/{busid}'], use_sudo=False)
+            if check_return_code != 0:
+                error_msg = f"Устройство с ID {busid} не существует или недоступно"
+                logger.error(error_msg)
+                try:
+                    from app import add_log_entry
+                    add_log_entry("ERROR", error_msg, "usbip")
+                except Exception as log_e:
+                    logger.error(f"Ошибка при добавлении лога: {str(log_e)}")
+                return False, error_msg
+        
+        # Вызываем usbip bind с правильными параметрами, пробуем разные пути к usbip
+        for usbip_path in ['/usr/bin/usbip', '/usr/sbin/usbip', '/usr/local/bin/usbip', '/usr/local/sbin/usbip']:
+            # Проверяем существование исполняемого файла
+            if os.path.exists(usbip_path):
+                logger.debug(f"Найден исполняемый файл usbip: {usbip_path}")
+                stdout, stderr, return_code = run_command([usbip_path, 'bind', '-b', busid], use_sudo=True, no_interactive=True)
+                break
+        else:
+            # Если ни один путь не найден, пробуем без полного пути
+            logger.debug("Не найден путь к usbip, пробуем без указания полного пути")
+            stdout, stderr, return_code = run_command(['usbip', 'bind', '-b', busid], use_sudo=True, no_interactive=True)
         
         # Логируем результат
         logger.debug(f"Результат публикации: код {return_code}, stderr: {stderr}")
