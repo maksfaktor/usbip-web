@@ -565,6 +565,20 @@ if systemctl is-active --quiet orange-usbip; then
     echo " - Status:       sudo systemctl status orange-usbip"
     echo " - Logs:         sudo journalctl -u orange-usbip"
     echo ""
+    
+    # Notice about uninstall options
+    echo_color "blue" "To uninstall this application, you have several options:"
+    echo ""
+    echo_color "yellow" "Option 1: Quick uninstall from anywhere (recommended):"
+    echo "   sudo bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/uninstall.sh)\""
+    echo ""
+    echo_color "yellow" "Option 2: From installation directory:"
+    echo "   cd ~/orange-usbip"
+    echo "   sudo ./install_arm.sh --uninstall"
+    echo ""
+    echo_color "yellow" "Option 3: Using local script (if downloaded):"
+    echo "   sudo ./uninstall.sh"
+    echo ""
 else
     echo_color "red" "Service failed to start. Check logs: sudo journalctl -u orange-usbip"
     exit 1
