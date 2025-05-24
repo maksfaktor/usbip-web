@@ -157,59 +157,8 @@ def parse_attached_devices(output):
         
     return devices
 
-def get_demo_usb_devices():
-    """
-    Возвращает список демонстрационных USB-устройств для тестирования интерфейса
-    
-    Returns:
-        list: Список демонстрационных устройств
-    """
-    devices = []
-    
-    # Разбор демо-устройств для корректного отображения в интерфейсе
-    demo_devices = [
-        {
-            'busid': '1-1',
-            'device_name': 'Logitech USB Mouse',
-            'idVendor': '046d',
-            'idProduct': 'c05a'
-        },
-        {
-            'busid': '1-2',
-            'device_name': 'Logitech Keyboard K120',
-            'idVendor': '046d',
-            'idProduct': 'c31c'
-        },
-        {
-            'busid': '1-3',
-            'device_name': 'Kingston DataTraveler 3.0',
-            'idVendor': '0951',
-            'idProduct': '1666'
-        },
-        {
-            'busid': '2-1',
-            'device_name': 'Microsoft LifeCam HD-3000',
-            'idVendor': '045e',
-            'idProduct': '0779'
-        },
-        {
-            'busid': '2-2',
-            'device_name': 'HP LaserJet Pro MFP',
-            'idVendor': '03f0',
-            'idProduct': '3d17'
-        }
-    ]
-    
-    # Конвертируем в формат, используемый в приложении
-    for device in demo_devices:
-        devices.append({
-            'busid': device['busid'],
-            'device_name': device['device_name'],
-            'idVendor': device['idVendor'],
-            'idProduct': device['idProduct']
-        })
-    
-    return devices
+# Удалена функция get_demo_usb_devices() по требованию пользователя
+# Вместо демонстрационных устройств используются только реальные и виртуальные устройства
 
 def get_local_usb_devices():
     """
@@ -227,16 +176,15 @@ def get_local_usb_devices():
             
             # Проверяем, вызвана ли ошибка отсутствием команды usbip
             if "No such file or directory" in stderr or return_code == 127:
-                logger.warning("Команда usbip не найдена, возвращаем демонстрационные устройства для тестирования")
-                return get_demo_usb_devices()
+                logger.warning("Команда usbip не найдена, возвращаем пустой список устройств")
             
             return []
         
         return parse_local_usb_devices(stdout)
     except Exception as e:
         logger.error(f"Ошибка при выполнении get_local_usb_devices: {str(e)}")
-        # Возвращаем демонстрационные данные при любой ошибке
-        return get_demo_usb_devices()
+        # Возвращаем пустой список при любой ошибке
+        return []
 
 def bind_device(busid):
     """
