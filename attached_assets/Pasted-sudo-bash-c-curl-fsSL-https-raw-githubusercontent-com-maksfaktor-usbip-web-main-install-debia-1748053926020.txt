@@ -1,0 +1,103 @@
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)"
+====================================================
+  Orange USBIP Automatic Installation for Debian    
+====================================================
+
+This script will set up the USB/IP server and client on your system.
+
+[1/10] Checking operating system...
+✓ Architecture x86_64 is compatible (x86/x86_64).
+[2/10] Updating package list...
+✓ Repositories updated.
+[3/10] Installing required packages...
+Installing uv - modern Python package manager...
+  → Method 1/3: Using official installer script...
+    → Rust not found, installing Rust first...
+    ✓ Rust successfully installed.
+  ✓ uv successfully installed via official script.
+✓ uv package manager is ready to use.
+✓ Required packages installed.
+[4/10] Checking and configuring USB/IP...
+    → Determining kernel version...
+    → Detected kernel version: 6.8.0-60-generic
+    → Installing Linux Tools for current kernel...
+    → Found package linux-tools-6.8.0-60-generic
+✓ USB/IP successfully installed.
+[5/10] Configuring kernel modules for USB/IP...
+    → Loading module usbip-core...
+    → Loading module usbip-host...
+    → Loading module vhci-hcd...
+✓ USB/IP modules configured.
+[6/10] Configuring USB/IP daemon...
+✓ USB/IP daemon configured.
+[7/10] Creating application directory...
+Cloning repository...
+Cloning into '.'...
+remote: Enumerating objects: 786, done.
+remote: Counting objects: 100% (10/10), done.
+remote: Compressing objects: 100% (10/10), done.
+remote: Total 786 (delta 7), reused 0 (delta 0), pack-reused 776 (from 1)
+Receiving objects: 100% (786/786), 4.87 MiB | 1.81 MiB/s, done.
+Resolving deltas: 100% (593/593), done.
+✓ Repository successfully downloaded to /home/maxx/orange-usbip.
+[8/10] Setting up Python virtual environment...
+Using uv for fast dependency installation...
+Using Python 3.12.3 environment at: venv
+Resolved 1 package in 364ms
+Prepared 1 package in 79ms
+Uninstalled 1 package in 90ms
+Installed 1 package in 163ms
+ - pip==24.0
+ + pip==25.1.1
+Using Python 3.12.3 environment at: venv
+Resolved 38 packages in 1.93s
+      Built netifaces==0.11.0
+Prepared 38 packages in 10.47s
+Installed 38 packages in 48ms
+ + babel==2.17.0
+ + blinker==1.9.0
+ + certifi==2025.4.26
+ + charset-normalizer==3.4.2
+ + click==8.2.1
+ + courlan==1.3.2
+ + dateparser==1.2.1
+ + dnspython==2.7.0
+ + email-validator==2.1.0
+ + flask==3.0.2
+ + flask-login==0.6.3
+ + flask-sqlalchemy==3.1.1
+ + flask-wtf==1.2.1
+ + greenlet==3.2.2
+ + gunicorn==23.0.0
+ + htmldate==1.9.3
+ + idna==3.10
+ + itsdangerous==2.2.0
+ + jinja2==3.1.6
+ + justext==3.0.2
+ + lxml==5.4.0
+ + lxml-html-clean==0.4.2
+ + markupsafe==3.0.2
+ + netifaces==0.11.0
+ + packaging==25.0
+ + python-dateutil==2.9.0.post0
+ + pytz==2025.2
+ + regex==2024.11.6
+ + requests==2.31.0
+ + six==1.17.0
+ + sqlalchemy==2.0.27
+ + tld==0.13.1
+ + trafilatura==1.6.3
+ + typing-extensions==4.13.2
+ + tzlocal==5.3.1
+ + urllib3==2.4.0
+ + werkzeug==3.0.1
+ + wtforms==3.2.1
+warning: `email-validator==2.1.0` is yanked (reason: "Forgot to drop Python 3.7 from python_requires, see https://github.com/JoshData/python-email-validator/pull/118")
+✓ Python virtual environment configured.
+[9/10] Creating systemd service...
+Created symlink /etc/systemd/system/multi-user.target.wants/orange-usbip.service → /etc/systemd/system/orange-usbip.service.
+✓ Systemd service created and started.
+[10/10] Configuring access rights for USB/IP...
+✓ Access rights configured.
+====================================================
+  Orange USBIP Installation Successfully Completed! 
