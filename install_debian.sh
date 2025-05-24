@@ -726,7 +726,7 @@ fi
 
 # Notice about uninstall options
 echo_color "blue" "To uninstall this application:"
-echo "   cd ~/orange-usbip && sudo ./uninstall.sh"
+echo "   cd ~/orange-usbip && chmod +x uninstall.sh && sudo ./uninstall.sh"
 echo ""
 
 exit 0

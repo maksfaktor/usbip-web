@@ -86,7 +86,8 @@ def main():
     files_to_update = [
         "doctor.sh",
         "usbip_utils.py",
-        "install_debian.sh"
+        "install_debian.sh",
+        "uninstall.sh"
     ]
     
     commit_message = "Исправлена функция публикации устройств и упрощены инструкции по удалению"
