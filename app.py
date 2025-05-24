@@ -127,7 +127,7 @@ def inject_translation():
     return dict(t=translate)
 
 # Импортирование утилит
-from usbip_utils import get_local_usb_devices, bind_device, get_remote_usb_devices, attach_device, detach_device, get_attached_devices
+from usbip_utils import get_local_usb_devices, bind_device, get_remote_usb_devices, attach_device, detach_device, get_attached_devices, get_published_devices
 
 # Импортирование моделей (после настройки db)
 from models import User, DeviceAlias, UsbPort, LogEntry, VirtualUsbDevice, VirtualUsbPort, VirtualUsbFile
@@ -262,6 +262,17 @@ def get_local_devices_api():
 def index():
     # Получаем реальные USB устройства через usbip
     local_devices = get_local_usb_devices()
+    
+    # Получаем список опубликованных устройств
+    published_busids = get_published_devices()
+    
+    # Помечаем опубликованные устройства
+    for device in local_devices:
+        if 'busid' in device and device['busid'] in published_busids:
+            device['is_published'] = True
+        else:
+            device['is_published'] = False
+            
     attached_devices = get_attached_devices()
     
     # Добавляем виртуальные устройства в список локальных устройств

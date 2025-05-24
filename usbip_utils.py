@@ -473,6 +473,42 @@ def parse_doctor_output(output):
     
     return devices
 
+def get_published_devices():
+    """
+    Получает список опубликованных USB-устройств
+    
+    Returns:
+        list: Список busid опубликованных устройств
+    """
+    try:
+        logger.debug("Получаем список опубликованных устройств")
+        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-b'], use_sudo=True)
+        
+        if return_code != 0 or not stdout:
+            logger.warning(f"Не удалось получить список опубликованных устройств: {stderr}")
+            return []
+            
+        published_devices = []
+        
+        # Пример строки: "1-1: unknown vendor : unknown product (0000:0000)"
+        for line in stdout.strip().split('\n'):
+            if not line or "usbip:" in line:
+                continue
+                
+            # Извлекаем busid из строки
+            match = re.match(r'(\d+-\d+):', line)
+            if match:
+                busid = match.group(1)
+                # Нормализуем формат busid
+                busid = normalize_busid(busid)
+                published_devices.append(busid)
+                
+        logger.debug(f"Найдено {len(published_devices)} опубликованных устройств: {published_devices}")
+        return published_devices
+    except Exception as e:
+        logger.error(f"Ошибка при получении списка опубликованных устройств: {str(e)}")
+        return []
+
 def get_local_usb_devices():
     """
     Получает список локальных USB-устройств
