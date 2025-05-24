@@ -90,6 +90,32 @@ sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-we
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)"
 ```
 
+### Uninstallation
+
+If you need to uninstall Orange USBIP Web Interface, you have several options:
+
+#### Option 1: Using uninstall.sh script
+
+```bash
+sudo ./uninstall.sh
+```
+
+#### Option 2: Using installation scripts with --uninstall parameter
+
+```bash
+# For ARM systems
+sudo ./install_arm.sh --uninstall
+
+# For Debian/Ubuntu systems
+sudo ./install_debian.sh --uninstall
+```
+
+The uninstall process will:
+- Create a backup of your settings and database in `/var/backups/orangeusb/`
+- Stop and remove the systemd service
+- Remove application files and configuration
+- Clean up the sudoers configuration
+
 ### Standard Installation
 
 If you prefer to check the script before running it, you can use the standard approach:
