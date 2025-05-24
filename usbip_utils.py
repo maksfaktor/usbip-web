@@ -257,7 +257,7 @@ def attach_device(ip, busid):
         tuple: (success, message)
     """
     try:
-        stdout, stderr, return_code = run_command(['usbip', 'attach', '-r', ip, '-b', busid])
+        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'attach', '-r', ip, '-b', busid])
         
         if return_code != 0:
             return False, f"Ошибка подключения устройства: {stderr}"
@@ -279,7 +279,7 @@ def detach_device(port):
         tuple: (success, message)
     """
     try:
-        stdout, stderr, return_code = run_command(['usbip', 'detach', '-p', port])
+        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'detach', '-p', port])
         
         if return_code != 0:
             return False, f"Ошибка отключения устройства: {stderr}"
@@ -298,7 +298,7 @@ def get_attached_devices():
         list: Список устройств
     """
     try:
-        stdout, stderr, return_code = run_command(['usbip', 'port'])
+        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'port'])
         
         if return_code != 0:
             logger.error(f"Ошибка получения списка подключенных устройств: {stderr}")
