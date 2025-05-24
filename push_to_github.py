@@ -84,20 +84,10 @@ def update_file(file_path, message):
 # Основная функция
 def main():
     files_to_update = [
-        "install_arm.sh",
-        "install_debian.sh",
-        "uninstall.sh",
-        "README.md",
-        "requirements-deploy.txt",
-        "usbip_utils.py",
-        "doctor.sh",
-        "app.py",
-        "translations.py",
-        "templates/base.html",
         "templates/index.html"
     ]
     
-    commit_message = "Удалены демо-устройства, оставлены только реальные и виртуальные"
+    commit_message = "Добавлена интеграция doctor.sh в веб-интерфейс для диагностики"
     
     print("Отправляем изменения в GitHub...")
     
