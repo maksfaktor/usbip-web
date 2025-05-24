@@ -143,7 +143,7 @@ function getRemoteDevices() {
  * Обработчик для формы подключения удаленного устройства
  */
 function attachDevice(ip, busid) {
-    fetch('/attach-device', {
+    fetch(URLS.attach_device, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ function attachDevice(ip, busid) {
  * Обработчик для отключения устройства
  */
 function detachDevice(port) {
-    fetch('/detach-device', {
+    fetch(URLS.detach_device, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
