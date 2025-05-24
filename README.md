@@ -94,13 +94,19 @@ sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-we
 
 If you need to uninstall Orange USBIP Web Interface, you have several options:
 
-#### Option 1: Using uninstall.sh script
+#### Option 1: Direct download and uninstall (one-line command)
+
+```bash
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/uninstall.sh)"
+```
+
+#### Option 2: Using uninstall.sh script
 
 ```bash
 sudo ./uninstall.sh
 ```
 
-#### Option 2: Using installation scripts with --uninstall parameter
+#### Option 3: Using installation scripts with --uninstall parameter
 
 ```bash
 # For ARM systems
