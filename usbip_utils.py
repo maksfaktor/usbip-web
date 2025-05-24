@@ -470,9 +470,10 @@ def get_local_usb_devices():
         except Exception as e:
             logger.error(f"Ошибка при выполнении usbip list -l: {str(e)}")
             try:
+                from app import add_log_entry
                 add_log_entry("ERROR", f"Ошибка при выполнении usbip list -l: {str(e)}", "usbip")
-            except:
-                pass
+            except Exception as ex:
+                logger.error(f"Ошибка при добавлении лога: {str(ex)}")
                 
         # Если ничего не сработало, возвращаем ошибку
         error_device = {
