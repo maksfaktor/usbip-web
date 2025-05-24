@@ -682,8 +682,13 @@ progress_update $CURRENT_STEP $TOTAL_STEPS "Configuring access rights for USB/IP
 if [ ! -f "/etc/sudoers.d/usbip-$REAL_USER" ]; then
     cat > "/etc/sudoers.d/usbip-$REAL_USER" << EOF
 $REAL_USER ALL=(ALL) NOPASSWD: /usr/sbin/usbip
+$REAL_USER ALL=(ALL) NOPASSWD: /usr/bin/usbip
 $REAL_USER ALL=(ALL) NOPASSWD: /usr/lib/linux-tools/*/usbip
 $REAL_USER ALL=(ALL) NOPASSWD: /usr/local/bin/usbip
+$REAL_USER ALL=(ALL) NOPASSWD: /usr/bin/find
+$REAL_USER ALL=(ALL) NOPASSWD: /bin/find
+$REAL_USER ALL=(ALL) NOPASSWD: /usr/bin/lsusb
+$REAL_USER ALL=(ALL) NOPASSWD: /bin/lsusb
 EOF
     chmod 440 "/etc/sudoers.d/usbip-$REAL_USER"
 fi

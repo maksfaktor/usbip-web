@@ -44,15 +44,31 @@ def run_command(command, use_sudo=True, no_interactive=True):
                 pkexec_cmd = ['pkexec'] + command
                 logger.debug(f"Выполнение команды: {' '.join(pkexec_cmd)}")
                 
-                process = subprocess.Popen(
+                pkexec_process = subprocess.Popen(
                     pkexec_cmd,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True
                 )
-            except subprocess.TimeoutExpired:
-                process.kill()
-                return "", "Команда выполнялась слишком долго и была прервана", 1
+                stdout, stderr = pkexec_process.communicate(timeout=5)
+                return_code = pkexec_process.returncode
+                return stdout, stderr, return_code
+                
+            except subprocess.TimeoutExpired as timeout_error:
+                # Обрабатываем случай таймаута
+                error_msg = "Команда выполнялась слишком долго и была прервана"
+                logger.error(f"{error_msg}: {str(timeout_error)}")
+                
+                # Безопасное завершение процесса
+                try:
+                    if 'process' in locals():
+                        process.kill()
+                    if 'pkexec_process' in locals():
+                        pkexec_process.kill()
+                except Exception as kill_error:
+                    logger.error(f"Ошибка при завершении процесса: {str(kill_error)}")
+                
+                return "", error_msg, 1
         else:
             cmd = command
             logger.debug(f"Выполнение команды без sudo: {' '.join(cmd)}")
@@ -505,12 +521,13 @@ def get_local_usb_devices():
                 logger.error(f"Ошибка при добавлении лога: {str(ex)}")
                 
         # Если ничего не сработало, возвращаем ошибку
+        error_message = "Не удалось получить список устройств"
         error_device = {
             'busid': 'error',
             'info': 'Ошибка: Служба USB/IP не запущена или не настроена',
             'details': [
                 'Запустите doctor.sh для диагностики и устранения проблем.',
-                f'Детали ошибки: {stderr if stderr else "Не удалось получить список устройств"}',
+                f'Детали ошибки: {error_message}',
                 'Убедитесь, что пользователь веб-сервера имеет права на выполнение команд без пароля.'
             ],
             'device_name': 'Ошибка USB/IP',
