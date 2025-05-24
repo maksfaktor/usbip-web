@@ -427,10 +427,12 @@ def port_name():
 
 
 
-@app.route('/bind_device', methods=['POST'])
+@app.route('/bind-device', methods=['POST'])
 @login_required
 def bind_device_route():
-    busid = request.form.get('busid')
+    # Получаем данные из JSON (не из form)
+    data = request.get_json()
+    busid = data.get('busid') if data else None
     if not busid:
         return jsonify({'success': False, 'message': 'Не указан busid устройства'}), 400
     
