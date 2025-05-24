@@ -166,7 +166,7 @@ def get_local_usb_devices():
     """
     try:
         # В реальном окружении
-        stdout, stderr, return_code = run_command(['usbip', 'list', '-l'])
+        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-l'])
         
         if return_code != 0:
             logger.error(f"Ошибка получения списка локальных устройств: {stderr}")
@@ -200,7 +200,7 @@ def bind_device(busid):
         tuple: (success, message)
     """
     try:
-        stdout, stderr, return_code = run_command(['usbip', 'bind', '-b', busid])
+        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'bind', '-b', busid])
         
         if return_code != 0:
             return False, f"Ошибка публикации устройства: {stderr}"
@@ -222,7 +222,7 @@ def get_remote_usb_devices(ip):
         tuple: (список устройств, сообщение об ошибке)
     """
     try:
-        stdout, stderr, return_code = run_command(['usbip', 'list', '-r', ip])
+        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-r', ip])
         
         if return_code != 0:
             return [], f"Ошибка получения списка удаленных устройств: {stderr}"
