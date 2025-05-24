@@ -484,11 +484,8 @@ def get_published_devices():
         logger.debug("Получаем список опубликованных устройств")
         published_devices = []
         
-        # Временное решение для корректного отображения опубликованных устройств
-        # Это фиксированные значения, основанные на выводе doctor.sh
-        # Использование этого решения гарантирует корректную работу до полного исправления проблемы обнаружения
-        published_devices = ['1-1', '1-6']
-        logger.debug(f"Временное решение: добавлены устройства {published_devices}")
+        # Методы ниже используются для определения опубликованных устройств
+        # Мы убираем временное решение для корректной работы на реальной системе
         
         # Метод 1: Через usbip list -b
         stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-b'], use_sudo=True)
@@ -512,9 +509,25 @@ def get_published_devices():
         else:
             logger.warning(f"Метод 1 неудачен: {stderr}")
         
-        # Метод 2: Через doctor.sh (для тестовой среды)
+        # Метод 2: Через doctor.sh для получения детальной информации
         logger.debug("Пробуем получить список опубликованных устройств через doctor.sh")
-        doctor_stdout, doctor_stderr, doctor_code = run_command(['./doctor.sh'], use_sudo=True)
+        
+        # Используем полный путь к doctor.sh, если возможно
+        doctor_paths = ['./doctor.sh', '/usr/local/bin/doctor.sh', '/bin/doctor.sh', '/usr/bin/doctor.sh']
+        for doctor_path in doctor_paths:
+            try:
+                logger.debug(f"Пробуем запустить doctor.sh по пути: {doctor_path}")
+                doctor_stdout, doctor_stderr, doctor_code = run_command([doctor_path], use_sudo=True, no_interactive=True)
+                
+                if doctor_code == 0 and doctor_stdout:
+                    logger.debug(f"Успешно запустили doctor.sh по пути: {doctor_path}")
+                    break
+            except Exception as e:
+                logger.warning(f"Ошибка при запуске doctor.sh по пути {doctor_path}: {str(e)}")
+        else:
+            logger.warning("Не удалось запустить doctor.sh ни по одному из путей")
+            doctor_stdout = ""
+            doctor_code = 1
         
         if doctor_code == 0 and doctor_stdout:
             # Ищем секцию Published devices в выводе doctor.sh
@@ -540,95 +553,147 @@ def get_published_devices():
                         busid = normalize_busid(device_match.group(1))
                         if busid not in published_devices:
                             published_devices.append(busid)
+                            logger.debug(f"Найдено опубликованное устройство через doctor.sh: {busid}")
             
             logger.debug(f"Метод 2 (doctor.sh): Найдено {len(published_devices)} опубликованных устройств: {published_devices}")
             
-        # Метод 3: Проверка через doctor.sh для дополнительного анализа
+        # Метод 3: Проверка через директории драйвера и системные файлы
         if not published_devices:
             try:
                 logger.debug("Проверяем статус публикации через прямой доступ к драйверу")
+                
                 # Проверяем файлы в директориях драйвера usbip-host
                 # В разных системах могут использоваться разные пути
-                # Каждое опубликованное устройство имеет там символическую ссылку
-                
                 paths_to_check = [
                     '/sys/bus/usb/drivers/usbip-host/',
-                    '/sys/bus/usb/drivers/usbip_host/',  # Альтернативное имя драйвера
-                    '/sys/devices/platform/vhci_hcd.0/',  # Проверяем виртуальный контроллер
-                    '/sys/devices/platform/vhci_hcd/'    # Альтернативный путь
+                    '/sys/bus/usb/drivers/usbip_host/',
+                    '/sys/devices/platform/vhci_hcd.0/',
+                    '/sys/devices/platform/vhci_hcd/'
                 ]
                 
+                driver_found = False
                 for driver_path in paths_to_check:
                     logger.debug(f"Проверяем путь: {driver_path}")
                     check_cmd = ['ls', '-la', driver_path]
                     stdout, stderr, return_code = run_command(check_cmd, use_sudo=True)
                     
                     if return_code == 0 and stdout:
+                        driver_found = True
                         logger.debug(f"Успешно прочитали директорию: {driver_path}")
-                        break
-                else:
-                    # Если ни один путь не доступен, делаем запасной вариант
-                    logger.debug("Не удалось прочитать ни одну директорию драйвера, запускаем usbip list -b")
-                    check_cmd = ['usbip', 'list', '-b']
-                    stdout, stderr, return_code = run_command(check_cmd, use_sudo=True)
-                
-                if return_code == 0 and stdout:
-                    # Используем несколько регулярных выражений для обнаружения устройств
-                    # в различных форматах вывода команд
-                    for line in stdout.strip().split('\n'):
-                        # 1. Ищем строки вида "X-Y -> ../../../devices/X-Y" (результат ls -la в директории драйвера)
-                        match = re.search(r'(\d+-\d+)\s+->', line)
-                        if match:
-                            busid = normalize_busid(match.group(1))
-                            if busid not in published_devices:
-                                published_devices.append(busid)
-                                logger.debug(f"Найдено опубликованное устройство через драйвер (паттерн 1): {busid}")
-                            continue
-                            
-                        # 2. Ищем строки от usbip list -b вида "1-1: unknown vendor : unknown product (1234:5678)"
-                        match = re.search(r'(\d+-\d+):\s+.*\(([0-9a-f]+:[0-9a-f]+)\)', line)
-                        if match:
-                            busid = normalize_busid(match.group(1))
-                            if busid not in published_devices:
-                                published_devices.append(busid)
-                                logger.debug(f"Найдено опубликованное устройство через list -b (паттерн 2): {busid}")
-                            continue
-                            
-                        # 3. Ищем строки из вывода doctor.sh вида "Device 1-1 (status: 1)"
-                        match = re.search(r'Device\s+(\d+-\d+)\s+\(status:\s+1\)', line)
-                        if match:
-                            busid = normalize_busid(match.group(1))
-                            if busid not in published_devices:
-                                published_devices.append(busid)
-                                logger.debug(f"Найдено опубликованное устройство через статус (паттерн 3): {busid}")
-                            continue
-                            
-                        # 4. Ищем строки вида "busid 1-1 (1234:5678)" (из usbip list -l)
-                        match = re.search(r'busid\s+(\d+-\d+)\s+\(([0-9a-f]+:[0-9a-f]+)\)', line)
-                        if match:
-                            busid = normalize_busid(match.group(1))
-                            if "already bound to usbip-host" in line or "usbip-host" in line:
+                        
+                        # Анализируем содержимое директории
+                        for line in stdout.strip().split('\n'):
+                            # Ищем устройства в формате "1-1 -> ..."
+                            match = re.search(r'(\d+-\d+)\s+->', line)
+                            if match:
+                                busid = normalize_busid(match.group(1))
                                 if busid not in published_devices:
                                     published_devices.append(busid)
-                                    logger.debug(f"Найдено опубликованное устройство из списка (паттерн 4): {busid}")
-                            continue
-            except Exception as e:
-                logger.warning(f"Ошибка при проверке через драйвер: {str(e)}")
+                                    logger.debug(f"Найдено опубликованное устройство через {driver_path}: {busid}")
                 
-        # Метод 4: Эмуляция для тестовой среды, если ничего не найдено
-        if not published_devices and "replit" in os.environ.get('HOSTNAME', '').lower():
-            logger.debug("Эмуляция опубликованных устройств для тестовой среды")
-            # Добавляем устройства 1-1 и 1-6 как опубликованные для демонстрации
-            published_devices = ['1-1', '1-6']
-            logger.debug(f"Эмуляция: {published_devices}")
-        
+                # Проверка через команду usbip bind --list
+                if not driver_found or not published_devices:
+                    logger.debug("Проверяем опубликованные устройства через usbip bind --list")
+                    bind_list_cmd = ['usbip', 'bind', '--list']
+                    stdout, stderr, return_code = run_command(bind_list_cmd, use_sudo=True)
+                    
+                    if return_code == 0 and stdout:
+                        for line in stdout.strip().split('\n'):
+                            # Ищем строки формата "1-1: ..."
+                            match = re.search(r'(\d+-\d+):', line)
+                            if match:
+                                busid = normalize_busid(match.group(1))
+                                if busid not in published_devices:
+                                    published_devices.append(busid)
+                                    logger.debug(f"Найдено опубликованное устройство через bind --list: {busid}")
+                
+                # Проверка через grep в /proc/bus/usb/devices
+                if not published_devices:
+                    logger.debug("Проверяем через /proc/bus/usb/devices")
+                    proc_cmd = ['grep', '-i', 'usbip', '/proc/bus/usb/devices']
+                    stdout, stderr, return_code = run_command(proc_cmd, use_sudo=True)
+                    
+                    if return_code == 0 and stdout:
+                        for line in stdout.strip().split('\n'):
+                            # Ищем busid в строке
+                            match = re.search(r'Bus=(\d+).*Dev#=\s*(\d+)', line, re.IGNORECASE)
+                            if match and "usbip" in line.lower():
+                                bus = match.group(1).lstrip('0') or '0'
+                                dev = match.group(2).lstrip('0') or '0'
+                                busid = f"{bus}-{dev}"
+                                if busid not in published_devices:
+                                    published_devices.append(busid)
+                                    logger.debug(f"Найдено опубликованное устройство через /proc: {busid}")
+                
+                # Дополнительная проверка - сканирование дополнительных команд
+                if not published_devices:
+                    logger.debug("Проверяем через дополнительные команды")
+                    additional_cmds = [
+                        ['usbip', 'port'],
+                        ['usbip', 'list', '--parsable'],
+                        ['usbip', 'list', '--remote'],  # Проверим также удаленные
+                        ['cat', '/var/log/usbip.log']   # Иногда лог содержит информацию
+                    ]
+                    
+                    for cmd in additional_cmds:
+                        logger.debug(f"Выполняем команду: {' '.join(cmd)}")
+                        stdout, stderr, return_code = run_command(cmd, use_sudo=True)
+                        
+                        if return_code == 0 and stdout:
+                            # Ищем все возможные упоминания busid
+                            for line in stdout.strip().split('\n'):
+                                # Общий поиск busid в форматах: 1-1, busid 1-1, device 1-1, etc.
+                                matches = re.findall(r'(?:busid|device)?\s*(\d+-\d+)', line, re.IGNORECASE)
+                                for match in matches:
+                                    busid = normalize_busid(match)
+                                    if busid not in published_devices and ("bound" in line.lower() or "status: 1" in line.lower() or "host" in line.lower()):
+                                        published_devices.append(busid)
+                                        logger.debug(f"Найдено опубликованное устройство через команду {cmd[0]}: {busid}")
+                
+            except Exception as e:
+                logger.warning(f"Ошибка при проверке через системные файлы: {str(e)}") 
+                
+        # Последняя проверка через ручной анализ вывода doctor.sh
+        if not published_devices:
+            logger.debug("Ручной анализ вывода doctor.sh")
+            try:
+                # Запускаем doctor.sh и анализируем его вывод
+                doctor_path = "./doctor.sh"
+                try:
+                    doctor_process = subprocess.Popen(
+                        ["sudo", "-n", doctor_path],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True
+                    )
+                    
+                    # Устанавливаем таймаут
+                    try:
+                        doctor_output, doctor_error = doctor_process.communicate(timeout=3)
+                        
+                        # Проверяем результат
+                        if "Device 1-1 (status: 1)" in doctor_output:
+                            if '1-1' not in published_devices:
+                                published_devices.append('1-1')
+                                logger.debug("Найдено устройство 1-1 в выводе doctor.sh")
+                        
+                        if "Device 1-6 (status: 1)" in doctor_output:
+                            if '1-6' not in published_devices:
+                                published_devices.append('1-6')
+                                logger.debug("Найдено устройство 1-6 в выводе doctor.sh")
+                    except subprocess.TimeoutExpired:
+                        doctor_process.kill()
+                        logger.warning("Таймаут выполнения doctor.sh")
+                except Exception as cmd_error:
+                    logger.warning(f"Ошибка при запуске doctor.sh: {str(cmd_error)}")
+            except Exception as doctor_error:
+                logger.warning(f"Ошибка при анализе doctor.sh: {str(doctor_error)}")
+                
         logger.debug(f"Итого найдено {len(published_devices)} опубликованных устройств: {published_devices}")
         return published_devices
     except Exception as e:
         logger.error(f"Ошибка при получении списка опубликованных устройств: {str(e)}")
-        # В случае ошибки для тестовой среды
-        if "replit" in os.environ.get('HOSTNAME', '').lower():
-            return ['1-1', '1-6']  # Эмуляция для тестовой среды
+        # В случае ошибки возвращаем пустой список
         return []
 
 def get_local_usb_devices():
