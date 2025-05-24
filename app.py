@@ -262,75 +262,7 @@ def index():
                           available_virtual_ports=available_virtual_ports,
                           network_interfaces=network_interfaces)
 
-@app.route('/usb-devices')
-@login_required
-def usb_devices():
-    """
-    Страница для просмотра и управления USB-устройствами.
-    Позволяет видеть все подключенные устройства и публиковать (bind) их.
-    """
-    # Получаем список локальных USB-устройств
-    local_devices = get_local_usb_devices()
-    
-    # Получаем список алиасов устройств для отображения пользовательских имен
-    device_aliases = DeviceAlias.query.all()
-    aliases_dict = {alias.busid: alias.alias for alias in device_aliases}
-    
-    # Добавляем информацию об алиасах и проверяем, опубликовано ли устройство
-    for device in local_devices:
-        if device.get('busid') in aliases_dict:
-            device['alias'] = aliases_dict[device['busid']]
-        else:
-            device['alias'] = None
-    
-    # Получаем информацию о сетевых интерфейсах
-    network_interfaces = get_network_interfaces()
-    
-    return render_template('usb_devices.html', 
-                          local_devices=local_devices,
-                          network_interfaces=network_interfaces)
 
-@app.route('/bind-device/<busid>', methods=['POST'])
-@login_required
-def bind_usb_device(busid):
-    """
-    API для публикации USB-устройства.
-    
-    Args:
-        busid (str): Идентификатор устройства (например, '1-1')
-        
-    Returns:
-        JSON с результатом операции
-    """
-    try:
-        # Проверяем, что устройство существует
-        local_devices = get_local_usb_devices()
-        device_exists = False
-        device_info = ""
-        
-        for device in local_devices:
-            if device.get('busid') == busid:
-                device_exists = True
-                device_info = device.get('info', "Unknown device")
-                break
-                
-        if not device_exists:
-            add_log_entry('ERROR', f'Attempt to bind non-existent device with busid {busid}', 'usbip')
-            return jsonify({'success': False, 'message': f'Device with busid {busid} not found'})
-        
-        # Публикуем устройство
-        success, message = bind_device(busid)
-        
-        if success:
-            add_log_entry('INFO', f'Device {busid} ({device_info}) successfully published', 'usbip')
-        else:
-            add_log_entry('ERROR', f'Failed to publish device {busid}: {message}', 'usbip')
-            
-        return jsonify({'success': success, 'message': message})
-    
-    except Exception as e:
-        add_log_entry('ERROR', f'Error publishing device {busid}: {str(e)}', 'usbip')
-        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
