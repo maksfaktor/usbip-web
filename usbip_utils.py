@@ -600,7 +600,17 @@ def bind_device(busid):
         # Добавляем подробное логирование
         logger.debug(f"Публикуем устройство с busid: {busid}")
         
-        # Проверяем существование устройства в системе (без преобразования формата)
+        # Преобразуем формат busid, если нужно
+        orig_busid = busid
+        # Проверяем, если busid в формате 1-2 или в формате 001-002
+        if re.match(r'^(\d+)-(\d+)$', busid):
+            match = re.match(r'^(\d+)-(\d+)$', busid)
+            bus, device = match.groups()
+            # Нормализуем к формату 1-2 (без ведущих нулей)
+            busid = f"{int(bus)}-{int(device)}"
+            logger.debug(f"Нормализован busid из {orig_busid} в {busid}")
+            
+        # Проверяем существование устройства в системе
         logger.debug(f"Проверяем существование устройства с busid: {busid}")
         check_stdout, check_stderr, check_return_code = run_command(['ls', f'/sys/bus/usb/devices/{busid}'], use_sudo=True)
         
