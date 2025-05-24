@@ -273,6 +273,14 @@
 
 {% block extra_js %}
 <script>
+// Константы URL для API
+const URLS = {
+    bind_device: "{{ url_for('bind_device_route') }}",
+    get_remote_devices: "{{ url_for('get_remote_devices_route') }}",
+    attach_device: "{{ url_for('attach_device_route') }}",
+    detach_device: "{{ url_for('detach_device_route') }}"
+}
+
 // Обработчик для кнопки публикации устройства
 // Тексты сообщений для использования в JS
 const messages = {

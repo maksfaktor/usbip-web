@@ -57,7 +57,8 @@ function initializeTooltips() {
  * Обработчик для формы публикации USB устройства
  */
 function bindDevice(busid) {
-    fetch('/bind-device', {
+    // Используем URL из констант, переданных через шаблон
+    fetch(URLS.bind_device, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -94,7 +95,7 @@ function getRemoteDevices() {
     document.getElementById('remote-devices-spinner').classList.remove('d-none');
     document.getElementById('remote-devices-list').innerHTML = '';
     
-    fetch('/get-remote-devices', {
+    fetch(URLS.get_remote_devices, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
