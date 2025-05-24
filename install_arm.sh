@@ -654,9 +654,10 @@ if systemctl is-active --quiet orange-usbip; then
     echo " - Run diagnostic: sudo $APP_DIR/doctor.sh"
     echo ""
     
-    # Make diagnostic script executable
+    # Make diagnostic and uninstall scripts executable
     chmod +x "$APP_DIR/doctor.sh"
-    echo_color "green" "✓ Diagnostic tool installed and ready to use."
+    chmod +x "$APP_DIR/uninstall.sh" 2>/dev/null || true
+    echo_color "green" "✓ Diagnostic and uninstall tools installed and ready to use."
     echo ""
     
     # Notice about uninstall options
