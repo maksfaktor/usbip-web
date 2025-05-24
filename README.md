@@ -300,6 +300,28 @@ gunicorn --bind 0.0.0.0:5000 main:app
 
 ### Troubleshooting
 
+### Diagnostic Tool
+
+Orange USBIP comes with a built-in diagnostic tool that helps identify and resolve common issues.
+Run the diagnostic tool with the following command:
+
+```bash
+sudo ./doctor.sh
+```
+
+The diagnostic tool will check:
+- Operating system compatibility
+- Required commands availability
+- Service status (usbipd and orange-usbip)
+- Kernel modules
+- Open ports (3240 for usbipd and 5000 for web interface)
+- Firewall configuration
+- Published USB devices
+- Network interfaces
+- Connectivity with remote servers
+
+### Common Issues
+
 1. **Devices don't appear on the remote devices page:**
    - Make sure port 3240 is open in the firewall
    - Check if the usbipd daemon is running on the server computer

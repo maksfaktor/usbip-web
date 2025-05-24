@@ -1,12 +1,31 @@
 #!/bin/bash
+#####################################################################
+# Orange USBIP Diagnostic Script (doctor.sh)
+# 
+# This script helps diagnose common issues with USB/IP connections,
+# checking system configuration, services, and network connectivity.
+# 
+# Usage: sudo ./doctor.sh
+# 
+# Author: Orange USBIP Team
+# License: MIT
+# Repository: https://github.com/maksfaktor/usbip-web
+# 
+# Created: May 2025
+# Last Updated: May 24, 2025
+#####################################################################
 
-# Функции для цветного вывода
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Functions for colored output
+RED='\033[0;31m'    # Used for errors and critical issues
+GREEN='\033[0;32m'  # Used for success messages and working components
+YELLOW='\033[0;33m' # Used for warnings and recommendations
+BLUE='\033[0;34m'   # Used for headers and informational sections
+NC='\033[0m'        # No Color - resets text formatting
 
+# Function for colored text output
+# Parameters:
+#   $1: color name (red|green|yellow|blue)
+#   $2: message to display
 echo_color() {
     color=$1
     message=$2
@@ -19,7 +38,10 @@ echo_color() {
     esac
 }
 
-# Функция для проверки статуса
+# Function to check command execution status and display appropriate message
+# Parameters:
+#   $1: Success message to display
+#   $2: (Optional) Recommendation if check fails
 check_status() {
     if [ $? -eq 0 ]; then
         echo_color "green" "✓ $1"
@@ -31,7 +53,9 @@ check_status() {
     fi
 }
 
-# Функция для отображения заголовка
+# Function to display section header with formatting
+# Parameters:
+#   $1: Header text
 show_header() {
     echo ""
     echo_color "blue" "===================================================="
@@ -40,217 +64,276 @@ show_header() {
     echo ""
 }
 
-# Функция для проверки наличия команды
+# Function to check if a command exists in the system
+# Parameters:
+#   $1: Command name to check
 check_command() {
     command -v $1 > /dev/null 2>&1
-    check_status "Команда $1 доступна" "Установите пакет, содержащий команду $1"
+    check_status "Command $1 is available" "Please install package containing $1 command"
 }
 
-# Основной скрипт
+#####################################################################
+# Main diagnostic routines
+#####################################################################
+
+# Clear the screen and show welcome message
 clear
 show_header "Orange USBIP Diagnostic Tool"
 
-# Проверка операционной системы
-show_header "1. Проверка операционной системы"
-echo "Имя операционной системы: $(uname -s)"
-echo "Версия операционной системы: $(uname -r)"
-echo "Архитектура: $(uname -m)"
+#####################################################################
+# Section 1: Operating System Check
+# Displays information about the current operating system
+#####################################################################
+show_header "1. Operating System Check"
+echo "OS Name: $(uname -s)"
+echo "OS Version: $(uname -r)"
+echo "Architecture: $(uname -m)"
 
-# Проверка наличия необходимых команд
-show_header "2. Проверка наличия необходимых команд"
-check_command "usbip"
-check_command "gunicorn"
-check_command "python3"
-check_command "systemctl"
-check_command "nc"
+#####################################################################
+# Section 2: Required Commands Check
+# Verifies all necessary commands are available in the system
+#####################################################################
+show_header "2. Required Commands Check"
+check_command "usbip"     # Main USB/IP command
+check_command "gunicorn"  # Web server for the application
+check_command "python3"   # Required for running the application
+check_command "systemctl" # For service management
+check_command "nc"        # For network connectivity tests
 
-# Проверка запущенных сервисов
-show_header "3. Проверка запущенных сервисов"
+#####################################################################
+# Section 3: Services Check
+# Checks if usbipd and orange-usbip services are running
+#####################################################################
+show_header "3. Services Check"
 
-# Проверка службы usbipd
-echo "Проверка службы usbipd:"
+# Check if usbipd service is running via systemd
+echo "Checking usbipd service:"
 systemctl is-active --quiet usbipd
 if [ $? -eq 0 ]; then
-    echo_color "green" "✓ Служба usbipd запущена"
+    echo_color "green" "✓ usbipd service is running"
 else
-    echo_color "red" "✗ Служба usbipd не запущена"
-    echo_color "yellow" "  → Выполняется поиск исполняемого файла usbipd..."
+    echo_color "red" "✗ usbipd service is not running"
+    echo_color "yellow" "  → Searching for usbipd executable..."
     
+    # If service is not running, try to find the executable manually
     USBIPD_PATH=$(find /usr -name "usbipd" -type f -executable 2>/dev/null | head -1)
     if [ -z "$USBIPD_PATH" ]; then
-        echo_color "red" "  → Исполняемый файл usbipd не найден"
+        echo_color "red" "  → usbipd executable not found"
     else
-        echo_color "green" "  → Найден исполняемый файл usbipd: $USBIPD_PATH"
-        echo_color "yellow" "  → Проверка наличия запущенного процесса usbipd..."
+        echo_color "green" "  → Found usbipd executable: $USBIPD_PATH"
+        echo_color "yellow" "  → Checking for running usbipd process..."
         
+        # Check if usbipd is running as a standalone process
         ps aux | grep -v grep | grep -q usbipd
         if [ $? -eq 0 ]; then
-            echo_color "green" "  → Процесс usbipd запущен"
+            echo_color "green" "  → usbipd process is running"
         else
-            echo_color "red" "  → Процесс usbipd не запущен"
-            echo_color "yellow" "  → Рекомендуется запустить usbipd вручную: sudo $USBIPD_PATH -D"
+            echo_color "red" "  → usbipd process is not running"
+            echo_color "yellow" "  → Recommended: start usbipd manually: sudo $USBIPD_PATH -D"
         fi
     fi
 fi
 
-# Проверка службы Orange USBIP
-echo "Проверка службы Orange USBIP:"
+# Check if orange-usbip service is running
+echo "Checking Orange USBIP service:"
 systemctl is-active --quiet orange-usbip
 if [ $? -eq 0 ]; then
-    echo_color "green" "✓ Служба orange-usbip запущена"
+    echo_color "green" "✓ orange-usbip service is running"
 else
-    echo_color "red" "✗ Служба orange-usbip не запущена"
-    echo_color "yellow" "  → Рекомендуется запустить службу: sudo systemctl start orange-usbip"
+    echo_color "red" "✗ orange-usbip service is not running"
+    echo_color "yellow" "  → Recommended: start service: sudo systemctl start orange-usbip"
 fi
 
-# Проверка модулей ядра
-show_header "4. Проверка модулей ядра"
-echo "Проверка модуля usbip-core:"
+#####################################################################
+# Section 4: Kernel Modules Check
+# Verifies if required kernel modules are loaded
+#####################################################################
+show_header "4. Kernel Modules Check"
+
+# Check usbip-core module (required for basic USB/IP functionality)
+echo "Checking usbip-core module:"
 lsmod | grep -q usbip_core
-check_status "Модуль usbip-core загружен" "Загрузите модуль: sudo modprobe usbip-core"
+check_status "usbip-core module is loaded" "Load module: sudo modprobe usbip-core"
 
-echo "Проверка модуля usbip-host:"
+# Check usbip-host module (required for sharing local devices)
+echo "Checking usbip-host module:"
 lsmod | grep -q usbip_host
-check_status "Модуль usbip-host загружен" "Загрузите модуль: sudo modprobe usbip-host"
+check_status "usbip-host module is loaded" "Load module: sudo modprobe usbip-host"
 
-echo "Проверка модуля vhci-hcd:"
+# Check vhci-hcd module (required for attaching remote devices)
+echo "Checking vhci-hcd module:"
 lsmod | grep -q vhci_hcd
-check_status "Модуль vhci-hcd загружен" "Загрузите модуль: sudo modprobe vhci-hcd"
+check_status "vhci-hcd module is loaded" "Load module: sudo modprobe vhci-hcd"
 
-# Проверка открытых портов
-show_header "5. Проверка открытых портов"
-echo "Проверка порта 3240 (usbipd):"
+#####################################################################
+# Section 5: Open Ports Check
+# Checks if the required network ports are open and listening
+#####################################################################
+show_header "5. Open Ports Check"
+
+# Check if usbipd port (3240) is listening
+echo "Checking port 3240 (usbipd):"
 netstat -tuln | grep -q ":3240 "
 if [ $? -eq 0 ]; then
-    echo_color "green" "✓ Порт 3240 прослушивается"
+    echo_color "green" "✓ Port 3240 is listening"
 else
-    echo_color "red" "✗ Порт 3240 не прослушивается"
-    echo_color "yellow" "  → Служба usbipd не запущена или не прослушивает порт"
-    echo_color "yellow" "  → Рекомендуется перезапустить службу usbipd"
+    echo_color "red" "✗ Port 3240 is not listening"
+    echo_color "yellow" "  → usbipd service is not running or not listening on port"
+    echo_color "yellow" "  → Recommended: restart usbipd service"
 fi
 
-echo "Проверка порта 5000 (Orange USBIP Web):"
+# Check if web interface port (5000) is listening
+echo "Checking port 5000 (Orange USBIP Web):"
 netstat -tuln | grep -q ":5000 "
 if [ $? -eq 0 ]; then
-    echo_color "green" "✓ Порт 5000 прослушивается"
+    echo_color "green" "✓ Port 5000 is listening"
 else
-    echo_color "red" "✗ Порт 5000 не прослушивается"
-    echo_color "yellow" "  → Веб-интерфейс Orange USBIP не запущен"
-    echo_color "yellow" "  → Рекомендуется перезапустить службу orange-usbip"
+    echo_color "red" "✗ Port 5000 is not listening"
+    echo_color "yellow" "  → Orange USBIP Web interface is not running"
+    echo_color "yellow" "  → Recommended: restart orange-usbip service"
 fi
 
-# Проверка брандмауэра
-show_header "6. Проверка брандмауэра"
+#####################################################################
+# Section 6: Firewall Check
+# Verifies if firewall settings allow USB/IP traffic
+#####################################################################
+show_header "6. Firewall Check"
+
+# Check UFW (Uncomplicated Firewall) if installed
 if command -v ufw > /dev/null 2>&1; then
-    echo "Статус UFW:"
+    echo "UFW Status:"
     sudo ufw status | grep -q "Status: active"
     if [ $? -eq 0 ]; then
-        echo_color "yellow" "UFW активен, проверка правил для портов 3240 и 5000:"
+        echo_color "yellow" "UFW is active, checking rules for ports 3240 and 5000:"
+        
+        # Check if port 3240 is allowed in UFW
         sudo ufw status | grep -q "3240"
         if [ $? -eq 0 ]; then
-            echo_color "green" "✓ Порт 3240 разрешен в UFW"
+            echo_color "green" "✓ Port 3240 is allowed in UFW"
         else
-            echo_color "red" "✗ Порт 3240 не разрешен в UFW"
-            echo_color "yellow" "  → Рекомендуется разрешить порт: sudo ufw allow 3240/tcp"
+            echo_color "red" "✗ Port 3240 is not allowed in UFW"
+            echo_color "yellow" "  → Recommended: allow port: sudo ufw allow 3240/tcp"
         fi
         
+        # Check if port 5000 is allowed in UFW
         sudo ufw status | grep -q "5000"
         if [ $? -eq 0 ]; then
-            echo_color "green" "✓ Порт 5000 разрешен в UFW"
+            echo_color "green" "✓ Port 5000 is allowed in UFW"
         else
-            echo_color "red" "✗ Порт 5000 не разрешен в UFW"
-            echo_color "yellow" "  → Рекомендуется разрешить порт: sudo ufw allow 5000/tcp"
+            echo_color "red" "✗ Port 5000 is not allowed in UFW"
+            echo_color "yellow" "  → Recommended: allow port: sudo ufw allow 5000/tcp"
         fi
     else
-        echo_color "green" "UFW неактивен, порты не блокируются"
+        echo_color "green" "UFW is inactive, ports are not blocked"
     fi
 else
-    echo_color "yellow" "UFW не установлен, проверка iptables:"
+    # If UFW is not installed, check iptables directly
+    echo_color "yellow" "UFW is not installed, checking iptables:"
     sudo iptables -L INPUT -n | grep -q "3240"
     if [ $? -eq 0 ]; then
-        echo_color "green" "✓ Порт 3240 разрешен в iptables"
+        echo_color "green" "✓ Port 3240 is allowed in iptables"
     else
-        echo_color "yellow" "Порт 3240 может быть заблокирован в iptables"
-        echo_color "yellow" "  → Рекомендуется разрешить порт: sudo iptables -I INPUT -p tcp --dport 3240 -j ACCEPT"
+        echo_color "yellow" "Port 3240 might be blocked in iptables"
+        echo_color "yellow" "  → Recommended: allow port: sudo iptables -I INPUT -p tcp --dport 3240 -j ACCEPT"
     fi
 fi
 
-# Проверка опубликованных устройств
-show_header "7. Проверка опубликованных устройств"
+#####################################################################
+# Section 7: Published Devices Check
+# Checks for available and published USB devices
+#####################################################################
+show_header "7. Published Devices Check"
+
+# Try to list available USB devices
 sudo usbip list -l > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo "Локальные USB устройства:"
+    # List local USB devices
+    echo "Local USB devices:"
     DEVICES=$(sudo usbip list -l | grep -c "busid")
     if [ $DEVICES -gt 0 ]; then
-        echo_color "green" "✓ Найдено $DEVICES устройств"
+        echo_color "green" "✓ Found $DEVICES devices"
         echo ""
         sudo usbip list -l | grep -A 1 "busid" | grep -v "\-\-" | sed 's/^/  /'
     else
-        echo_color "yellow" "✗ Не найдено USB устройств"
+        echo_color "yellow" "✗ No USB devices found"
     fi
     
+    # List published (bound) devices
     echo ""
-    echo "Опубликованные устройства:"
+    echo "Published devices:"
     PUBLISHED=$(sudo usbip port | grep -c "usbip")
     if [ $PUBLISHED -gt 0 ]; then
-        echo_color "green" "✓ Найдено $PUBLISHED опубликованных устройств"
+        echo_color "green" "✓ Found $PUBLISHED published devices"
         echo ""
         sudo usbip port | grep -A 1 "Port" | grep -v "\-\-" | sed 's/^/  /'
     else
-        echo_color "yellow" "✗ Нет опубликованных устройств"
-        echo_color "yellow" "  → Для публикации устройства используйте: sudo usbip bind -b <busid>"
+        echo_color "yellow" "✗ No published devices"
+        echo_color "yellow" "  → To publish a device use: sudo usbip bind -b <busid>"
     fi
 else
-    echo_color "red" "✗ Не удалось получить список USB устройств"
-    echo_color "yellow" "  → Возможно, команда usbip недоступна или не имеет нужных прав"
+    echo_color "red" "✗ Failed to get USB devices list"
+    echo_color "yellow" "  → usbip command might not be available or doesn't have proper permissions"
 fi
 
-# Проверка сетевых интерфейсов
-show_header "8. Проверка сетевых интерфейсов"
+#####################################################################
+# Section 8: Network Interfaces Check
+# Displays information about network interfaces
+#####################################################################
+show_header "8. Network Interfaces Check"
+
+# Check for network interfaces using 'ip' command (modern) or fallback to 'ifconfig'
 if command -v ip > /dev/null 2>&1; then
-    echo "Доступные сетевые интерфейсы:"
+    echo "Available network interfaces:"
     ip -br addr show | grep -v "lo" | awk '{print "  " $1 ": " $3}'
     
     echo ""
-    echo "Маршруты по умолчанию:"
+    echo "Default routes:"
     ip route | grep default | sed 's/^/  /'
 else
-    echo_color "yellow" "Команда ip не найдена, используем ifconfig"
+    echo_color "yellow" "ip command not found, using ifconfig"
     ifconfig | grep -E "inet|eth|wlan" | grep -v "inet6" | sed 's/^/  /'
 fi
 
-# Проверка соединения с другими серверами
-show_header "9. Тест сетевого соединения"
-echo "Введите IP-адрес удаленного сервера для проверки (или оставьте пустым для пропуска):"
+#####################################################################
+# Section 9: Network Connection Test
+# Tests connectivity to a remote USB/IP server
+#####################################################################
+show_header "9. Network Connection Test"
+echo "Enter remote server IP address to test (or leave empty to skip):"
 read remote_ip
 
 if [ ! -z "$remote_ip" ]; then
-    echo "Проверка доступности $remote_ip через ping:"
+    # Test basic connectivity with ping
+    echo "Testing connectivity to $remote_ip via ping:"
     ping -c 3 $remote_ip > /dev/null 2>&1
-    check_status "Сервер $remote_ip доступен по ping" "Проверьте сетевое соединение и настройки брандмауэра"
+    check_status "Server $remote_ip is reachable via ping" "Check network connection and firewall settings"
     
-    echo "Проверка порта 3240 на $remote_ip:"
+    # Test if USB/IP port is accessible
+    echo "Testing port 3240 on $remote_ip:"
     nc -z -w 5 $remote_ip 3240 > /dev/null 2>&1
-    check_status "Порт 3240 на $remote_ip доступен" "Убедитесь, что на удаленном сервере запущен usbipd и разрешен порт 3240"
+    check_status "Port 3240 on $remote_ip is accessible" "Make sure usbipd is running on remote server and port 3240 is allowed"
     
-    echo "Проверка соединения с удаленным сервером через usbip:"
+    # Test USB/IP connection and list remote devices
+    echo "Testing connection to remote server via usbip:"
     sudo usbip list -r $remote_ip > /dev/null 2>&1
     if [ $? -eq 0 ]; then
-        echo_color "green" "✓ Успешное соединение с сервером $remote_ip"
+        echo_color "green" "✓ Successfully connected to server $remote_ip"
         echo ""
-        echo "Доступные устройства на сервере $remote_ip:"
+        echo "Available devices on server $remote_ip:"
         sudo usbip list -r $remote_ip | grep -A 1 "busid" | grep -v "\-\-" | sed 's/^/  /'
     else
-        echo_color "red" "✗ Не удалось получить список устройств с сервера $remote_ip"
-        echo_color "yellow" "  → Убедитесь, что на удаленном сервере:"
-        echo_color "yellow" "    1. Запущен сервис usbipd"
-        echo_color "yellow" "    2. Есть опубликованные устройства"
-        echo_color "yellow" "    3. Разрешены соединения на порт 3240"
+        echo_color "red" "✗ Failed to get devices list from server $remote_ip"
+        echo_color "yellow" "  → Make sure that on remote server:"
+        echo_color "yellow" "    1. usbipd service is running"
+        echo_color "yellow" "    2. There are published devices"
+        echo_color "yellow" "    3. Connections to port 3240 are allowed"
     fi
 fi
 
-# Заключение
-show_header "Диагностика завершена"
-echo "Если у вас возникли проблемы, обратитесь к документации или форуму поддержки."
-echo "Дополнительная информация: https://github.com/maksfaktor/usbip-web"
+#####################################################################
+# Conclusion
+#####################################################################
+show_header "Diagnostics Complete"
+echo "If you encountered any issues, please refer to documentation or support forum."
+echo "For more information: https://github.com/maksfaktor/usbip-web"
 echo ""

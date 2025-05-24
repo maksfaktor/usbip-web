@@ -72,10 +72,11 @@ def main():
         "uninstall.sh",
         "README.md",
         "requirements-deploy.txt",
-        "usbip_utils.py"
+        "usbip_utils.py",
+        "doctor.sh"
     ]
     
-    commit_message = "Улучшена обработка URL при подключении к серверу и добавлены зависимости"
+    commit_message = "Added diagnostic tool (doctor.sh) and fixed usbipd daemon issues"
     
     print("Отправляем изменения в GitHub...")
     
