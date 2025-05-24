@@ -3,6 +3,12 @@
 # Orange USBIP - Automatic installation script for ARM devices (Raspberry Pi, Orange Pi)
 # Created: $(date +%Y-%m-%d)
 
+# Обработка параметров командной строки
+FORCE_UPDATE="false"
+if [ "$1" == "-f" ] || [ "$2" == "-f" ]; then
+    FORCE_UPDATE="true"
+fi
+
 # Check for uninstall mode
 if [ "$1" == "--uninstall" ]; then
     # Function for displaying colored text
