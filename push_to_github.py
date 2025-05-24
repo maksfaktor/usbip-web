@@ -70,10 +70,11 @@ def main():
         "install_arm.sh",
         "install_debian.sh",
         "uninstall.sh",
-        "README.md"
+        "README.md",
+        "requirements-deploy.txt"
     ]
     
-    commit_message = "Add uninstall functionality to scripts and update README"
+    commit_message = "Add required dependencies and update uninstall instructions"
     
     print("Отправляем изменения в GitHub...")
     
