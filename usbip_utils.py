@@ -660,11 +660,28 @@ def bind_device(busid):
             if os.path.exists(usbip_path):
                 logger.debug(f"Найден исполняемый файл usbip: {usbip_path}")
                 stdout, stderr, return_code = run_command([usbip_path, 'bind', '-b', busid], use_sudo=True, no_interactive=True)
-                break
+                
+                # Проверяем успешность выполнения
+                if return_code == 0 or "already bound to usbip-host" in stderr:
+                    logger.debug(f"Успешная публикация через {usbip_path}")
+                    break
         else:
             # Если ни один путь не найден, пробуем без полного пути
             logger.debug("Не найден путь к usbip, пробуем без указания полного пути")
             stdout, stderr, return_code = run_command(['usbip', 'bind', '-b', busid], use_sudo=True, no_interactive=True)
+            
+        # Проверка на успешное выполнение и выполнение дополнительной верификации
+        if return_code == 0 or "already bound to usbip-host" in stderr:
+            logger.debug("Верификация публикации через usbip list -b")
+            verify_stdout, verify_stderr, verify_return_code = run_command(['usbip', 'list', '-b'], use_sudo=True, no_interactive=True)
+            
+            if verify_return_code == 0 and verify_stdout:
+                if busid in verify_stdout:
+                    logger.debug(f"Подтверждено: устройство {busid} опубликовано")
+                else:
+                    logger.warning(f"Верификация не удалась: устройство {busid} не найдено в списке опубликованных")
+            else:
+                logger.warning(f"Не удалось получить список опубликованных устройств для верификации: {verify_stderr}")
         
         # Логируем результат
         logger.debug(f"Результат публикации: код {return_code}, stderr: {stderr}")

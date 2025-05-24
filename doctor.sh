@@ -332,11 +332,51 @@ if [ $? -eq 0 ]; then
     # List published (bound) devices
     echo ""
     echo "Published devices:"
-    PUBLISHED=$(sudo usbip port | grep -c "usbip")
-    if [ $PUBLISHED -gt 0 ]; then
-        echo_color "green" "✓ Found $PUBLISHED published devices"
+    
+    # Проверка через usbip port
+    PUBLISHED_PORT=$(sudo usbip port | grep -c "usbip" 2>/dev/null)
+    
+    # Проверка через usbip list -b
+    sudo $USBIP_PATH list -b > /tmp/doctor_usbip_published.txt 2>/dev/null
+    PUBLISHED_LIST=$(grep -E "^[0-9]-[0-9]" /tmp/doctor_usbip_published.txt | wc -l)
+    
+    # Дополнительная проверка через директории ядра
+    PUBLISHED_KERNEL=0
+    for busid in $(ls -1 /sys/bus/usb/devices/ 2>/dev/null | grep -E "^[0-9]-[0-9]"); do
+        if [ -e "/sys/bus/usb/devices/$busid/usbip_status" ]; then
+            STATUS=$(cat "/sys/bus/usb/devices/$busid/usbip_status" 2>/dev/null)
+            if [ "$STATUS" = "1" ] || [ "$STATUS" = "2" ]; then
+                PUBLISHED_KERNEL=$((PUBLISHED_KERNEL + 1))
+            fi
+        fi
+    done
+    
+    # Отображение результатов
+    if [ $PUBLISHED_PORT -gt 0 ] || [ $PUBLISHED_LIST -gt 0 ] || [ $PUBLISHED_KERNEL -gt 0 ]; then
+        echo_color "green" "✓ Found published devices"
         echo ""
-        sudo usbip port | grep -A 1 "Port" | grep -v "\-\-" | sed 's/^/  /'
+        
+        if [ $PUBLISHED_PORT -gt 0 ]; then
+            echo "Via usbip port:"
+            sudo usbip port | grep -A 1 "Port" | grep -v "\-\-" | sed 's/^/  /'
+        fi
+        
+        if [ $PUBLISHED_LIST -gt 0 ]; then
+            echo "Via usbip list -b:"
+            grep -E "^[0-9]-[0-9]" /tmp/doctor_usbip_published.txt | sed 's/^/  /'
+        fi
+        
+        if [ $PUBLISHED_KERNEL -gt 0 ]; then
+            echo "Via kernel status:"
+            for busid in $(ls -1 /sys/bus/usb/devices/ 2>/dev/null | grep -E "^[0-9]-[0-9]"); do
+                if [ -e "/sys/bus/usb/devices/$busid/usbip_status" ]; then
+                    STATUS=$(cat "/sys/bus/usb/devices/$busid/usbip_status" 2>/dev/null)
+                    if [ "$STATUS" = "1" ] || [ "$STATUS" = "2" ]; then
+                        echo "  Device $busid (status: $STATUS)"
+                    fi
+                fi
+            done
+        fi
     else
         echo_color "yellow" "✗ No published devices"
         echo_color "yellow" "  → To publish a device use: sudo usbip bind -b <busid>"
