@@ -5,6 +5,44 @@ import os
 
 logger = logging.getLogger(__name__)
 
+def normalize_busid(busid):
+    """
+    Нормализует busid к стандартному формату без ведущих нулей.
+    Например, '001-002' превращается в '1-2'.
+    
+    Args:
+        busid (str): Исходный busid
+        
+    Returns:
+        str: Нормализованный busid
+    """
+    # Проверяем, что это действительно busid в формате X-Y
+    if not busid:
+        return busid
+        
+    # Убедимся, что работаем со строкой
+    busid_str = str(busid)
+    
+    # Используем регулярное выражение для извлечения чисел из busid
+    match = re.match(r'^(\d+)-(\d+)$', busid_str)
+    if match:
+        try:
+            # Извлекаем и конвертируем числа, чтобы убрать ведущие нули
+            bus = int(match.group(1))
+            device = int(match.group(2))
+            normalized = f"{bus}-{device}"
+            
+            # Логируем изменение только если что-то реально изменилось
+            if normalized != busid_str:
+                logger.debug(f"Нормализация busid: {busid_str} -> {normalized}")
+            
+            return normalized
+        except (ValueError, IndexError) as e:
+            logger.warning(f"Не удалось нормализовать busid: {busid_str}, ошибка: {e}")
+    
+    # Если формат не соответствует ожидаемому, возвращаем исходное значение
+    return busid
+
 def run_command(command, use_sudo=True, no_interactive=True):
     """
     Выполняет команду shell с поддержкой sudo
@@ -159,6 +197,8 @@ def parse_local_usb_devices(output):
                 devices.append(current_device)
                 
             busid = doctor_match.group(1)
+            # Нормализуем busid для обеспечения единообразия
+            busid = normalize_busid(busid)
             vendor_id = doctor_match.group(2)
             product_id = doctor_match.group(3)
             
@@ -187,6 +227,8 @@ def parse_local_usb_devices(output):
                 devices.append(current_device)
                 
             busid = standard_match.group(1)
+            # Нормализуем busid к формату без ведущих нулей
+            busid = normalize_busid(busid)
             info = standard_match.group(2).strip()
             
             current_device = {
@@ -218,6 +260,8 @@ def parse_local_usb_devices(output):
                 devices.append(current_device)
                 
             busid = flexible_match.group(1)
+            # Нормализуем busid к формату без ведущих нулей
+            busid = normalize_busid(busid)
             vendor_id = flexible_match.group(2)
             product_id = flexible_match.group(3)
             
@@ -330,7 +374,10 @@ def parse_attached_devices(output):
                 
             remote_busid_match = re.match(r'^\s*Remote busid:\s+(.+)$', line)
             if remote_busid_match:
-                current_device['remote_busid'] = remote_busid_match.group(1)
+                remote_busid = remote_busid_match.group(1)
+                # Нормализуем busid к формату без ведущих нулей
+                remote_busid = normalize_busid(remote_busid)
+                current_device['remote_busid'] = remote_busid
     
     # Добавляем последнее устройство
     if current_device:
@@ -602,12 +649,9 @@ def bind_device(busid):
         
         # Преобразуем формат busid, если нужно
         orig_busid = busid
-        # Проверяем, если busid в формате 1-2 или в формате 001-002
-        if re.match(r'^(\d+)-(\d+)$', busid):
-            match = re.match(r'^(\d+)-(\d+)$', busid)
-            bus, device = match.groups()
-            # Нормализуем к формату 1-2 (без ведущих нулей)
-            busid = f"{int(bus)}-{int(device)}"
+        # Используем функцию normalize_busid для стандартизации формата
+        busid = normalize_busid(busid)
+        if busid != orig_busid:
             logger.debug(f"Нормализован busid из {orig_busid} в {busid}")
             
         # Проверяем существование устройства в системе
