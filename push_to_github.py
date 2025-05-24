@@ -85,10 +85,10 @@ def update_file(file_path, message):
 def main():
     files_to_update = [
         "app.py",
-        "templates/index.html"
+        "templates/home2.html"
     ]
     
-    commit_message = "Улучшена обработка неавторизованных API-запросов и сессий"
+    commit_message = "Добавлена новая упрощенная страница Home2 для отображения USB-устройств"
     
     print("Отправляем изменения в GitHub...")
     
