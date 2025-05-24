@@ -45,7 +45,7 @@ def run_command(command, use_sudo=True):
 
 def parse_local_usb_devices(output):
     """
-    Парсит вывод команды usbip list -l
+    Парсит вывод команды usbip list -l или doctor.sh
     
     Args:
         output (str): Вывод команды
@@ -56,16 +56,30 @@ def parse_local_usb_devices(output):
     devices = []
     current_device = None
     
+    logger.debug(f"Начинаем парсинг вывода, длина текста: {len(output)}")
+    
     # Проверка на наличие шаблона busid как в выводе doctor.sh
     doctor_pattern = re.compile(r'^\s*-\s+busid\s+(\d+-\d+)\s+\(([0-9a-f]{4}):([0-9a-f]{4})\)')
     
     # Стандартный шаблон для usbip list -l
     standard_pattern = re.compile(r'^\s*(\d+-\d+):\s*(.+)')
     
+    # Дополнительный шаблон для более широкого захвата
+    flexible_pattern = re.compile(r'.*?(\d+-\d+).*?([0-9a-f]{4}):([0-9a-f]{4}).*')
+    
+    line_num = 0
     for line in output.split('\n'):
+        line_num += 1
+        line = line.strip()
+        if not line:
+            continue
+            
+        logger.debug(f"Обрабатываем строку {line_num}: '{line}'")
+        
         # Пробуем матчить по шаблону doctor.sh
         doctor_match = doctor_pattern.match(line)
         if doctor_match:
+            logger.debug(f"Найдено соответствие по шаблону doctor.sh: '{line}'")
             if current_device:
                 devices.append(current_device)
                 
@@ -84,43 +98,90 @@ def parse_local_usb_devices(output):
                 'info': f"{busid}: {device_name} ({vendor_id}:{product_id})",
                 'details': [],
                 'vendor_id': vendor_id,
-                'product_id': product_id
+                'product_id': product_id,
+                'device_name': device_name
             }
-        else:
-            # Пробуем стандартный шаблон
-            standard_match = standard_pattern.match(line)
-            if standard_match:
-                if current_device:
-                    devices.append(current_device)
-                    
-                busid = standard_match.group(1)
-                info = standard_match.group(2).strip()
+            logger.debug(f"Создано устройство: {current_device}")
+            continue
+            
+        # Пробуем стандартный шаблон
+        standard_match = standard_pattern.match(line)
+        if standard_match:
+            logger.debug(f"Найдено соответствие по стандартному шаблону: '{line}'")
+            if current_device:
+                devices.append(current_device)
                 
-                current_device = {
-                    'busid': busid,
-                    'info': f"{busid}: {info}",
-                    'details': []
-                }
+            busid = standard_match.group(1)
+            info = standard_match.group(2).strip()
+            
+            current_device = {
+                'busid': busid,
+                'info': f"{busid}: {info}",
+                'details': []
+            }
+            
+            # Попытка извлечь vendor_id и product_id из информации
+            id_match = re.search(r'([0-9a-f]{4}):([0-9a-f]{4})', info)
+            if id_match:
+                current_device['vendor_id'] = id_match.group(1)
+                current_device['product_id'] = id_match.group(2)
                 
-                # Попытка извлечь vendor_id и product_id из информации
-                id_match = re.search(r'([0-9a-f]{4}):([0-9a-f]{4})', info)
+                # Попытка извлечь имя устройства
+                name_match = re.search(r':\s+(.*?)\s+\(', info)
+                if name_match:
+                    device_name = name_match.group(1).strip()
+                    current_device['device_name'] = device_name
+            
+            logger.debug(f"Создано устройство: {current_device}")
+            continue
+            
+        # Если не сработали основные шаблоны, пробуем гибкий шаблон
+        flexible_match = flexible_pattern.match(line)
+        if flexible_match:
+            logger.debug(f"Найдено соответствие по гибкому шаблону: '{line}'")
+            if current_device:
+                devices.append(current_device)
+                
+            busid = flexible_match.group(1)
+            vendor_id = flexible_match.group(2)
+            product_id = flexible_match.group(3)
+            
+            # Пытаемся вытащить имя устройства из всего, что осталось
+            name_parts = re.split(r'[:()\[\]]', line)
+            device_name = "Unknown Device"
+            for part in name_parts:
+                part = part.strip()
+                if part and len(part) > 5 and not re.search(r'^\d', part) and not re.search(r'[0-9a-f]{4}:[0-9a-f]{4}', part):
+                    device_name = part
+                    break
+            
+            current_device = {
+                'busid': busid,
+                'info': f"{busid}: {device_name} ({vendor_id}:{product_id})",
+                'details': [],
+                'vendor_id': vendor_id,
+                'product_id': product_id,
+                'device_name': device_name
+            }
+            logger.debug(f"Создано устройство по гибкому шаблону: {current_device}")
+            continue
+            
+        # Если не нашли соответствие ни по одному шаблону, добавляем как детали
+        if current_device and line:
+            current_device['details'].append(line)
+            
+            # Пытаемся найти ID продукта/вендора в деталях если еще не нашли
+            if 'vendor_id' not in current_device or 'product_id' not in current_device:
+                id_match = re.search(r'([0-9a-f]{4}):([0-9a-f]{4})', line)
                 if id_match:
                     current_device['vendor_id'] = id_match.group(1)
                     current_device['product_id'] = id_match.group(2)
-            elif current_device and line.strip():
-                current_device['details'].append(line.strip())
-                
-                # Пытаемся найти ID продукта/вендора в деталях если еще не нашли
-                if 'vendor_id' not in current_device or 'product_id' not in current_device:
-                    id_match = re.search(r'([0-9a-f]{4}):([0-9a-f]{4})', line)
-                    if id_match:
-                        current_device['vendor_id'] = id_match.group(1)
-                        current_device['product_id'] = id_match.group(2)
     
     # Добавляем последнее устройство
     if current_device:
         devices.append(current_device)
-        
+    
+    logger.debug(f"Завершен парсинг, найдено устройств: {len(devices)}")
     return devices
 
 def parse_remote_usb_devices(output):
@@ -216,12 +277,39 @@ def get_local_usb_devices():
         logger.debug("Запускаем doctor.sh для получения списка устройств")
         doctor_stdout, doctor_stderr, doctor_return_code = run_command(['bash', 'doctor.sh', '--local-devices'])
         
-        if doctor_return_code == 0 and "Found" in doctor_stdout:
-            logger.debug(f"doctor.sh успешно выполнен")
-            devices = parse_local_usb_devices(doctor_stdout)
-            logger.debug(f"Распознано {len(devices)} устройств из вывода doctor.sh")
-            if devices:
-                return devices
+        # Детальное логирование для отладки
+        logger.debug(f"doctor.sh завершен с кодом: {doctor_return_code}")
+        logger.debug(f"doctor.sh STDOUT: {doctor_stdout}")
+        logger.debug(f"doctor.sh STDERR: {doctor_stderr}")
+        
+        if doctor_return_code == 0:
+            # Пытаемся найти секцию с устройствами в выводе doctor.sh
+            devices_section = ""
+            if "Local USB devices:" in doctor_stdout:
+                try:
+                    # Извлекаем секцию с устройствами между "Local USB devices:" и следующей секцией
+                    start_idx = doctor_stdout.find("Local USB devices:")
+                    next_section_idx = doctor_stdout.find("===", start_idx + 1)
+                    if next_section_idx > 0:
+                        devices_section = doctor_stdout[start_idx:next_section_idx]
+                    else:
+                        devices_section = doctor_stdout[start_idx:]
+                    
+                    logger.debug(f"Извлеченная секция устройств: {devices_section}")
+                except Exception as e:
+                    logger.error(f"Ошибка при извлечении секции устройств: {str(e)}")
+            
+            # Если нашли секцию с устройствами, парсим ее
+            if devices_section:
+                devices = parse_local_usb_devices(devices_section)
+                logger.debug(f"Распознано {len(devices)} устройств из вывода doctor.sh")
+                
+                # Подробный лог каждого устройства
+                for i, device in enumerate(devices):
+                    logger.debug(f"Устройство {i+1}: {device}")
+                
+                if devices:
+                    return devices
                 
         # Если doctor.sh не нашел устройства, пробуем стандартную команду
         stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-l'])
