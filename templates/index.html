@@ -248,7 +248,16 @@ const messages = {
     publishing: "{{ t('publishing') }}",
     publish_success: "{{ t('publish_success') }}",
     error: "{{ t('error') }}",
-    port_not_specified: "{{ t('port_not_specified') }}"
+    port_not_specified: "{{ t('port_not_specified') }}",
+    refreshing: "{{ t('refreshing') }}",
+    devices_refreshed: "{{ t('devices_refreshed') }}",
+    busid: "{{ t('busid') }}",
+    device: "{{ t('device') }}",
+    actions: "{{ t('actions') }}",
+    virtual: "{{ t('virtual') }}",
+    publish: "{{ t('publish') }}",
+    set_name: "{{ t('set_name') }}",
+    no_local_devices: "{{ t('no_local_devices') }}"
 };
 
 document.querySelectorAll('.bind-device-btn').forEach(button => {
@@ -412,9 +421,194 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
     });
 });
 
+// Функция для обновления списка устройств через API
+function refreshDevicesList() {
+    // Меняем состояние кнопки
+    const refreshBtn = document.querySelector('.refresh-devices-btn');
+    const originalBtnText = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>${messages.refreshing || 'Обновление...'}`;
+    refreshBtn.disabled = true;
+    
+    // Запрашиваем список устройств через API
+    fetch('/api/local_devices')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Обновляем содержимое таблицы
+                const container = document.querySelector('.local-devices-container');
+                if (data.devices && data.devices.length > 0) {
+                    // Создаем HTML-таблицу
+                    let html = `
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>${messages.busid || 'Bus ID'}</th>
+                                    <th>${messages.device || 'Устройство'}</th>
+                                    <th>${messages.actions || 'Действия'}</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                    
+                    data.devices.forEach(device => {
+                        const isVirtual = device.is_virtual || false;
+                        const deviceName = device.device_name;
+                        const vendorId = device.idVendor || device.vendor_id || '';
+                        const productId = device.idProduct || device.product_id || '';
+                        const busid = device.busid;
+                        const virtualId = device.virtual_id || '';
+                        
+                        html += `
+                        <tr ${isVirtual ? 'class="table-primary"' : ''}>
+                            <td>
+                                ${busid}
+                                ${isVirtual ? `<span class="badge bg-primary">${messages.virtual || 'Виртуальное'}</span>` : ''}
+                            </td>
+                            <td>
+                                <div>${deviceName}</div>
+                                <small class="text-muted">${vendorId}:${productId}</small>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-primary bind-device-btn" 
+                                            data-busid="${busid}"
+                                            ${isVirtual ? `data-is-virtual="true" data-virtual-id="${virtualId}"` : ''}>
+                                        <i class="fas fa-share me-1"></i>${messages.publish || 'Опубликовать'}
+                                    </button>
+                                    ${!isVirtual ? `
+                                    <button class="btn btn-outline-info set-alias-btn" 
+                                            data-busid="${busid}" 
+                                            data-device="${deviceName}">
+                                        <i class="fas fa-tag me-1"></i>${messages.set_name || 'Задать имя'}
+                                    </button>
+                                    ` : ''}
+                                </div>
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += `
+                            </tbody>
+                        </table>
+                    </div>`;
+                    
+                    container.innerHTML = html;
+                    
+                    // Переназначаем обработчики событий для новых кнопок
+                    attachBindButtonHandlers();
+                    attachAliasButtonHandlers();
+                    
+                } else {
+                    // Если устройств нет
+                    container.innerHTML = `
+                    <div class="alert alert-info m-3">
+                        <i class="fas fa-info-circle me-2"></i>${messages.no_local_devices || 'Нет локальных USB устройств'}
+                    </div>`;
+                }
+                
+                // Показываем уведомление об успешном обновлении
+                showNotification(messages.devices_refreshed || `Список устройств обновлен: найдено ${data.devices.length} устройств`, 'success');
+            } else {
+                // Если произошла ошибка
+                showNotification(`${messages.error || 'Ошибка'}: ${data.message}`, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification(`${messages.error || 'Ошибка'}: ${error}`, 'danger');
+        })
+        .finally(() => {
+            // Восстанавливаем состояние кнопки
+            refreshBtn.innerHTML = originalBtnText;
+            refreshBtn.disabled = false;
+        });
+}
+
+// Функция для прикрепления обработчиков к кнопкам публикации
+function attachBindButtonHandlers() {
+    document.querySelectorAll('.bind-device-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const busid = this.getAttribute('data-busid');
+            if (!busid) {
+                showNotification(messages.busid_not_specified, 'danger');
+                return;
+            }
+            
+            // Проверяем, является ли устройство виртуальным
+            const isVirtual = this.hasAttribute('data-is-virtual');
+            const virtualId = this.getAttribute('data-virtual-id');
+            
+            if (isVirtual && virtualId) {
+                // Для виртуальных устройств открываем модальное окно подключения
+                const modal = new bootstrap.Modal(document.getElementById('connectVirtualDeviceModal'));
+                document.getElementById('virtual_device_id').value = virtualId;
+                modal.show();
+                return;
+            }
+            
+            // Для реальных устройств отправляем запрос через USBIP
+            
+            // Меняем состояние кнопки
+            const originalText = this.innerHTML;
+            this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>${messages.publishing}`;
+            this.disabled = true;
+            
+            // Отправляем запрос на публикацию
+            fetch('/bind_device', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'busid': busid
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`${messages.publish_success} ${busid}`, 'success');
+                    // Обновляем список устройств
+                    refreshDevicesList();
+                } else {
+                    showNotification(`${messages.error}: ${data.message}`, 'danger');
+                }
+            })
+            .catch(error => {
+                showNotification(`${messages.error}: ${error}`, 'danger');
+            })
+            .finally(() => {
+                // Восстанавливаем состояние кнопки
+                this.innerHTML = originalText;
+                this.disabled = false;
+            });
+        });
+    });
+}
+
+// Функция для прикрепления обработчиков к кнопкам установки алиаса
+function attachAliasButtonHandlers() {
+    document.querySelectorAll('.set-alias-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const busid = this.getAttribute('data-busid');
+            const device = this.getAttribute('data-device');
+            
+            const modal = new bootstrap.Modal(document.getElementById('setAliasModal'));
+            document.getElementById('alias_busid').value = busid;
+            document.getElementById('alias_name').value = device;
+            
+            modal.show();
+        });
+    });
+}
+
 // Обработчик для кнопки обновления списка устройств
 document.querySelector('.refresh-devices-btn')?.addEventListener('click', function() {
-    window.location.reload();
+    refreshDevicesList();
+});
+
+// Загружаем список устройств при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Небольшая задержка для гарантии, что DOM полностью загружен
+    setTimeout(refreshDevicesList, 500);
 });
 
 // Обработчик для кнопки установки алиаса
