@@ -699,16 +699,46 @@ echo_color "green" "✓ Access rights configured."
 if systemctl is-active --quiet orange-usbip; then
     # Get IP address
     IP_ADDR=$(hostname -I | awk '{print $1}')
+    APP_URL="http://$IP_ADDR:5000"
     
     echo_color "green" "===================================================="
     echo_color "green" "  Orange USBIP Installation Successfully Completed! "
     echo_color "green" "===================================================="
     echo ""
-    echo_color "yellow" "Service available at: http://$IP_ADDR:5000"
+    echo_color "yellow" "Service available at: $APP_URL"
     echo_color "yellow" "Login: admin"
     echo_color "yellow" "Password: admin"
     echo ""
     echo_color "red" "IMPORTANT: Change your password after first login!"
+    
+    # Try to open the web interface in the default browser
+    echo_color "blue" "Attempting to open web interface in your default browser..."
+    
+    # Check which browsers or commands are available
+    if command -v xdg-open >/dev/null 2>&1; then
+        # Linux with desktop environment
+        xdg-open "$APP_URL" >/dev/null 2>&1 &
+        echo_color "green" "✓ Browser launched with xdg-open"
+    elif command -v sensible-browser >/dev/null 2>&1; then
+        # Debian/Ubuntu systems
+        sensible-browser "$APP_URL" >/dev/null 2>&1 &
+        echo_color "green" "✓ Browser launched with sensible-browser"
+    elif command -v firefox >/dev/null 2>&1; then
+        # Try firefox directly
+        firefox "$APP_URL" >/dev/null 2>&1 &
+        echo_color "green" "✓ Browser launched with firefox"
+    elif command -v chromium-browser >/dev/null 2>&1; then
+        # Try chromium
+        chromium-browser "$APP_URL" >/dev/null 2>&1 &
+        echo_color "green" "✓ Browser launched with chromium"
+    elif command -v google-chrome >/dev/null 2>&1; then
+        # Try chrome
+        google-chrome "$APP_URL" >/dev/null 2>&1 &
+        echo_color "green" "✓ Browser launched with chrome"
+    else
+        echo_color "yellow" "⚠ Could not detect a browser to launch automatically."
+        echo_color "yellow" "Please open the URL manually in your browser."
+    fi
     echo ""
     echo_color "blue" "Service management:"
     echo " - Restart:      sudo systemctl restart orange-usbip"
