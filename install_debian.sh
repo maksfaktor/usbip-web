@@ -469,8 +469,9 @@ Description=USB/IP daemon
 After=network.target
 
 [Service]
-Type=simple
+Type=forking
 ExecStart=$USBIPD_PATH -D
+PIDFile=/run/usbipd.pid
 Restart=on-failure
 
 [Install]
