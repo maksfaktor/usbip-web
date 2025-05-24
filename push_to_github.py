@@ -85,10 +85,11 @@ def update_file(file_path, message):
 def main():
     files_to_update = [
         "doctor.sh",
-        "usbip_utils.py"
+        "usbip_utils.py",
+        "install_debian.sh"
     ]
     
-    commit_message = "Исправлена функция публикации устройств с использованием неинтерактивного sudo"
+    commit_message = "Исправлена функция публикации устройств и упрощены инструкции по удалению"
     
     print("Отправляем изменения в GitHub...")
     
