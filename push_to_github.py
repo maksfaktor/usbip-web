@@ -84,16 +84,11 @@ def update_file(file_path, message):
 # Основная функция
 def main():
     files_to_update = [
-        "doctor.sh",
-        "usbip_utils.py",
-        "install_debian.sh",
-        "install_arm.sh",
-        "uninstall.sh",
         "app.py",
         "templates/index.html"
     ]
     
-    commit_message = "Исправлено отображение опубликованных устройств и удалено автоматическое открытие браузера"
+    commit_message = "Исправлено отображение опубликованных устройств, добавлен флаг is_published в API-ответ"
     
     print("Отправляем изменения в GitHub...")
     
