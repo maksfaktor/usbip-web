@@ -3,6 +3,12 @@
 # Orange USBIP - Automatic installation script for Debian/Ubuntu systems
 # Created: $(date +%Y-%m-%d)
 
+# Обработка параметров командной строки
+FORCE_UPDATE="false"
+if [ "$1" == "-f" ] || [ "$2" == "-f" ]; then
+    FORCE_UPDATE="true"
+fi
+
 # Check for uninstall mode
 if [ "$1" == "--uninstall" ]; then
     # Function for displaying colored text
@@ -447,22 +453,57 @@ CURRENT_STEP=$((CURRENT_STEP + 1))
 progress_update $CURRENT_STEP $TOTAL_STEPS "Configuring USB/IP daemon..."
 
 # Create systemd service for usbipd if it doesn't exist
-if [ ! -f "/etc/systemd/system/usbipd.service" ]; then
-    # Find the correct path to usbipd
-    USBIPD_PATH=$(find /usr -name "usbipd" -type f -executable 2>/dev/null | grep -E "/usr/(bin|sbin|lib)" | head -1)
+# Find the correct path to usbipd
+USBIPD_PATH=$(find /usr -name "usbipd" -type f -executable 2>/dev/null | grep -E "/usr/(bin|sbin|lib)" | head -1)
+
+if [ -z "$USBIPD_PATH" ]; then
+    echo_color "red" "Could not find usbipd executable. Service will not be created."
+else
+    echo_color "green" "Found usbipd at: $USBIPD_PATH"
     
-    if [ -z "$USBIPD_PATH" ]; then
-        echo_color "red" "Could not find usbipd executable. Service will not be created."
-    else
-        echo_color "green" "Found usbipd at: $USBIPD_PATH"
+    # Create symbolic link in /usr/sbin for compatibility
+    if [ ! -f "/usr/sbin/usbipd" ]; then
+        mkdir -p /usr/sbin
+        ln -sf "$USBIPD_PATH" /usr/sbin/usbipd
+        echo_color "blue" "Created symbolic link: /usr/sbin/usbipd -> $USBIPD_PATH"
+    fi
+    
+    # Проверка существующей службы и обновление конфигурации при необходимости
+    SERVICE_UPDATED=false
+    if [ -f "/etc/systemd/system/usbipd.service" ]; then
+        echo_color "blue" "usbipd service already exists, checking configuration..."
         
-        # Create symbolic link in /usr/sbin for compatibility
-        if [ ! -f "/usr/sbin/usbipd" ]; then
-            mkdir -p /usr/sbin
-            ln -sf "$USBIPD_PATH" /usr/sbin/usbipd
-            echo_color "blue" "Created symbolic link: /usr/sbin/usbipd -> $USBIPD_PATH"
+        # Проверка пути к исполняемому файлу
+        CURRENT_PATH=$(grep "ExecStart" /etc/systemd/system/usbipd.service | grep -o "/[^ ]*" | head -1)
+        if [ "$CURRENT_PATH" != "$USBIPD_PATH" ]; then
+            echo_color "yellow" "Updating path in service configuration:"
+            echo_color "yellow" "From: $CURRENT_PATH"
+            echo_color "yellow" "To: $USBIPD_PATH"
+            sed -i "s|ExecStart=.*|ExecStart=$USBIPD_PATH -D|" /etc/systemd/system/usbipd.service
+            SERVICE_UPDATED=true
         fi
         
+        # Проверка типа службы
+        if ! grep -q "Type=forking" /etc/systemd/system/usbipd.service; then
+            echo_color "yellow" "Setting service type to 'forking' for proper daemon operation"
+            sed -i "s|Type=.*|Type=forking|" /etc/systemd/system/usbipd.service
+            
+            # Добавление PIDFile если его нет
+            if ! grep -q "PIDFile=" /etc/systemd/system/usbipd.service; then
+                sed -i "/Type=forking/a PIDFile=/run/usbipd.pid" /etc/systemd/system/usbipd.service
+            fi
+            SERVICE_UPDATED=true
+        fi
+        
+        # Если конфигурация была обновлена, перезагрузим службу
+        if [ "$SERVICE_UPDATED" = true ]; then
+            echo_color "blue" "Service configuration updated, reloading..."
+            systemctl daemon-reload
+            systemctl restart usbipd
+        fi
+    else
+        # Создание новой службы
+        echo_color "blue" "Creating usbipd service..."
         cat > /etc/systemd/system/usbipd.service << EOF
 [Unit]
 Description=USB/IP daemon
@@ -480,7 +521,34 @@ EOF
 
         systemctl daemon-reload
         systemctl enable usbipd
-        systemctl start usbipd || echo_color "yellow" "Failed to start usbipd, check the path to the binary file"
+    fi
+    
+    # Запуск службы
+    echo_color "blue" "Starting usbipd service..."
+    systemctl start usbipd
+    
+    # Проверка запуска службы
+    sleep 2
+    if systemctl is-active --quiet usbipd; then
+        echo_color "green" "✓ usbipd service started successfully"
+    else
+        echo_color "yellow" "⚠ Failed to start usbipd service, will try to diagnose the issue"
+        
+        # Дополнительная диагностика, если служба не запустилась
+        ps aux | grep -v grep | grep -q usbipd
+        if [ $? -eq 0 ]; then
+            echo_color "blue" "usbipd process is running but service status is inactive."
+            echo_color "blue" "This might be normal with some systemd configurations."
+        else
+            echo_color "red" "No usbipd process found. Starting manually as fallback..."
+            $USBIPD_PATH -D
+            
+            if [ $? -eq 0 ]; then
+                echo_color "green" "✓ Started usbipd manually as fallback"
+            else
+                echo_color "red" "✗ Failed to start usbipd manually. Please check system logs."
+            fi
+        fi
     fi
 fi
 
@@ -500,7 +568,36 @@ fi
 cd "$APP_DIR"
 if [ -d ".git" ]; then
     echo "Updating existing repository..."
-    sudo -u $REAL_USER git pull
+    
+    # Проверка параметра -f (force) для принудительного обновления
+    if [ "$FORCE_UPDATE" = "true" ]; then
+        echo_color "yellow" "Принудительное обновление: локальные изменения будут потеряны"
+        sudo -u $REAL_USER git fetch origin
+        sudo -u $REAL_USER git reset --hard origin/main
+    else
+        # Проверка наличия локальных изменений
+        if sudo -u $REAL_USER git diff-index --quiet HEAD --; then
+            # Нет локальных изменений, безопасно обновляем
+            sudo -u $REAL_USER git pull
+        else
+            echo_color "red" "⚠️ Обнаружены локальные изменения в репозитории."
+            echo_color "yellow" "Чтобы принудительно обновить и отбросить локальные изменения, используйте:"
+            echo_color "yellow" "    sudo bash install_debian.sh -f"
+            echo_color "yellow" "Или сохраните изменения вручную:"
+            echo_color "yellow" "    cd $APP_DIR && git stash && git pull && git stash apply"
+            
+            # Спрашиваем пользователя, что делать
+            read -p "Хотите продолжить и отбросить локальные изменения? (y/n): " response
+            if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+                echo "Принудительное обновление..."
+                sudo -u $REAL_USER git fetch origin
+                sudo -u $REAL_USER git reset --hard origin/main
+            else
+                echo "Установка прервана. Сохраните ваши изменения и попробуйте снова."
+                exit 1
+            fi
+        fi
+    fi
 else
     echo "Cloning repository..."
     sudo -u $REAL_USER git clone https://github.com/maksfaktor/usbip-web.git .

@@ -96,7 +96,7 @@ def main():
         "templates/base.html"
     ]
     
-    commit_message = "Исправлена проблема с запуском службы usbipd: изменен тип с simple на forking"
+    commit_message = "Улучшен скрипт диагностики doctor.sh с автоматическим исправлением конфигурации службы usbipd"
     
     print("Отправляем изменения в GitHub...")
     

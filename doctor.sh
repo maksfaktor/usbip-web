@@ -68,8 +68,32 @@ show_header() {
 # Parameters:
 #   $1: Command name to check
 check_command() {
-    command -v $1 > /dev/null 2>&1
-    check_status "Command $1 is available" "Please install package containing $1 command"
+    local cmd="$1"
+    local app_dir="$HOME/orange-usbip"
+    local venv_bin="$app_dir/venv/bin"
+    
+    # Проверка в системных путях
+    if command -v $cmd > /dev/null 2>&1; then
+        echo_color "green" "✓ Command $cmd is available"
+        return
+    fi
+    
+    # Проверка в виртуальном окружении
+    if [ -f "$venv_bin/$cmd" ]; then
+        echo_color "green" "✓ Command $cmd is available in virtual environment"
+        return
+    fi
+    
+    # Команда не найдена
+    echo_color "red" "✗ Command $cmd is not available"
+    
+    # Специальные инструкции для разных команд
+    if [ "$cmd" = "gunicorn" ]; then
+        echo_color "yellow" "  → gunicorn должен быть установлен в виртуальном окружении автоматически"
+        echo_color "yellow" "  → Попробуйте: cd $app_dir && source venv/bin/activate && pip install gunicorn"
+    else
+        echo_color "yellow" "  → Please install package containing $cmd command"
+    fi
 }
 
 #####################################################################
@@ -116,20 +140,67 @@ else
     echo_color "yellow" "  → Searching for usbipd executable..."
     
     # If service is not running, try to find the executable manually
-    USBIPD_PATH=$(find /usr -name "usbipd" -type f -executable 2>/dev/null | head -1)
+    # Более точный поиск исполняемого файла usbipd - в каталогах linux-tools
+    USBIPD_PATH=$(find /usr -name "usbipd" -type f -executable 2>/dev/null | grep -E "/usr/(bin|sbin|lib)" | head -1)
     if [ -z "$USBIPD_PATH" ]; then
         echo_color "red" "  → usbipd executable not found"
     else
         echo_color "green" "  → Found usbipd executable: $USBIPD_PATH"
-        echo_color "yellow" "  → Checking for running usbipd process..."
         
-        # Check if usbipd is running as a standalone process
+        # Проверка конфигурации службы usbipd
+        if [ -f "/etc/systemd/system/usbipd.service" ]; then
+            SERVICE_PATH=$(grep "ExecStart" /etc/systemd/system/usbipd.service | grep -o "/[^ ]*" | head -1)
+            
+            if [ "$SERVICE_PATH" != "$USBIPD_PATH" ]; then
+                echo_color "yellow" "  → Path mismatch in service configuration"
+                echo_color "yellow" "  → Current path: $SERVICE_PATH"
+                echo_color "yellow" "  → Correct path: $USBIPD_PATH"
+                echo_color "yellow" "  → To fix, run these commands:"
+                echo_color "yellow" "    sudo sed -i \"s|ExecStart=.*|ExecStart=$USBIPD_PATH -D|\" /etc/systemd/system/usbipd.service"
+                echo_color "yellow" "    sudo systemctl daemon-reload"
+                echo_color "yellow" "    sudo systemctl restart usbipd"
+                
+                # Предложить автоматическое исправление
+                echo -n "Do you want to automatically fix the service configuration? (y/n): "
+                read fix_choice
+                if [[ "$fix_choice" =~ ^[Yy]$ ]]; then
+                    echo "Fixing service configuration..."
+                    sudo sed -i "s|ExecStart=.*|ExecStart=$USBIPD_PATH -D|" /etc/systemd/system/usbipd.service
+                    sudo systemctl daemon-reload
+                    sudo systemctl restart usbipd
+                    
+                    # Проверка успешности запуска
+                    sleep 2
+                    systemctl is-active --quiet usbipd
+                    if [ $? -eq 0 ]; then
+                        echo_color "green" "✓ usbipd service successfully started"
+                    else
+                        echo_color "red" "✗ usbipd service still not running"
+                        echo_color "yellow" "  → Checking service type..."
+                        
+                        # Проверка типа службы (simple или forking)
+                        SERVICE_TYPE=$(grep "Type" /etc/systemd/system/usbipd.service | cut -d= -f2 | tr -d ' ')
+                        if [ "$SERVICE_TYPE" != "forking" ]; then
+                            echo_color "yellow" "  → Service type is not set to 'forking', fixing..."
+                            sudo sed -i "s|Type=.*|Type=forking|" /etc/systemd/system/usbipd.service
+                            sudo systemctl daemon-reload
+                            sudo systemctl restart usbipd
+                            echo_color "green" "✓ Service type updated to 'forking'"
+                        fi
+                    fi
+                fi
+            fi
+        fi
+        
+        # Проверка процесса
+        echo_color "yellow" "  → Checking for running usbipd process..."
         ps aux | grep -v grep | grep -q usbipd
         if [ $? -eq 0 ]; then
             echo_color "green" "  → usbipd process is running"
         else
             echo_color "red" "  → usbipd process is not running"
             echo_color "yellow" "  → Recommended: start usbipd manually: sudo $USBIPD_PATH -D"
+            echo_color "yellow" "  → Or restart service: sudo systemctl restart usbipd"
         fi
     fi
 fi
