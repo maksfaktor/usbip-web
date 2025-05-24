@@ -278,7 +278,9 @@ const messages = {
     virtual: "{{ t('virtual') }}",
     publish: "{{ t('publish') }}",
     set_name: "{{ t('set_name') }}",
-    no_local_devices: "{{ t('no_local_devices') }}"
+    no_local_devices: "{{ t('no_local_devices') }}",
+    running_doctor: "Запуск диагностики...",
+    doctor_results: "Результаты диагностики"
 };
 
 document.querySelectorAll('.bind-device-btn').forEach(button => {
@@ -630,6 +632,87 @@ document.querySelector('.refresh-devices-btn')?.addEventListener('click', functi
 document.addEventListener('DOMContentLoaded', function() {
     // Небольшая задержка для гарантии, что DOM полностью загружен
     setTimeout(refreshDevicesList, 500);
+    
+    // Обработчик для кнопки запуска диагностики
+    document.querySelector('.run-doctor-btn')?.addEventListener('click', function() {
+        // Показываем уведомление о запуске
+        showNotification(messages.running_doctor, 'info');
+        
+        // Меняем состояние кнопки
+        const originalText = this.innerHTML;
+        this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>${messages.running_doctor}`;
+        this.disabled = true;
+        
+        // Вызываем API для запуска doctor.sh
+        fetch('/api/run_doctor', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Восстанавливаем состояние кнопки
+            this.innerHTML = originalText;
+            this.disabled = false;
+            
+            if (data.success) {
+                // Создаем модальное окно с результатами
+                const modalId = 'doctorResultsModal';
+                
+                // Удаляем существующее модальное окно, если оно есть
+                const existingModal = document.getElementById(modalId);
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // Создаем новое модальное окно
+                const modalHtml = `
+                <div class="modal fade" id="${modalId}" tabindex="-1" aria-labelledby="${modalId}Label" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="${modalId}Label">${messages.doctor_results}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <pre class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">${data.output}</pre>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                <button type="button" class="btn btn-primary refresh-after-doctor">Обновить список устройств</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                
+                // Добавляем модальное окно в DOM
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                
+                // Показываем модальное окно
+                const modal = new bootstrap.Modal(document.getElementById(modalId));
+                modal.show();
+                
+                // Добавляем обработчик для кнопки обновления списка устройств
+                document.querySelector('.refresh-after-doctor').addEventListener('click', function() {
+                    modal.hide();
+                    refreshDevicesList();
+                });
+                
+                // Обновляем список устройств
+                refreshDevicesList();
+            } else {
+                showNotification(`${messages.error}: ${data.message}`, 'danger');
+            }
+        })
+        .catch(error => {
+            // Восстанавливаем состояние кнопки
+            this.innerHTML = originalText;
+            this.disabled = false;
+            
+            showNotification(`${messages.error}: ${error}`, 'danger');
+        });
+    });
 });
 
 // Обработчик для кнопки установки алиаса
