@@ -26,7 +26,11 @@ def run_command(command, use_sudo=True, no_interactive=True):
             # Логируем команду для отладки
             logger.debug(f"Выполнение команды: {' '.join(cmd)}")
             
+            process = None
+            pkexec_process = None
+            
             try:
+                # Сначала пробуем sudo с -n
                 process = subprocess.Popen(
                     cmd,
                     stdout=subprocess.PIPE,
@@ -61,13 +65,17 @@ def run_command(command, use_sudo=True, no_interactive=True):
                 logger.error(f"{error_msg}: {str(timeout_error)}")
                 
                 # Безопасное завершение процесса
-                try:
-                    if 'process' in locals():
+                if process:
+                    try:
                         process.kill()
-                    if 'pkexec_process' in locals():
+                    except Exception as kill_error:
+                        logger.error(f"Ошибка при завершении процесса sudo: {str(kill_error)}")
+                
+                if pkexec_process:
+                    try:
                         pkexec_process.kill()
-                except Exception as kill_error:
-                    logger.error(f"Ошибка при завершении процесса: {str(kill_error)}")
+                    except Exception as kill_error:
+                        logger.error(f"Ошибка при завершении процесса pkexec: {str(kill_error)}")
                 
                 return "", error_msg, 1
         else:
