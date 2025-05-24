@@ -581,6 +581,14 @@ if systemctl is-active --quiet orange-usbip; then
     echo " - Status:       sudo systemctl status orange-usbip"
     echo " - Logs:         sudo journalctl -u orange-usbip"
     echo ""
+    echo_color "blue" "Diagnostic tool:"
+    echo " - Run diagnostic: sudo $APP_DIR/doctor.sh"
+    echo ""
+    
+    # Make diagnostic script executable
+    chmod +x "$APP_DIR/doctor.sh"
+    echo_color "green" "✓ Diagnostic tool installed and ready to use."
+    echo ""
     
     # Notice about uninstall options
     echo_color "blue" "To uninstall this application, you have several options:"
