@@ -9,9 +9,14 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="fas fa-hdd me-2"></i>{{ t('local_usb_devices') }}</h4>
-                <button class="btn btn-sm btn-outline-primary refresh-devices-btn">
-                    <i class="fas fa-sync-alt me-1"></i>{{ t('refresh') }}
-                </button>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-warning run-doctor-btn">
+                        <i class="fas fa-stethoscope me-1"></i>Диагностика
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary refresh-devices-btn">
+                        <i class="fas fa-sync-alt me-1"></i>{{ t('refresh') }}
+                    </button>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="local-devices-container">
@@ -524,9 +529,36 @@ function refreshDevicesList() {
                 } else {
                     // Если устройств нет
                     container.innerHTML = `
-                    <div class="alert alert-info m-3">
-                        <i class="fas fa-info-circle me-2"></i>${messages.no_local_devices || 'Нет локальных USB устройств'}
+                    <div class="alert alert-warning m-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>${messages.no_local_devices || 'Нет локальных USB устройств'}
+                        <div class="mt-2 small">
+                            Возможные причины:
+                            <ul class="mb-0">
+                                <li>К компьютеру не подключены USB устройства</li>
+                                <li>Служба usbipd не запущена</li>
+                                <li>У приложения недостаточно прав для доступа к USB</li>
+                            </ul>
+                            <div class="mt-2">
+                                Рекомендации:
+                                <ul class="mb-0">
+                                    <li>Подключите USB устройства к компьютеру</li>
+                                    <li>Перезапустите службу: <code>sudo systemctl restart usbipd</code></li>
+                                    <li>Запустите диагностику с помощью кнопки ниже</li>
+                                </ul>
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn btn-warning run-doctor-btn">
+                                    <i class="fas fa-stethoscope me-1"></i>Запустить диагностику
+                                </button>
+                            </div>
+                        </div>
                     </div>`;
+                    
+                    // Добавляем обработчик для кнопки диагностики, т.к. она была добавлена динамически
+                    const doctorBtn = container.querySelector('.run-doctor-btn');
+                    if (doctorBtn) {
+                        doctorBtn.addEventListener('click', runDoctorDiagnostics);
+                    }
                 }
                 
                 // Показываем уведомление об успешном обновлении
@@ -628,91 +660,96 @@ document.querySelector('.refresh-devices-btn')?.addEventListener('click', functi
     refreshDevicesList();
 });
 
-// Загружаем список устройств при загрузке страницы
+// Функция для запуска диагностики
+function runDoctorDiagnostics() {
+    // Получаем кнопку, которая была нажата
+    const button = this;
+    
+    // Показываем уведомление о запуске
+    showNotification(messages.running_doctor, 'info');
+    
+    // Меняем состояние кнопки
+    const originalText = button.innerHTML;
+    button.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>${messages.running_doctor}`;
+    button.disabled = true;
+    
+    // Вызываем API для запуска doctor.sh
+    fetch('/api/run_doctor', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Восстанавливаем состояние кнопки
+        button.innerHTML = originalText;
+        button.disabled = false;
+        
+        if (data.success) {
+            // Создаем модальное окно с результатами
+            const modalId = 'doctorResultsModal';
+            
+            // Удаляем существующее модальное окно, если оно есть
+            const existingModal = document.getElementById(modalId);
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Создаем новое модальное окно
+            const modalHtml = `
+            <div class="modal fade" id="${modalId}" tabindex="-1" aria-labelledby="${modalId}Label" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="${modalId}Label">${messages.doctor_results}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <pre class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">${data.output}</pre>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                            <button type="button" class="btn btn-primary refresh-after-doctor">Обновить список устройств</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            
+            // Добавляем модальное окно в DOM
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Показываем модальное окно
+            const modal = new bootstrap.Modal(document.getElementById(modalId));
+            modal.show();
+            
+            // Добавляем обработчик для кнопки обновления списка устройств
+            document.querySelector('.refresh-after-doctor').addEventListener('click', function() {
+                modal.hide();
+                refreshDevicesList();
+            });
+            
+            // Обновляем список устройств
+            refreshDevicesList();
+        } else {
+            showNotification(`${messages.error}: ${data.message}`, 'danger');
+        }
+    })
+    .catch(error => {
+        // Восстанавливаем состояние кнопки
+        button.innerHTML = originalText;
+        button.disabled = false;
+        
+        showNotification(`${messages.error}: ${error}`, 'danger');
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Небольшая задержка для гарантии, что DOM полностью загружен
     setTimeout(refreshDevicesList, 500);
     
-    // Обработчик для кнопки запуска диагностики
-    document.querySelector('.run-doctor-btn')?.addEventListener('click', function() {
-        // Показываем уведомление о запуске
-        showNotification(messages.running_doctor, 'info');
-        
-        // Меняем состояние кнопки
-        const originalText = this.innerHTML;
-        this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>${messages.running_doctor}`;
-        this.disabled = true;
-        
-        // Вызываем API для запуска doctor.sh
-        fetch('/api/run_doctor', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Восстанавливаем состояние кнопки
-            this.innerHTML = originalText;
-            this.disabled = false;
-            
-            if (data.success) {
-                // Создаем модальное окно с результатами
-                const modalId = 'doctorResultsModal';
-                
-                // Удаляем существующее модальное окно, если оно есть
-                const existingModal = document.getElementById(modalId);
-                if (existingModal) {
-                    existingModal.remove();
-                }
-                
-                // Создаем новое модальное окно
-                const modalHtml = `
-                <div class="modal fade" id="${modalId}" tabindex="-1" aria-labelledby="${modalId}Label" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="${modalId}Label">${messages.doctor_results}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <pre class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">${data.output}</pre>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                                <button type="button" class="btn btn-primary refresh-after-doctor">Обновить список устройств</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-                
-                // Добавляем модальное окно в DOM
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
-                
-                // Показываем модальное окно
-                const modal = new bootstrap.Modal(document.getElementById(modalId));
-                modal.show();
-                
-                // Добавляем обработчик для кнопки обновления списка устройств
-                document.querySelector('.refresh-after-doctor').addEventListener('click', function() {
-                    modal.hide();
-                    refreshDevicesList();
-                });
-                
-                // Обновляем список устройств
-                refreshDevicesList();
-            } else {
-                showNotification(`${messages.error}: ${data.message}`, 'danger');
-            }
-        })
-        .catch(error => {
-            // Восстанавливаем состояние кнопки
-            this.innerHTML = originalText;
-            this.disabled = false;
-            
-            showNotification(`${messages.error}: ${error}`, 'danger');
-        });
-    });
+    // Обработчик для кнопки запуска диагностики, которая присутствует при загрузке страницы
+    document.querySelector('.run-doctor-btn')?.addEventListener('click', runDoctorDiagnostics);
 });
 
 // Обработчик для кнопки установки алиаса
