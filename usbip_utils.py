@@ -435,8 +435,9 @@ def get_local_usb_devices():
     """
     try:
         # Сначала пробуем получить список через lsusb - самый надежный метод
+        # Используем sudo для доступа ко всем устройствам, включая принадлежащие root
         logger.debug("Пробуем получить список через lsusb")
-        lsusb_stdout, lsusb_stderr, lsusb_return_code = run_command(['lsusb'], use_sudo=False)
+        lsusb_stdout, lsusb_stderr, lsusb_return_code = run_command(['lsusb'], use_sudo=True)
         
         try:
             from app import add_log_entry
@@ -580,14 +581,14 @@ def bind_device(busid):
         # Добавляем подробное логирование
         logger.debug(f"Публикуем устройство с busid: {busid}")
         
-        # Сначала проверяем существование устройства
-        check_stdout, check_stderr, check_return_code = run_command(['lsusb', '-d', busid.replace('-', ':')], use_sudo=False)
+        # Сначала проверяем существование устройства с sudo (чтобы иметь доступ ко всем устройствам)
+        check_stdout, check_stderr, check_return_code = run_command(['lsusb', '-d', busid.replace('-', ':')], use_sudo=True)
         
         # Если устройство не найдено через lsusb, проверяем через системные файлы
         if check_return_code != 0:
-            logger.debug(f"Устройство {busid} не найдено через lsusb, проверяем наличие в системе")
-            # Проверяем наличие устройства в /sys/bus/usb/devices/
-            check_stdout, check_stderr, check_return_code = run_command(['ls', f'/sys/bus/usb/devices/{busid}'], use_sudo=False)
+            logger.debug(f"Устройство {busid} не найдено через lsusb с sudo, проверяем наличие в системе")
+            # Проверяем наличие устройства в /sys/bus/usb/devices/ (тоже с sudo)
+            check_stdout, check_stderr, check_return_code = run_command(['ls', f'/sys/bus/usb/devices/{busid}'], use_sudo=True)
             if check_return_code != 0:
                 error_msg = f"Устройство с ID {busid} не существует или недоступно"
                 logger.error(error_msg)
