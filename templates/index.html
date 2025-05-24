@@ -512,10 +512,12 @@ function refreshDevicesList() {
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-primary bind-device-btn" 
+                                    <button class="${device.is_published ? 'btn btn-success' : 'btn btn-primary'} bind-device-btn" 
                                             data-busid="${busid}"
-                                            ${isVirtual ? `data-is-virtual="true" data-virtual-id="${virtualId}"` : ''}>
-                                        <i class="fas fa-share me-1"></i>${messages.publish || 'Опубликовать'}
+                                            ${isVirtual ? `data-is-virtual="true" data-virtual-id="${virtualId}"` : ''}
+                                            ${device.is_published ? 'disabled' : ''}>
+                                        <i class="${device.is_published ? 'fas fa-check me-1' : 'fas fa-share me-1'}"></i>
+                                        ${device.is_published ? (messages.published || 'Опубликовано') : (messages.publish || 'Опубликовать')}
                                     </button>
                                     ${!isVirtual ? `
                                     <button class="btn btn-outline-info set-alias-btn" 
