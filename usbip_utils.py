@@ -18,22 +18,51 @@ def run_command(command, use_sudo=True, no_interactive=True):
     """
     try:
         if use_sudo:
-            # Для неинтерактивного режима добавляем опцию -n, чтобы sudo не запрашивал пароль
-            if no_interactive:
-                cmd = ['sudo', '-n'] + command
-            else:
-                cmd = ['sudo'] + command
+            # Проверяем наличие NOPASSWD в sudoers
+            # Сначала пробуем с опцией -n (неинтерактивный режим)
+            cmd = ['sudo', '-n'] + command
+            
+            # Логируем команду для отладки
+            logger.debug(f"Выполнение команды: {' '.join(cmd)}")
+            
+            try:
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                stdout, stderr = process.communicate(timeout=5)
+                return_code = process.returncode
+                
+                # Если команда выполнилась успешно, возвращаем результат
+                if return_code == 0 or "password is required" not in stderr:
+                    return stdout, stderr, return_code
+                
+                # Если требуется пароль, пробуем с pkexec
+                logger.debug("Sudo с -n не сработал, пробуем использовать pkexec")
+                pkexec_cmd = ['pkexec'] + command
+                logger.debug(f"Выполнение команды: {' '.join(pkexec_cmd)}")
+                
+                process = subprocess.Popen(
+                    pkexec_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+            except subprocess.TimeoutExpired:
+                process.kill()
+                return "", "Команда выполнялась слишком долго и была прервана", 1
         else:
             cmd = command
+            logger.debug(f"Выполнение команды без sudo: {' '.join(cmd)}")
             
-        logger.debug(f"Выполнение команды: {' '.join(cmd)}")
-        
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
         stdout, stderr = process.communicate()
         return_code = process.returncode
         
