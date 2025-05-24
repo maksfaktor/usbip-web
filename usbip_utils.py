@@ -531,6 +531,24 @@ def get_local_usb_devices():
             except Exception as ex:
                 logger.error(f"Ошибка при добавлении лога: {str(ex)}")
                 
+        # Как последнюю попытку, попробуем запустить doctor.sh для получения списка устройств
+        try:
+            logger.debug("Пробуем запустить doctor.sh для получения списка устройств")
+            # Сначала находим путь к doctor.sh (предполагаем, что он находится в текущей директории или рядом с usbip_utils.py)
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            doctor_path = os.path.join(script_dir, "doctor.sh")
+            
+            if os.path.exists(doctor_path):
+                doctor_stdout, doctor_stderr, doctor_return_code = run_command([doctor_path], use_sudo=True)
+                if doctor_return_code == 0 and doctor_stdout:
+                    # Парсим вывод doctor.sh
+                    devices = parse_doctor_output(doctor_stdout)
+                    if devices:
+                        logger.debug(f"Распознано {len(devices)} устройств из doctor.sh")
+                        return devices
+        except Exception as e:
+            logger.error(f"Ошибка при запуске doctor.sh: {str(e)}")
+        
         # Если ничего не сработало, возвращаем ошибку
         error_message = "Не удалось получить список устройств"
         error_device = {
@@ -582,15 +600,26 @@ def bind_device(busid):
         # Добавляем подробное логирование
         logger.debug(f"Публикуем устройство с busid: {busid}")
         
-        # Сначала проверяем существование устройства с sudo (чтобы иметь доступ ко всем устройствам)
-        check_stdout, check_stderr, check_return_code = run_command(['lsusb', '-d', busid.replace('-', ':')], use_sudo=True)
+        # Проверяем существование устройства в системе (без преобразования формата)
+        logger.debug(f"Проверяем существование устройства с busid: {busid}")
+        check_stdout, check_stderr, check_return_code = run_command(['ls', f'/sys/bus/usb/devices/{busid}'], use_sudo=True)
         
-        # Если устройство не найдено через lsusb, проверяем через системные файлы
+        # Если устройство не найдено, проверяем через usbip list -l
         if check_return_code != 0:
-            logger.debug(f"Устройство {busid} не найдено через lsusb с sudo, проверяем наличие в системе")
-            # Проверяем наличие устройства в /sys/bus/usb/devices/ (тоже с sudo)
-            check_stdout, check_stderr, check_return_code = run_command(['ls', f'/sys/bus/usb/devices/{busid}'], use_sudo=True)
-            if check_return_code != 0:
+            logger.debug(f"Устройство {busid} не найдено через системные файлы, проверяем через usbip list -l")
+            
+            list_stdout, list_stderr, list_return_code = run_command(['usbip', 'list', '-l'], use_sudo=True)
+            
+            # Проверяем, есть ли устройство в выводе usbip list -l
+            device_found = False
+            if list_return_code == 0 and list_stdout:
+                for line in list_stdout.split('\n'):
+                    if f"busid {busid}" in line:
+                        device_found = True
+                        logger.debug(f"Устройство {busid} найдено в выводе usbip list -l")
+                        break
+            
+            if not device_found:
                 error_msg = f"Устройство с ID {busid} не существует или недоступно"
                 logger.error(error_msg)
                 try:
@@ -600,6 +629,21 @@ def bind_device(busid):
                     logger.error(f"Ошибка при добавлении лога: {str(log_e)}")
                 return False, error_msg
         
+        # Проверяем, не опубликовано ли уже устройство
+        logger.debug(f"Проверяем, опубликовано ли уже устройство {busid}")
+        check_bound_stdout, check_bound_stderr, check_bound_return_code = run_command(['usbip', 'list', '-b'], use_sudo=True)
+        
+        # Если устройство уже опубликовано, считаем операцию успешной
+        if check_bound_return_code == 0 and check_bound_stdout and busid in check_bound_stdout:
+            success_msg = f"Устройство {busid} уже опубликовано"
+            logger.debug(success_msg)
+            try:
+                from app import add_log_entry
+                add_log_entry("INFO", success_msg, "usbip")
+            except Exception as log_e:
+                logger.error(f"Ошибка при добавлении лога: {str(log_e)}")
+            return True, success_msg
+            
         # Вызываем usbip bind с правильными параметрами, пробуем разные пути к usbip
         for usbip_path in ['/usr/bin/usbip', '/usr/sbin/usbip', '/usr/local/bin/usbip', '/usr/local/sbin/usbip']:
             # Проверяем существование исполняемого файла
@@ -621,6 +665,18 @@ def bind_device(busid):
         except Exception as log_e:
             logger.error(f"Ошибка при добавлении лога: {str(log_e)}")
         
+        # Если устройство уже опубликовано, тоже считаем операцию успешной
+        if return_code != 0 and stderr and "already bound to usbip-host" in stderr:
+            success_msg = f"Устройство {busid} уже опубликовано"
+            logger.debug(success_msg)
+            try:
+                from app import add_log_entry
+                add_log_entry("INFO", success_msg, "usbip")
+            except Exception as log_e:
+                logger.error(f"Ошибка при добавлении лога: {str(log_e)}")
+            return True, success_msg
+        
+        # Если произошла ошибка и это не сообщение о том, что устройство уже опубликовано
         if return_code != 0:
             error_msg = f"Ошибка публикации устройства: {stderr}"
             logger.error(error_msg)
