@@ -3,6 +3,124 @@
 # Orange USBIP - Automatic installation script for ARM devices (Raspberry Pi, Orange Pi)
 # Created: $(date +%Y-%m-%d)
 
+# Check for uninstall mode
+if [ "$1" == "--uninstall" ]; then
+    # Function for displaying colored text
+    echo_color() {
+        local color=$1
+        local message=$2
+        case $color in
+            "green") echo -e "\033[0;32m$message\033[0m" ;;
+            "red") echo -e "\033[0;31m$message\033[0m" ;;
+            "yellow") echo -e "\033[0;33m$message\033[0m" ;;
+            "blue") echo -e "\033[0;34m$message\033[0m" ;;
+            *) echo "$message" ;;
+        esac
+    }
+    
+    echo_color "green" "===================================================="
+    echo_color "green" "  Orange USBIP Web Interface Uninstaller            "
+    echo_color "green" "===================================================="
+    echo ""
+    
+    # Ask for confirmation
+    read -p "Are you sure you want to uninstall Orange USBIP Web Interface? [y/N] " -n 1 -r
+    echo
+    
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo_color "yellow" "Uninstallation cancelled."
+        exit 0
+    fi
+    
+    # Determine the real user (not sudo)
+    if [ -n "$SUDO_USER" ]; then
+        REAL_USER=$SUDO_USER
+    else
+        REAL_USER=$(whoami)
+    fi
+    USER_HOME=$(eval echo ~$REAL_USER)
+    APP_DIR="$USER_HOME/orange-usbip"
+    
+    # Step 1: Create backup
+    echo_color "blue" "[1/3] Creating backup of settings and database..."
+    
+    # Create timestamp for backup
+    TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+    BACKUP_DIR="/var/backups/orangeusb"
+    BACKUP_PATH="${BACKUP_DIR}/${TIMESTAMP}"
+    
+    # Create backup directory
+    mkdir -p "$BACKUP_PATH"
+    
+    # Backup database
+    if [ -f "${APP_DIR}/usbip_web.db" ]; then
+        cp "${APP_DIR}/usbip_web.db" "${BACKUP_PATH}/usbip_web.db"
+        echo_color "green" "✓ Database backup created at ${BACKUP_PATH}/usbip_web.db"
+    else
+        echo_color "yellow" "⚠ Database file not found, skipping database backup."
+    fi
+    
+    # Backup configuration files
+    if [ -d "${APP_DIR}" ]; then
+        # Create a tarball of the application directory
+        tar -czf "${BACKUP_PATH}/orangeusb_config.tar.gz" -C "${APP_DIR}" .
+        echo_color "green" "✓ Configuration backup created at ${BACKUP_PATH}/orangeusb_config.tar.gz"
+    else
+        echo_color "yellow" "⚠ Application directory not found, skipping configuration backup."
+    fi
+    
+    # Step 2: Remove application components
+    echo_color "blue" "[2/3] Removing application components..."
+    
+    # Stop and disable the service
+    echo_color "blue" "    → Stopping and removing systemd service..."
+    systemctl stop orange-usbip 2>/dev/null || true
+    systemctl disable orange-usbip 2>/dev/null || true
+    
+    # Remove service file
+    if [ -f "/etc/systemd/system/orange-usbip.service" ]; then
+        rm "/etc/systemd/system/orange-usbip.service"
+        echo_color "green" "    ✓ Service file removed."
+    else
+        echo_color "yellow" "    ⚠ Service file not found, skipping."
+    fi
+    
+    # Reload systemd
+    systemctl daemon-reload
+    
+    # Remove sudoers file
+    echo_color "blue" "    → Removing sudoers configuration..."
+    if [ -f "/etc/sudoers.d/usbip-$REAL_USER" ]; then
+        rm "/etc/sudoers.d/usbip-$REAL_USER"
+        echo_color "green" "    ✓ Sudoers configuration removed."
+    else
+        echo_color "yellow" "    ⚠ Sudoers configuration not found, skipping."
+    fi
+    
+    # Remove application files
+    echo_color "blue" "    → Removing application files..."
+    if [ -d "$APP_DIR" ]; then
+        rm -rf "$APP_DIR"
+        echo_color "green" "    ✓ Application files removed."
+    else
+        echo_color "yellow" "    ⚠ Application directory not found, skipping."
+    fi
+    
+    # Step 3: Finalize uninstallation
+    echo_color "blue" "[3/3] Finalizing uninstallation..."
+    
+    echo ""
+    echo_color "green" "===================================================="
+    echo_color "green" "Orange USBIP Web Interface has been successfully uninstalled."
+    echo_color "green" "===================================================="
+    echo ""
+    echo_color "yellow" "Note: USB/IP related packages (usbip, usbutils, etc.) were not removed."
+    echo_color "yellow" "If you want to remove them, please use your package manager manually."
+    echo ""
+    
+    exit 0
+fi
+
 set -e  # Stop execution on errors
 
 # Function for displaying colored text
