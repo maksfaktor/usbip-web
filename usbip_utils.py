@@ -56,21 +56,66 @@ def parse_local_usb_devices(output):
     devices = []
     current_device = None
     
+    # Проверка на наличие шаблона busid как в выводе doctor.sh
+    doctor_pattern = re.compile(r'^\s*-\s+busid\s+(\d+-\d+)\s+\(([0-9a-f]{4}):([0-9a-f]{4})\)')
+    
+    # Стандартный шаблон для usbip list -l
+    standard_pattern = re.compile(r'^\s*(\d+-\d+):\s*(.+)')
+    
     for line in output.split('\n'):
-        # Строка описания устройства начинается с busid
-        busid_match = re.match(r'^\s*(\d+-\d+):', line)
-        if busid_match:
+        # Пробуем матчить по шаблону doctor.sh
+        doctor_match = doctor_pattern.match(line)
+        if doctor_match:
             if current_device:
                 devices.append(current_device)
                 
-            busid = busid_match.group(1)
+            busid = doctor_match.group(1)
+            vendor_id = doctor_match.group(2)
+            product_id = doctor_match.group(3)
+            
+            # Попытка извлечь имя устройства
+            device_name = "Unknown Device"
+            name_match = re.search(r'\(.+\)\s*(.+)', line)
+            if name_match:
+                device_name = name_match.group(1).strip()
+            
             current_device = {
                 'busid': busid,
-                'info': line.strip(),
-                'details': []
+                'info': f"{busid}: {device_name} ({vendor_id}:{product_id})",
+                'details': [],
+                'vendor_id': vendor_id,
+                'product_id': product_id
             }
-        elif current_device and line.strip():
-            current_device['details'].append(line.strip())
+        else:
+            # Пробуем стандартный шаблон
+            standard_match = standard_pattern.match(line)
+            if standard_match:
+                if current_device:
+                    devices.append(current_device)
+                    
+                busid = standard_match.group(1)
+                info = standard_match.group(2).strip()
+                
+                current_device = {
+                    'busid': busid,
+                    'info': f"{busid}: {info}",
+                    'details': []
+                }
+                
+                # Попытка извлечь vendor_id и product_id из информации
+                id_match = re.search(r'([0-9a-f]{4}):([0-9a-f]{4})', info)
+                if id_match:
+                    current_device['vendor_id'] = id_match.group(1)
+                    current_device['product_id'] = id_match.group(2)
+            elif current_device and line.strip():
+                current_device['details'].append(line.strip())
+                
+                # Пытаемся найти ID продукта/вендора в деталях если еще не нашли
+                if 'vendor_id' not in current_device or 'product_id' not in current_device:
+                    id_match = re.search(r'([0-9a-f]{4}):([0-9a-f]{4})', line)
+                    if id_match:
+                        current_device['vendor_id'] = id_match.group(1)
+                        current_device['product_id'] = id_match.group(2)
     
     # Добавляем последнее устройство
     if current_device:
@@ -167,14 +212,26 @@ def get_local_usb_devices():
         list: Список устройств
     """
     try:
-        # В реальном окружении
+        # Сначала пробуем doctor.sh, так как он работает надежнее
+        logger.debug("Запускаем doctor.sh для получения списка устройств")
+        doctor_stdout, doctor_stderr, doctor_return_code = run_command(['bash', 'doctor.sh', '--local-devices'])
+        
+        if doctor_return_code == 0 and "Found" in doctor_stdout:
+            logger.debug(f"doctor.sh успешно выполнен")
+            devices = parse_local_usb_devices(doctor_stdout)
+            logger.debug(f"Распознано {len(devices)} устройств из вывода doctor.sh")
+            if devices:
+                return devices
+                
+        # Если doctor.sh не нашел устройства, пробуем стандартную команду
         stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-l'])
         
         if return_code != 0:
             error_msg = f"Ошибка получения списка локальных устройств: {stderr}"
             logger.error(error_msg)
             
-            # Создаем специальное "устройство-уведомление", информирующее о проблеме
+            # Если usbip list -l не сработал, и doctor.sh тоже не нашел устройства,
+            # показываем ошибку и рекомендации
             error_device = {
                 'busid': 'error',
                 'info': 'Ошибка: Служба USB/IP не запущена или не настроена',
@@ -190,8 +247,9 @@ def get_local_usb_devices():
             
             return [error_device]
         
-        # Получаем список устройств из вывода команды
+        # Получаем список устройств из вывода стандартной команды
         devices = parse_local_usb_devices(stdout)
+        logger.debug(f"Распознано {len(devices)} устройств из вывода usbip list -l")
         
         # Если список пуст, добавляем информационное "устройство"
         if not devices:
@@ -211,6 +269,10 @@ def get_local_usb_devices():
         
         # Дополнительно обрабатываем каждое устройство, добавляя vendor_id, product_id и device_name
         for device in devices:
+            # Пропускаем если уже извлечены vendor_id и product_id
+            if 'vendor_id' in device and 'product_id' in device:
+                continue
+                
             # Извлекаем vendor_id и product_id из строки info
             # Пример: "1-1: LogiLink : UDisk flash drive (abcd:1234)"
             ids_match = re.search(r'\(([0-9a-f]{4}):([0-9a-f]{4})\)', device['info'])
@@ -221,6 +283,10 @@ def get_local_usb_devices():
                 device['vendor_id'] = '0000'
                 device['product_id'] = '0000'
             
+            # Пропускаем если уже есть device_name
+            if 'device_name' in device:
+                continue
+                
             # Извлекаем имя устройства из строки info
             name_match = re.search(r':\s+(.*?)\s+\(', device['info'])
             if name_match:
