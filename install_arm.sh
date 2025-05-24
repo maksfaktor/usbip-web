@@ -406,23 +406,39 @@ progress_update $CURRENT_STEP $TOTAL_STEPS "Configuring USB/IP daemon..."
 
 # Create systemd service for usbipd if it doesn't exist
 if [ ! -f "/etc/systemd/system/usbipd.service" ]; then
-    cat > /etc/systemd/system/usbipd.service << 'EOF'
+    # Find the correct path to usbipd
+    USBIPD_PATH=$(find /usr -name "usbipd" -type f -executable 2>/dev/null | grep -E "/usr/(bin|sbin|lib)" | head -1)
+    
+    if [ -z "$USBIPD_PATH" ]; then
+        echo_color "red" "Could not find usbipd executable. Service will not be created."
+    else
+        echo_color "green" "Found usbipd at: $USBIPD_PATH"
+        
+        # Create symbolic link in /usr/sbin for compatibility
+        if [ ! -f "/usr/sbin/usbipd" ]; then
+            mkdir -p /usr/sbin
+            ln -sf "$USBIPD_PATH" /usr/sbin/usbipd
+            echo_color "blue" "Created symbolic link: /usr/sbin/usbipd -> $USBIPD_PATH"
+        fi
+        
+        cat > /etc/systemd/system/usbipd.service << EOF
 [Unit]
 Description=USB/IP daemon
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/usbipd -D
+ExecStart=$USBIPD_PATH -D
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-    systemctl daemon-reload
-    systemctl enable usbipd
-    systemctl start usbipd
+        systemctl daemon-reload
+        systemctl enable usbipd
+        systemctl start usbipd || echo_color "yellow" "Failed to start usbipd, check the path to the binary file"
+    fi
 fi
 
 echo_color "green" "✓ USB/IP daemon configured and started."
