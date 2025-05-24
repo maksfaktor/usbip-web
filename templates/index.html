@@ -11,7 +11,7 @@
                 <h4 class="mb-0"><i class="fas fa-hdd me-2"></i>{{ t('local_usb_devices') }}</h4>
                 <div class="btn-group">
                     <button class="btn btn-sm btn-outline-warning run-doctor-btn">
-                        <i class="fas fa-stethoscope me-1"></i>Диагностика
+                        <i class="fas fa-stethoscope me-1"></i>{{ t('diagnose') }}
                     </button>
                     <button class="btn btn-sm btn-outline-primary refresh-devices-btn">
                         <i class="fas fa-sync-alt me-1"></i>{{ t('refresh') }}
@@ -284,8 +284,8 @@ const messages = {
     publish: "{{ t('publish') }}",
     set_name: "{{ t('set_name') }}",
     no_local_devices: "{{ t('no_local_devices') }}",
-    running_doctor: "Запуск диагностики...",
-    doctor_results: "Результаты диагностики"
+    running_doctor: "{{ t('running_doctor') }}",
+    doctor_results: "{{ t('doctor_results') }}"
 };
 
 document.querySelectorAll('.bind-device-btn').forEach(button => {
@@ -548,7 +548,7 @@ function refreshDevicesList() {
                             </div>
                             <div class="mt-3">
                                 <button class="btn btn-warning run-doctor-btn">
-                                    <i class="fas fa-stethoscope me-1"></i>Запустить диагностику
+                                    <i class="fas fa-stethoscope me-1"></i>{{ t('run_doctor') }}
                                 </button>
                             </div>
                         </div>
