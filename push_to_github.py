@@ -71,10 +71,11 @@ def main():
         "install_debian.sh",
         "uninstall.sh",
         "README.md",
-        "requirements-deploy.txt"
+        "requirements-deploy.txt",
+        "usbip_utils.py"
     ]
     
-    commit_message = "Add required dependencies and update uninstall instructions"
+    commit_message = "Улучшена обработка URL при подключении к серверу и добавлены зависимости"
     
     print("Отправляем изменения в GitHub...")
     

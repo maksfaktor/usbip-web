@@ -221,8 +221,25 @@ def get_remote_usb_devices(ip):
     Returns:
         tuple: (список устройств, сообщение об ошибке)
     """
+    # Очистка IP-адреса от протокола и порта
+    clean_ip = ip
+    
+    # Убираем протокол (http:// или https://)
+    if "://" in clean_ip:
+        clean_ip = clean_ip.split("://", 1)[1]
+    
+    # Убираем порт и путь
+    if "/" in clean_ip:
+        clean_ip = clean_ip.split("/", 1)[0]
+    
+    # Убираем порт, если он указан через двоеточие
+    if ":" in clean_ip:
+        clean_ip = clean_ip.split(":", 1)[0]
+    
+    logger.debug(f"Очищенный IP-адрес: {clean_ip} (исходный: {ip})")
+    
     try:
-        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-r', ip])
+        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-r', clean_ip])
         
         if return_code != 0:
             return [], f"Ошибка получения списка удаленных устройств: {stderr}"
@@ -256,13 +273,30 @@ def attach_device(ip, busid):
     Returns:
         tuple: (success, message)
     """
+    # Очистка IP-адреса от протокола и порта
+    clean_ip = ip
+    
+    # Убираем протокол (http:// или https://)
+    if "://" in clean_ip:
+        clean_ip = clean_ip.split("://", 1)[1]
+    
+    # Убираем порт и путь
+    if "/" in clean_ip:
+        clean_ip = clean_ip.split("/", 1)[0]
+    
+    # Убираем порт, если он указан через двоеточие
+    if ":" in clean_ip:
+        clean_ip = clean_ip.split(":", 1)[0]
+    
+    logger.debug(f"Очищенный IP-адрес: {clean_ip} (исходный: {ip})")
+    
     try:
-        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'attach', '-r', ip, '-b', busid])
+        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'attach', '-r', clean_ip, '-b', busid])
         
         if return_code != 0:
             return False, f"Ошибка подключения устройства: {stderr}"
         
-        return True, f"Устройство {busid} с сервера {ip} успешно подключено"
+        return True, f"Устройство {busid} с сервера {clean_ip} успешно подключено"
     except Exception as e:
         logger.error(f"Ошибка при подключении устройства: {str(e)}")
         # Для тестирования в Replit
