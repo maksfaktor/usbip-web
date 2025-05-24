@@ -157,69 +157,8 @@ def parse_attached_devices(output):
         
     return devices
 
-def get_demo_usb_devices():
-    """
-    Возвращает список демонстрационных USB-устройств для тестирования интерфейса
-    
-    Returns:
-        list: Список демонстрационных устройств в формате, совместимом с parse_local_usb_devices
-    """
-    # Используем те же устройства, что показывает doctor.sh для согласованности
-    demo_devices = [
-        {
-            'busid': '1-1',
-            'device_name': 'LogiLink UDisk flash drive',
-            'idVendor': 'abcd',
-            'idProduct': '1234',
-            'details': ['USB Mass Storage Interface']
-        },
-        {
-            'busid': '1-3',
-            'device_name': 'MosArt Semiconductor Corp. Wireless Keyboard/Mouse',
-            'idVendor': '062a',
-            'idProduct': '4101',
-            'details': ['USB HID Interface']
-        },
-        {
-            'busid': '1-6',
-            'device_name': 'Elan Microelectronics Corp. Touchpad',
-            'idVendor': '04f3',
-            'idProduct': '22e8',
-            'details': ['USB HID Interface']
-        },
-        {
-            'busid': '1-7',
-            'device_name': 'Intel Corp. Bluetooth wireless interface',
-            'idVendor': '8087',
-            'idProduct': '0a2a',
-            'details': ['USB Bluetooth Interface']
-        },
-        {
-            'busid': '1-8',
-            'device_name': 'Chicony Electronics Co., Ltd Webcam',
-            'idVendor': '04f2',
-            'idProduct': 'b5d8',
-            'details': ['USB Video Interface']
-        }
-    ]
-    
-    # Формируем данные в формате, который ожидает приложение и JavaScript
-    # Этот формат должен соответствовать результату parse_local_usb_devices и index.html JS
-    devices = []
-    for device in demo_devices:
-        device_info = f"{device['busid']}: {device['device_name']} ({device['idVendor']}:{device['idProduct']})"
-        devices.append({
-            'busid': device['busid'],
-            'device_name': device['device_name'],
-            'vendor_id': device['idVendor'],
-            'product_id': device['idProduct'],
-            'idVendor': device['idVendor'],  # Дублируем для совместимости
-            'idProduct': device['idProduct'],  # Дублируем для совместимости
-            'info': device_info,
-            'details': device['details']
-        })
-    
-    return devices
+# Удалена функция get_demo_usb_devices() по требованию пользователя
+# Вместо демонстрационных устройств используются только реальные и виртуальные устройства
 
 def get_local_usb_devices():
     """
@@ -237,16 +176,15 @@ def get_local_usb_devices():
             
             # Проверяем, вызвана ли ошибка отсутствием команды usbip
             if "No such file or directory" in stderr or return_code == 127:
-                logger.warning("Команда usbip не найдена, возвращаем демонстрационные устройства для тестирования")
-                return get_demo_usb_devices()
+                logger.warning("Команда usbip не найдена, возвращаем пустой список устройств")
             
             return []
         
         return parse_local_usb_devices(stdout)
     except Exception as e:
         logger.error(f"Ошибка при выполнении get_local_usb_devices: {str(e)}")
-        # Возвращаем демонстрационные данные при любой ошибке
-        return get_demo_usb_devices()
+        # Возвращаем пустой список при любой ошибке
+        return []
 
 def bind_device(busid):
     """
