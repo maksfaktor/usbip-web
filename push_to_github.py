@@ -91,7 +91,7 @@ def main():
         "uninstall.sh"
     ]
     
-    commit_message = "Исправлено несоответствие между API маршрутами в JavaScript и Flask"
+    commit_message = "Исправлено несоответствие нумерации устройств через унификацию формата busid"
     
     print("Отправляем изменения в GitHub...")
     
