@@ -105,12 +105,19 @@ remove_application() {
         print_warning "Sudoers configuration not found, skipping."
     fi
     
-    # Remove application files
-    print_step "Removing application files..."
+    # Ask about removing application files
+    print_step "Application files..."
     
     if [ -d "$APP_DIR" ]; then
-        rm -rf "$APP_DIR"
-        print_success "Application files removed."
+        read -p "Do you want to delete the local project folder ($APP_DIR)? [y/N] " -n 1 -r
+        echo
+        
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            rm -rf "$APP_DIR"
+            print_success "Application files removed."
+        else
+            print_warning "Application files were kept at $APP_DIR."
+        fi
     else
         print_warning "Application directory not found, skipping."
     fi
