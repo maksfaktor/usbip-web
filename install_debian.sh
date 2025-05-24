@@ -711,40 +711,8 @@ if systemctl is-active --quiet orange-usbip; then
     echo ""
     echo_color "red" "IMPORTANT: Change your password after first login!"
     
-    # Try to open the web interface in the default browser
-    echo_color "blue" "Attempting to open web interface in your default browser..."
-    
-    # Проверяем, является ли окружение графическим (есть ли DISPLAY)
-    if [ -n "$DISPLAY" ]; then
-        # Check which browsers or commands are available
-        if command -v xdg-open >/dev/null 2>&1; then
-            # Linux with desktop environment
-            xdg-open "$APP_URL" >/dev/null 2>&1 &
-            echo_color "green" "✓ Browser launched with xdg-open"
-        elif command -v sensible-browser >/dev/null 2>&1; then
-            # Debian/Ubuntu systems
-            sensible-browser "$APP_URL" >/dev/null 2>&1 &
-            echo_color "green" "✓ Browser launched with sensible-browser"
-        elif command -v firefox >/dev/null 2>&1; then
-            # Try firefox directly
-            firefox "$APP_URL" >/dev/null 2>&1 &
-            echo_color "green" "✓ Browser launched with firefox"
-        elif command -v chromium-browser >/dev/null 2>&1; then
-            # Try chromium
-            chromium-browser "$APP_URL" >/dev/null 2>&1 &
-            echo_color "green" "✓ Browser launched with chromium"
-        elif command -v google-chrome >/dev/null 2>&1; then
-            # Try chrome
-            google-chrome "$APP_URL" >/dev/null 2>&1 &
-            echo_color "green" "✓ Browser launched with chrome"
-        else
-            echo_color "yellow" "⚠ Could not detect a browser to launch automatically."
-            echo_color "yellow" "Please open the URL manually in your browser."
-        fi
-    else
-        echo_color "yellow" "⚠ No graphical environment detected (DISPLAY variable not set)."
-        echo_color "yellow" "Please open the URL manually in your browser."
-    fi
+    # Removed automatic browser launch for better compatibility
+    echo_color "blue" "Open the URL above in your web browser to access the interface"
     echo ""
     echo_color "blue" "Service management:"
     echo " - Restart:      sudo systemctl restart orange-usbip"

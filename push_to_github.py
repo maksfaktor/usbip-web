@@ -88,10 +88,12 @@ def main():
         "usbip_utils.py",
         "install_debian.sh",
         "install_arm.sh",
-        "uninstall.sh"
+        "uninstall.sh",
+        "app.py",
+        "templates/index.html"
     ]
     
-    commit_message = "Исправлено несоответствие нумерации устройств через унификацию формата busid"
+    commit_message = "Исправлено отображение опубликованных устройств и удалено автоматическое открытие браузера"
     
     print("Отправляем изменения в GitHub...")
     
