@@ -68,8 +68,32 @@ show_header() {
 # Parameters:
 #   $1: Command name to check
 check_command() {
-    command -v $1 > /dev/null 2>&1
-    check_status "Command $1 is available" "Please install package containing $1 command"
+    local cmd="$1"
+    local app_dir="$HOME/orange-usbip"
+    local venv_bin="$app_dir/venv/bin"
+    
+    # Проверка в системных путях
+    if command -v $cmd > /dev/null 2>&1; then
+        echo_color "green" "✓ Command $cmd is available"
+        return
+    fi
+    
+    # Проверка в виртуальном окружении
+    if [ -f "$venv_bin/$cmd" ]; then
+        echo_color "green" "✓ Command $cmd is available in virtual environment"
+        return
+    fi
+    
+    # Команда не найдена
+    echo_color "red" "✗ Command $cmd is not available"
+    
+    # Специальные инструкции для разных команд
+    if [ "$cmd" = "gunicorn" ]; then
+        echo_color "yellow" "  → gunicorn должен быть установлен в виртуальном окружении автоматически"
+        echo_color "yellow" "  → Попробуйте: cd $app_dir && source venv/bin/activate && pip install gunicorn"
+    else
+        echo_color "yellow" "  → Please install package containing $cmd command"
+    fi
 }
 
 #####################################################################
