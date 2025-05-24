@@ -461,7 +461,8 @@ def get_local_usb_devices():
                     match = re.match(r'Bus (\d+) Device (\d+): ID ([0-9a-f]+):([0-9a-f]+)(.+)', line)
                     if match:
                         bus, device, vendor_id, product_id, desc = match.groups()
-                        busid = f"{bus}-{device}"
+                        # Преобразуем busid в формат, который требует usbip (без лидирующих нулей)
+                        busid = f"{int(bus)}-{int(device)}"
                         
                         desc = desc.strip()
                         if not desc:
