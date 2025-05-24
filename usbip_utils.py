@@ -538,7 +538,30 @@ def get_published_devices():
             
             logger.debug(f"Метод 2 (doctor.sh): Найдено {len(published_devices)} опубликованных устройств: {published_devices}")
             
-        # Метод 3: Эмуляция для тестовой среды, если ничего не найдено
+        # Метод 3: Проверка через doctor.sh для дополнительного анализа
+        if not published_devices:
+            try:
+                logger.debug("Проверяем статус публикации через прямой доступ к драйверу")
+                # Проверяем файлы в /sys/bus/usb/drivers/usbip-host/
+                # Многие системы используют /sys/bus/usb/drivers/usbip-host/ для отслеживания опубликованных устройств
+                # Каждое опубликованное устройство имеет там символическую ссылку
+                
+                check_cmd = ['ls', '-la', '/sys/bus/usb/drivers/usbip-host/']
+                stdout, stderr, return_code = run_command(check_cmd, use_sudo=True)
+                
+                if return_code == 0 and stdout:
+                    for line in stdout.strip().split('\n'):
+                        # Ищем строки вида "X-Y -> ../../../devices/X-Y"
+                        match = re.search(r'(\d+-\d+)\s+->', line)
+                        if match:
+                            busid = normalize_busid(match.group(1))
+                            if busid not in published_devices:
+                                published_devices.append(busid)
+                                logger.debug(f"Найдено опубликованное устройство через драйвер: {busid}")
+            except Exception as e:
+                logger.warning(f"Ошибка при проверке через драйвер: {str(e)}")
+                
+        # Метод 4: Эмуляция для тестовой среды, если ничего не найдено
         if not published_devices and "replit" in os.environ.get('HOSTNAME', '').lower():
             logger.debug("Эмуляция опубликованных устройств для тестовой среды")
             # Добавляем устройства 1-1 и 1-6 как опубликованные для демонстрации

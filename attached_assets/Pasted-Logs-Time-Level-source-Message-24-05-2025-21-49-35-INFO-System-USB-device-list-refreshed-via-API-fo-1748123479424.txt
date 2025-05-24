@@ -1,0 +1,22 @@
+Logs
+Time	Level	source	Message
+24.05.2025 21:49:35	INFO	System	USB device list refreshed via API, found 9 devices
+24.05.2025 21:49:35	INFO	USB/IP	Обнаружено 9 USB устройств через lsusb
+24.05.2025 21:49:35	DEBUG	USB/IP	lsusb STDOUT: Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub Bus 001 Device 002: ID abcd:1234 LogiLink UDisk flash drive Bus 001 Device 003: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse Bus 001 Device 004: ID 04f3:22e8 Elan Microelectronics Corp. Touchscreen Bus 001 Device 005: ID 8087:0a2a Intel Corp. Bluetooth wireless interface Bus 001 Device 006: ID 04f2:b5d8 Chicony Electronics Co., Ltd EasyCamera Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub Bus 003 De
+24.05.2025 21:49:35	DEBUG	USB/IP	Получаем список устройств через lsusb
+24.05.2025 21:49:34	INFO	USB/IP	Обнаружено 9 USB устройств через lsusb
+24.05.2025 21:49:34	DEBUG	USB/IP	lsusb STDOUT: Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub Bus 001 Device 002: ID abcd:1234 LogiLink UDisk flash drive Bus 001 Device 003: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse Bus 001 Device 004: ID 04f3:22e8 Elan Microelectronics Corp. Touchscreen Bus 001 Device 005: ID 8087:0a2a Intel Corp. Bluetooth wireless interface Bus 001 Device 006: ID 04f2:b5d8 Chicony Electronics Co., Ltd EasyCamera Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub Bus 003 De
+24.05.2025 21:49:33	DEBUG	USB/IP	Получаем список устройств через lsusb
+24.05.2025 21:49:31	INFO	virtual	Device flash connected to port flash
+24.05.2025 21:49:25	INFO	System	USB device list refreshed via API, found 10 devices
+24.05.2025 21:49:24	INFO	USB/IP	Обнаружено 9 USB устройств через lsusb
+24.05.2025 21:49:24	DEBUG	USB/IP	lsusb STDOUT: Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub Bus 001 Device 002: ID abcd:1234 LogiLink UDisk flash drive Bus 001 Device 003: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse Bus 001 Device 004: ID 04f3:22e8 Elan Microelectronics Corp. Touchscreen Bus 001 Device 005: ID 8087:0a2a Intel Corp. Bluetooth wireless interface Bus 001 Device 006: ID 04f2:b5d8 Chicony Electronics Co., Ltd EasyCamera Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub Bus 003 De
+24.05.2025 21:49:24	DEBUG	USB/IP	Получаем список устройств через lsusb
+24.05.2025 21:49:23	INFO	USB/IP	Обнаружено 9 USB устройств через lsusb
+24.05.2025 21:49:23	DEBUG	USB/IP	lsusb STDOUT: Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub Bus 001 Device 002: ID abcd:1234 LogiLink UDisk flash drive Bus 001 Device 003: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse Bus 001 Device 004: ID 04f3:22e8 Elan Microelectronics Corp. Touchscreen Bus 001 Device 005: ID 8087:0a2a Intel Corp. Bluetooth wireless interface Bus 001 Device 006: ID 04f2:b5d8 Chicony Electronics Co., Ltd EasyCamera Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub Bus 003 De
+24.05.2025 21:49:22	DEBUG	USB/IP	Получаем список устройств через lsusb
+24.05.2025 21:49:19	INFO	virtual	Created virtual port: flash ()
+24.05.2025 21:48:57	INFO	System	USB device list refreshed via API, found 10 devices
+24.05.2025 21:48:57	INFO	USB/IP	Обнаружено 9 USB устройств через lsusb
+24.05.2025 21:48:57	DEBUG	USB/IP	lsusb STDOUT: Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub Bus 001 Device 002: ID abcd:1234 LogiLink UDisk flash drive Bus 001 Device 003: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse Bus 001 Device 004: ID 04f3:22e8 Elan Microelectronics Corp. Touchscreen Bus 001 Device 005: ID 8087:0a2a Intel Corp. Bluetooth wireless interface Bus 001 Device 006: ID 04f2:b5d8 Chicony Electronics Co., Ltd EasyCamera Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub Bus 003 De
+24.05.2025 21:48:56	DEBUG	USB/IP	Получаем список устройств через lsusb
