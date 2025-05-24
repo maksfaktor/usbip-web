@@ -96,7 +96,7 @@ def main():
         "templates/base.html"
     ]
     
-    commit_message = "Улучшения интерфейса: удалена избыточная вкладка USB-устройств, упрощено меню навигации"
+    commit_message = "Исправлена проблема с запуском службы usbipd: изменен тип с simple на forking"
     
     print("Отправляем изменения в GitHub...")
     
