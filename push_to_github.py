@@ -84,8 +84,8 @@ def update_file(file_path, message):
 # Основная функция
 def main():
     files_to_update = [
-        "usbip_utils.py",
-        "templates/index.html"
+        "doctor.sh",
+        "usbip_utils.py"
     ]
     
     commit_message = "Изменен doctor.sh для отображения только проводных, WiFi и tailscale соединений"
