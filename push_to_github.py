@@ -93,10 +93,11 @@ def main():
         "doctor.sh",
         "app.py",
         "translations.py",
-        "templates/base.html"
+        "templates/base.html",
+        "templates/index.html"
     ]
     
-    commit_message = "Улучшен скрипт диагностики doctor.sh с автоматическим исправлением конфигурации службы usbipd"
+    commit_message = "Улучшено обновление списка USB-устройств с асинхронным API"
     
     print("Отправляем изменения в GitHub...")
     

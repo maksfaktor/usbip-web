@@ -452,7 +452,7 @@ function refreshDevicesList() {
                     
                     data.devices.forEach(device => {
                         const isVirtual = device.is_virtual || false;
-                        const deviceName = device.device_name;
+                        const deviceName = device.device_name || device.info?.split(':')[1]?.trim() || 'Неизвестное устройство';
                         const vendorId = device.idVendor || device.vendor_id || '';
                         const productId = device.idProduct || device.product_id || '';
                         const busid = device.busid;
