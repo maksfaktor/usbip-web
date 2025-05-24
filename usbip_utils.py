@@ -217,6 +217,8 @@ def parse_local_usb_devices(output):
                 devices.append(current_device)
                 
             busid = standard_match.group(1)
+            # Нормализуем busid к формату без ведущих нулей
+            busid = normalize_busid(busid)
             info = standard_match.group(2).strip()
             
             current_device = {
@@ -248,6 +250,8 @@ def parse_local_usb_devices(output):
                 devices.append(current_device)
                 
             busid = flexible_match.group(1)
+            # Нормализуем busid к формату без ведущих нулей
+            busid = normalize_busid(busid)
             vendor_id = flexible_match.group(2)
             product_id = flexible_match.group(3)
             
@@ -360,7 +364,10 @@ def parse_attached_devices(output):
                 
             remote_busid_match = re.match(r'^\s*Remote busid:\s+(.+)$', line)
             if remote_busid_match:
-                current_device['remote_busid'] = remote_busid_match.group(1)
+                remote_busid = remote_busid_match.group(1)
+                # Нормализуем busid к формату без ведущих нулей
+                remote_busid = normalize_busid(remote_busid)
+                current_device['remote_busid'] = remote_busid
     
     # Добавляем последнее устройство
     if current_device:
