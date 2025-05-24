@@ -11,6 +11,7 @@ translations = {
         'main_page': 'Home',
         'remote_devices': 'Remote Devices',
         'virtual_devices': 'Virtual Devices',
+        'usb_devices': 'USB Devices',
         'logs': 'Logs',
         'admin_panel': 'Admin Panel',
         'network': 'Network',
@@ -144,6 +145,21 @@ translations = {
         'set_port_name': 'Set Port Name',
         'current_port_name': 'Current Port Name',
         'new_port_name': 'New Port Name',
+        
+        # USB устройства
+        'local_usb_devices': 'Local USB Devices',
+        'no_usb_devices_detected': 'No USB devices detected',
+        'alias': 'Alias',
+        'no_alias': 'No alias',
+        'set_device_alias': 'Set Device Alias',
+        'unknown': 'Unknown',
+        'publishing': 'Publishing...',
+        'published': 'Published',
+        'error': 'Error',
+        'publish_error': 'Publish Error',
+        'server_error': 'Server error',
+        'unknown_error': 'Unknown error',
+        'local_devices_info': 'Here you can view all USB devices connected to this system and publish them for remote access.',
         
         # Сообщения
         'login_required': 'Please log in to access this page',
@@ -282,6 +298,7 @@ translations = {
         'main_page': 'Главная',
         'remote_devices': 'Удаленные устройства',
         'virtual_devices': 'Виртуальные устройства',
+        'usb_devices': 'USB-устройства',
         'logs': 'Логи',
         'admin_panel': 'Админ-панель',
         'network': 'Сеть',
@@ -309,6 +326,21 @@ translations = {
         'detach': 'Отключить',
         'show_password': 'Показать пароль',
         'hide_password': 'Скрыть пароль',
+        
+        # USB устройства
+        'local_usb_devices': 'Локальные USB-устройства',
+        'no_usb_devices_detected': 'USB-устройства не обнаружены',
+        'alias': 'Алиас',
+        'no_alias': 'Нет алиаса',
+        'set_device_alias': 'Установить алиас устройства',
+        'unknown': 'Неизвестно',
+        'publishing': 'Публикация...',
+        'published': 'Опубликовано',
+        'error': 'Ошибка',
+        'publish_error': 'Ошибка публикации',
+        'server_error': 'Ошибка сервера',
+        'unknown_error': 'Неизвестная ошибка',
+        'local_devices_info': 'Здесь вы можете просмотреть все USB-устройства, подключенные к этой системе, и опубликовать их для удаленного доступа.',
         
         # Главная страница
         'local_devices': 'Локальные USB устройства',
