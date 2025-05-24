@@ -355,14 +355,11 @@ show_header "8. Network Interfaces Check"
 # Check for network interfaces using 'ip' command (modern) or fallback to 'ifconfig'
 if command -v ip > /dev/null 2>&1; then
     echo "Available network interfaces:"
-    ip -br addr show | grep -v "lo" | awk '{print "  " $1 ": " $3}'
-    
-    echo ""
-    echo "Default routes:"
-    ip route | grep default | sed 's/^/  /'
+    # Отображаем только проводные (enp*), WiFi (wlp*) и tailscale интерфейсы
+    ip -br addr show | grep -v "lo" | grep -E "enp|wlp|tailscale" | awk '{print "  " $1 ": " $3}'
 else
     echo_color "yellow" "ip command not found, using ifconfig"
-    ifconfig | grep -E "inet|eth|wlan" | grep -v "inet6" | sed 's/^/  /'
+    ifconfig | grep -E "enp|wlp|tailscale" | grep -v "inet6" | sed 's/^/  /'
 fi
 
 #####################################################################

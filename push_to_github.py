@@ -88,7 +88,7 @@ def main():
         "templates/index.html"
     ]
     
-    commit_message = "Добавлена запись отладочной информации в базу данных логов"
+    commit_message = "Изменен doctor.sh для отображения только проводных, WiFi и tailscale соединений"
     
     print("Отправляем изменения в GitHub...")
     
