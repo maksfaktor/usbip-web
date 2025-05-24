@@ -4,6 +4,7 @@ import json
 import random
 import logging
 import socket
+import subprocess
 import netifaces
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, send_file, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -922,6 +923,57 @@ def handle_exception(error):
                           error_code=str(code),
                           error_title="Ошибка сервера",
                           error_description="Произошла неожиданная ошибка. Пожалуйста, попробуйте позже или обратитесь к администратору."), code
+
+@app.route('/api/run_doctor', methods=['POST'])
+@login_required
+def run_doctor():
+    """
+    API для запуска скрипта doctor.sh и получения результатов диагностики
+    """
+    try:
+        # Проверяем, что скрипт существует
+        if not os.path.exists('./doctor.sh'):
+            return jsonify({
+                'success': False,
+                'message': 'Скрипт doctor.sh не найден'
+            }), 404
+        
+        # Делаем скрипт исполняемым, если он еще не такой
+        os.chmod('./doctor.sh', 0o755)
+        
+        # Запускаем скрипт doctor.sh и получаем вывод
+        process = subprocess.Popen(
+            ['sudo', './doctor.sh'], 
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True
+        )
+        
+        stdout, stderr = process.communicate()
+        
+        # Записываем результаты в лог
+        if process.returncode == 0:
+            add_log_entry('INFO', 'Скрипт doctor.sh успешно выполнен', 'system')
+        else:
+            add_log_entry('ERROR', f'Ошибка при выполнении doctor.sh: {stderr}', 'system')
+        
+        # Форматируем вывод для отображения в веб-интерфейсе
+        output = stdout if stdout else "Нет вывода"
+        if stderr:
+            output += f"\n\nОшибки:\n{stderr}"
+        
+        return jsonify({
+            'success': process.returncode == 0,
+            'output': output,
+            'message': 'Диагностика выполнена успешно' if process.returncode == 0 else 'Ошибка при выполнении диагностики'
+        })
+    except Exception as e:
+        # Записываем ошибку в лог
+        add_log_entry('ERROR', f'Исключение при запуске doctor.sh: {str(e)}', 'system')
+        return jsonify({
+            'success': False,
+            'message': f'Ошибка: {str(e)}'
+        }), 500
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
