@@ -88,7 +88,7 @@ def main():
         "templates/index.html"
     ]
     
-    commit_message = "Исправлено отображение опубликованных устройств, добавлен флаг is_published в API-ответ"
+    commit_message = "Улучшена обработка неавторизованных API-запросов и сессий"
     
     print("Отправляем изменения в GitHub...")
     
