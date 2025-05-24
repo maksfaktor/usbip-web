@@ -266,10 +266,21 @@ def index():
     # Получаем список опубликованных устройств
     published_busids = get_published_devices()
     
+    # Добавляем отладочное логирование
+    add_log_entry('DEBUG', f'Published devices: {published_busids}', 'usbip')
+    
     # Помечаем опубликованные устройства
     for device in local_devices:
-        if 'busid' in device and device['busid'] in published_busids:
-            device['is_published'] = True
+        # Нормализуем busid устройства для правильного сравнения
+        if 'busid' in device:
+            from usbip_utils import normalize_busid
+            device_busid = normalize_busid(device['busid'])
+            if device_busid in published_busids:
+                device['is_published'] = True
+                add_log_entry('DEBUG', f'Device {device["busid"]} marked as published', 'usbip')
+            else:
+                device['is_published'] = False
+                add_log_entry('DEBUG', f'Device {device["busid"]} NOT marked as published', 'usbip')
         else:
             device['is_published'] = False
             
