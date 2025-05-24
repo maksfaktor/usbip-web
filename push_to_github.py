@@ -16,7 +16,16 @@ if not GITHUB_TOKEN:
 
 # Функция для получения SHA файла
 def get_file_sha(file_path):
-    api_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{file_path}"
+    # Обрабатываем случай с вложенными папками
+    if '/' in file_path:
+        # Проверяем существование папки
+        folder_path = '/'.join(file_path.split('/')[:-1])
+        file_name = file_path.split('/')[-1]
+        api_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{folder_path}"
+    else:
+        api_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents"
+        file_name = file_path
+        
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.v3+json"
@@ -24,11 +33,19 @@ def get_file_sha(file_path):
     
     response = requests.get(api_url, headers=headers)
     if response.status_code == 200:
-        return response.json().get("sha")
+        contents = response.json()
+        if isinstance(contents, list):
+            for item in contents:
+                if item["name"] == file_name:
+                    return item["sha"]
+            return None
+        else:
+            return contents.get("sha")
     elif response.status_code == 404:
         return None
     else:
         print(f"Ошибка при получении SHA для {file_path}: {response.status_code}")
+        print(response.json())
         return None
 
 # Функция для обновления файла
@@ -73,10 +90,13 @@ def main():
         "README.md",
         "requirements-deploy.txt",
         "usbip_utils.py",
-        "doctor.sh"
+        "doctor.sh",
+        "app.py",
+        "translations.py",
+        "templates/base.html"
     ]
     
-    commit_message = "Added diagnostic tool (doctor.sh) and fixed usbipd daemon issues"
+    commit_message = "Улучшения интерфейса: удалена избыточная вкладка USB-устройств, упрощено меню навигации"
     
     print("Отправляем изменения в GitHub...")
     
