@@ -157,8 +157,7 @@ def parse_attached_devices(output):
         
     return devices
 
-# Удалена функция get_demo_usb_devices() по требованию пользователя
-# Вместо демонстрационных устройств используются только реальные и виртуальные устройства
+# Функция удалена по запросу пользователя
 
 def get_local_usb_devices():
     """
@@ -172,19 +171,83 @@ def get_local_usb_devices():
         stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-l'])
         
         if return_code != 0:
-            logger.error(f"Ошибка получения списка локальных устройств: {stderr}")
+            error_msg = f"Ошибка получения списка локальных устройств: {stderr}"
+            logger.error(error_msg)
             
-            # Проверяем, вызвана ли ошибка отсутствием команды usbip
-            if "No such file or directory" in stderr or return_code == 127:
-                logger.warning("Команда usbip не найдена, возвращаем пустой список устройств")
+            # Создаем специальное "устройство-уведомление", информирующее о проблеме
+            error_device = {
+                'busid': 'error',
+                'info': 'Ошибка: Служба USB/IP не запущена или не настроена',
+                'details': [
+                    'Запустите doctor.sh для диагностики и устранения проблем.',
+                    f'Детали ошибки: {stderr}'
+                ],
+                'device_name': 'Ошибка USB/IP',
+                'vendor_id': '0000',
+                'product_id': '0000',
+                'is_error': True  # Специальный флаг для обработки в интерфейсе
+            }
             
-            return []
+            return [error_device]
         
-        return parse_local_usb_devices(stdout)
+        # Получаем список устройств из вывода команды
+        devices = parse_local_usb_devices(stdout)
+        
+        # Если список пуст, добавляем информационное "устройство"
+        if not devices:
+            info_device = {
+                'busid': 'info',
+                'info': 'USB устройства не обнаружены',
+                'details': [
+                    'Проверьте подключение USB устройств к компьютеру',
+                    'Убедитесь, что служба USB/IP запущена: sudo systemctl start usbipd'
+                ],
+                'device_name': 'Нет устройств',
+                'vendor_id': '0000',
+                'product_id': '0000',
+                'is_info': True  # Специальный флаг для обработки в интерфейсе
+            }
+            return [info_device]
+        
+        # Дополнительно обрабатываем каждое устройство, добавляя vendor_id, product_id и device_name
+        for device in devices:
+            # Извлекаем vendor_id и product_id из строки info
+            # Пример: "1-1: LogiLink : UDisk flash drive (abcd:1234)"
+            ids_match = re.search(r'\(([0-9a-f]{4}):([0-9a-f]{4})\)', device['info'])
+            if ids_match:
+                device['vendor_id'] = ids_match.group(1)
+                device['product_id'] = ids_match.group(2)
+            else:
+                device['vendor_id'] = '0000'
+                device['product_id'] = '0000'
+            
+            # Извлекаем имя устройства из строки info
+            name_match = re.search(r':\s+(.*?)\s+\(', device['info'])
+            if name_match:
+                device['device_name'] = name_match.group(1).strip()
+            else:
+                device['device_name'] = f"Устройство {device['busid']}"
+        
+        return devices
     except Exception as e:
-        logger.error(f"Ошибка при выполнении get_local_usb_devices: {str(e)}")
-        # Возвращаем пустой список при любой ошибке
-        return []
+        error_msg = f"Ошибка при выполнении get_local_usb_devices: {str(e)}"
+        logger.error(error_msg)
+        
+        # Создаем специальное "устройство-уведомление" с информацией об ошибке
+        error_device = {
+            'busid': 'error',
+            'info': 'Ошибка при получении списка USB устройств',
+            'details': [
+                'Запустите doctor.sh для диагностики и устранения проблем.',
+                f'Детали ошибки: {str(e)}'
+            ],
+            'device_name': 'Ошибка USB/IP',
+            'vendor_id': '0000',
+            'product_id': '0000',
+            'is_error': True
+        }
+        
+        return [error_device]
 
 def bind_device(busid):
     """
