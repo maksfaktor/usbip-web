@@ -3,6 +3,12 @@
 # Orange USBIP - Automatic installation script for Debian/Ubuntu systems
 # Created: $(date +%Y-%m-%d)
 
+# Обработка параметров командной строки
+FORCE_UPDATE="false"
+if [ "$1" == "-f" ] || [ "$2" == "-f" ]; then
+    FORCE_UPDATE="true"
+fi
+
 # Check for uninstall mode
 if [ "$1" == "--uninstall" ]; then
     # Function for displaying colored text
@@ -500,7 +506,36 @@ fi
 cd "$APP_DIR"
 if [ -d ".git" ]; then
     echo "Updating existing repository..."
-    sudo -u $REAL_USER git pull
+    
+    # Проверка параметра -f (force) для принудительного обновления
+    if [ "$FORCE_UPDATE" = "true" ]; then
+        echo_color "yellow" "Принудительное обновление: локальные изменения будут потеряны"
+        sudo -u $REAL_USER git fetch origin
+        sudo -u $REAL_USER git reset --hard origin/main
+    else
+        # Проверка наличия локальных изменений
+        if sudo -u $REAL_USER git diff-index --quiet HEAD --; then
+            # Нет локальных изменений, безопасно обновляем
+            sudo -u $REAL_USER git pull
+        else
+            echo_color "red" "⚠️ Обнаружены локальные изменения в репозитории."
+            echo_color "yellow" "Чтобы принудительно обновить и отбросить локальные изменения, используйте:"
+            echo_color "yellow" "    sudo bash install_debian.sh -f"
+            echo_color "yellow" "Или сохраните изменения вручную:"
+            echo_color "yellow" "    cd $APP_DIR && git stash && git pull && git stash apply"
+            
+            # Спрашиваем пользователя, что делать
+            read -p "Хотите продолжить и отбросить локальные изменения? (y/n): " response
+            if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+                echo "Принудительное обновление..."
+                sudo -u $REAL_USER git fetch origin
+                sudo -u $REAL_USER git reset --hard origin/main
+            else
+                echo "Установка прервана. Сохраните ваши изменения и попробуйте снова."
+                exit 1
+            fi
+        fi
+    fi
 else
     echo "Cloning repository..."
     sudo -u $REAL_USER git clone https://github.com/maksfaktor/usbip-web.git .
