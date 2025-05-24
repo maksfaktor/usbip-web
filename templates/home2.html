@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('home_title', 'Orange USB/IP - Dashboard') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ translate('local_devices', 'Local USB Devices') }}</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ translate('available_devices', 'Available Devices') }}</h5>
+            <div>
+                <a href="{{ url_for('home2') }}" class="btn btn-sm btn-primary refresh-btn">
+                    <i class="fas fa-sync-alt me-1"></i>{{ translate('refresh', 'Refresh') }}
+                </a>
+                <button class="btn btn-sm btn-outline-secondary diagnostic-btn">
+                    <i class="fas fa-stethoscope me-1"></i>{{ translate('diagnostic', 'Diagnostic') }}
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if local_devices %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{{ translate('busid', 'Bus ID') }}</th>
+                                <th>{{ translate('device', 'Device') }}</th>
+                                <th>{{ translate('status', 'Status') }}</th>
+                                <th>{{ translate('actions', 'Actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for device in local_devices %}
+                            <tr {% if device.is_virtual %}class="table-primary"{% endif %}>
+                                <td>{{ device.busid }}
+                                    {% if device.is_virtual %}
+                                    <span class="badge bg-primary">{{ translate('virtual', 'Virtual') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div>{{ device.device_name|default(device.info.split(':')[1]|trim|default('Unknown device'), true) }}</div>
+                                    <small class="text-muted">{{ device.idVendor|default(device.vendor_id, true) }}:{{ device.idProduct|default(device.product_id, true) }}</small>
+                                </td>
+                                <td>
+                                    {% if device.is_published %}
+                                    <span class="badge bg-success">{{ translate('published', 'Published') }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ translate('not_published', 'Not Published') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <form method="post" action="{{ url_for('bind_device_route') }}" class="d-inline">
+                                            <input type="hidden" name="busid" value="{{ device.busid }}">
+                                            <button type="submit" class="btn {% if device.is_published %}btn-success disabled{% else %}btn-primary{% endif %}"
+                                                    {% if device.is_published %}disabled{% endif %}>
+                                                <i class="fas {% if device.is_published %}fa-check{% else %}fa-share{% endif %} me-1"></i>
+                                                {% if device.is_published %}
+                                                    {{ translate('published', 'Published') }}
+                                                {% else %}
+                                                    {{ translate('publish', 'Publish') }}
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                        
+                                        {% if not device.is_virtual %}
+                                        <button class="btn btn-outline-info btn-sm set-alias-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#aliasModal"
+                                                data-busid="{{ device.busid }}"
+                                                data-device="{{ device.device_name|default(device.info.split(':')[1]|trim|default('Unknown device'), true) }}">
+                                            <i class="fas fa-tag me-1"></i>{{ translate('set_name', 'Set Name') }}
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ translate('no_local_devices', 'No local USB devices found') }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Attached Remote Devices Section -->
+    <h2>{{ translate('attached_remote_devices', 'Attached Remote Devices') }}</h2>
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">{{ translate('connected_devices', 'Connected Devices') }}</h5>
+        </div>
+        <div class="card-body">
+            {% if attached_devices %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>{{ translate('port', 'Port') }}</th>
+                                <th>{{ translate('device', 'Device') }}</th>
+                                <th>{{ translate('remote', 'Remote') }}</th>
+                                <th>{{ translate('actions', 'Actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for device in attached_devices %}
+                            <tr>
+                                <td>{{ device.port }}</td>
+                                <td>
+                                    <div>{{ device.device }}</div>
+                                    <small class="text-muted">{{ device.busid }}</small>
+                                </td>
+                                <td>{{ device.remote }}</td>
+                                <td>
+                                    <form method="post" action="{{ url_for('detach_device_route') }}">
+                                        <input type="hidden" name="port" value="{{ device.port }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-unlink me-1"></i>{{ translate('disconnect', 'Disconnect') }}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>{{ translate('no_remote_devices', 'No remote devices attached') }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Set Alias Modal -->
+<div class="modal fade" id="aliasModal" tabindex="-1" aria-labelledby="aliasModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{{ url_for('device_alias') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aliasModalLabel">{{ translate('set_device_alias', 'Set Device Alias') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="busid" id="alias_busid">
+                    <input type="hidden" name="device_info" id="alias_device_info">
+                    <div class="mb-3">
+                        <label for="alias_name" class="form-label">{{ translate('alias', 'Alias') }}</label>
+                        <input type="text" class="form-control" id="alias_name" name="alias" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('cancel', 'Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ translate('save', 'Save') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Diagnostic Modal -->
+<div class="modal fade" id="diagnosticModal" tabindex="-1" aria-labelledby="diagnosticModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="diagnosticModalLabel">{{ translate('diagnostic_results', 'Diagnostic Results') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-4 d-none" id="diagnosticSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">{{ translate('loading', 'Loading...') }}</span>
+                    </div>
+                    <p class="mt-2">{{ translate('running_diagnostic', 'Running diagnostic...') }}</p>
+                </div>
+                <pre class="bg-dark text-light p-3 rounded d-none" id="diagnosticOutput" style="max-height: 400px; overflow-y: auto;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('close', 'Close') }}</button>
+                <button type="button" class="btn btn-primary refresh-after-diagnostic d-none">{{ translate('refresh_devices', 'Refresh Devices') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Настройка модального окна для установки псевдонимов
+    const aliasModal = document.getElementById('aliasModal');
+    if (aliasModal) {
+        aliasModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const busid = button.getAttribute('data-busid');
+            const device = button.getAttribute('data-device');
+            
+            document.getElementById('alias_busid').value = busid;
+            document.getElementById('alias_device_info').value = device;
+            document.getElementById('alias_name').value = device;
+        });
+    }
+    
+    // Настройка диагностики
+    const diagnosticBtn = document.querySelector('.diagnostic-btn');
+    if (diagnosticBtn) {
+        diagnosticBtn.addEventListener('click', function() {
+            const modal = new bootstrap.Modal(document.getElementById('diagnosticModal'));
+            modal.show();
+            
+            // Показываем спиннер, скрываем вывод
+            document.getElementById('diagnosticSpinner').classList.remove('d-none');
+            document.getElementById('diagnosticOutput').classList.add('d-none');
+            document.querySelector('.refresh-after-diagnostic').classList.add('d-none');
+            
+            // Запускаем диагностику
+            fetch('/run_doctor', {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Скрываем спиннер, показываем вывод
+                document.getElementById('diagnosticSpinner').classList.add('d-none');
+                document.getElementById('diagnosticOutput').classList.remove('d-none');
+                document.querySelector('.refresh-after-diagnostic').classList.remove('d-none');
+                
+                // Заполняем вывод результатами
+                document.getElementById('diagnosticOutput').textContent = data.output;
+                
+                // Настраиваем кнопку обновления
+                document.querySelector('.refresh-after-diagnostic').addEventListener('click', function() {
+                    window.location.reload();
+                });
+            })
+            .catch(error => {
+                // Скрываем спиннер, показываем сообщение об ошибке
+                document.getElementById('diagnosticSpinner').classList.add('d-none');
+                document.getElementById('diagnosticOutput').classList.remove('d-none');
+                document.getElementById('diagnosticOutput').textContent = `Error: ${error.message}`;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}
