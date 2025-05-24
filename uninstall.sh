@@ -1,4 +1,6 @@
 #!/bin/bash
+# Orange USBIP Web Interface - Uninstall Script
+# This script requires execution permissions (chmod +x uninstall.sh)
 
 # Colors for pretty output
 RED='\033[0;31m'
