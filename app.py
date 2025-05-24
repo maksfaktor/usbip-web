@@ -217,6 +217,45 @@ def logout():
     flash(message, 'info')
     return redirect(url_for('login'))
 
+@app.route('/api/local_devices')
+@login_required
+def get_local_devices_api():
+    """
+    API для получения списка локальных USB устройств.
+    Возвращает JSON с устройствами для обновления списка без перезагрузки страницы.
+    """
+    try:
+        # Получаем реальные USB устройства через usbip
+        local_devices = get_local_usb_devices()
+        
+        # Добавляем виртуальные устройства в список локальных устройств
+        virtual_devices = VirtualUsbDevice.query.filter_by(is_active=False).all()
+        
+        for device in virtual_devices:
+            local_devices.append({
+                'busid': f'v-{device.id}',
+                'device_name': device.name,
+                'idVendor': device.vendor_id,
+                'idProduct': device.product_id,
+                'is_virtual': True,
+                'virtual_id': device.id
+            })
+        
+        # Запись в лог
+        add_log_entry('INFO', f'USB device list refreshed via API, found {len(local_devices)} devices', 'system')
+        
+        return jsonify({
+            'success': True,
+            'devices': local_devices
+        })
+    except Exception as e:
+        # Запись в лог
+        add_log_entry('ERROR', f'Failed to get USB devices list: {str(e)}', 'system')
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
 @app.route('/')
 @login_required
 def index():
