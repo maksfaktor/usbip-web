@@ -179,7 +179,7 @@ if [ $? -eq 0 ]; then
 else
     echo_color "red" "✗ Port 3240 is not listening"
     echo_color "yellow" "  → usbipd service is not running or not listening on port"
-    echo_color "yellow" "  → Recommended: restart usbipd service"
+    echo_color "yellow" "  → Recommended: restart usbipd service: sudo systemctl restart usbipd"
 fi
 
 # Check if web interface port (5000) is listening
