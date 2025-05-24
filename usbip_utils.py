@@ -556,54 +556,6 @@ def get_local_usb_devices():
         }
         
         return [error_device]
-        
-        # Дополнительно обрабатываем каждое устройство, добавляя vendor_id, product_id и device_name
-        for device in devices:
-            # Пропускаем если уже извлечены vendor_id и product_id
-            if 'vendor_id' in device and 'product_id' in device:
-                continue
-                
-            # Извлекаем vendor_id и product_id из строки info
-            # Пример: "1-1: LogiLink : UDisk flash drive (abcd:1234)"
-            ids_match = re.search(r'\(([0-9a-f]{4}):([0-9a-f]{4})\)', device['info'])
-            if ids_match:
-                device['vendor_id'] = ids_match.group(1)
-                device['product_id'] = ids_match.group(2)
-            else:
-                device['vendor_id'] = '0000'
-                device['product_id'] = '0000'
-            
-            # Пропускаем если уже есть device_name
-            if 'device_name' in device:
-                continue
-                
-            # Извлекаем имя устройства из строки info
-            name_match = re.search(r':\s+(.*?)\s+\(', device['info'])
-            if name_match:
-                device['device_name'] = name_match.group(1).strip()
-            else:
-                device['device_name'] = f"Устройство {device['busid']}"
-        
-        return devices
-    except Exception as e:
-        error_msg = f"Ошибка при выполнении get_local_usb_devices: {str(e)}"
-        logger.error(error_msg)
-        
-        # Создаем специальное "устройство-уведомление" с информацией об ошибке
-        error_device = {
-            'busid': 'error',
-            'info': 'Ошибка при получении списка USB устройств',
-            'details': [
-                'Запустите doctor.sh для диагностики и устранения проблем.',
-                f'Детали ошибки: {str(e)}'
-            ],
-            'device_name': 'Ошибка USB/IP',
-            'vendor_id': '0000',
-            'product_id': '0000',
-            'is_error': True
-        }
-        
-        return [error_device]
 
 def bind_device(busid):
     """
