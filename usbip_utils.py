@@ -58,6 +58,22 @@ def parse_local_usb_devices(output):
     
     logger.debug(f"Начинаем парсинг вывода, длина текста: {len(output)}")
     
+    # Добавляем запись в базу данных логов для отображения в веб-интерфейсе
+    try:
+        from app import add_log_entry
+        add_log_entry("DEBUG", f"Начинаем парсинг вывода usbip, длина текста: {len(output)}", "usbip")
+        
+        # Разбиваем вывод на строки для логирования
+        lines = output.split('\n')
+        if len(lines) > 20:
+            log_lines = lines[:10] + ["..."] + lines[-10:]
+        else:
+            log_lines = lines
+            
+        add_log_entry("DEBUG", f"Анализируемые строки: {log_lines}", "usbip")
+    except Exception as e:
+        logger.error(f"Ошибка при добавлении лога парсинга: {str(e)}")
+    
     # Проверка на наличие шаблона busid как в выводе doctor.sh
     doctor_pattern = re.compile(r'^\s*-\s+busid\s+(\d+-\d+)\s+\(([0-9a-f]{4}):([0-9a-f]{4})\)')
     
@@ -282,6 +298,22 @@ def get_local_usb_devices():
         logger.debug(f"doctor.sh STDOUT: {doctor_stdout}")
         logger.debug(f"doctor.sh STDERR: {doctor_stderr}")
         
+        # Добавляем запись в базу данных логов для отображения в веб-интерфейсе
+        try:
+            from app import add_log_entry
+            add_log_entry("DEBUG", f"doctor.sh завершен с кодом: {doctor_return_code}", "usbip")
+            
+            # Разбиваем длинный вывод на части для логирования
+            max_log_length = 500
+            stdout_parts = [doctor_stdout[i:i+max_log_length] for i in range(0, len(doctor_stdout), max_log_length)]
+            for i, part in enumerate(stdout_parts):
+                add_log_entry("DEBUG", f"doctor.sh STDOUT (часть {i+1}/{len(stdout_parts)}): {part}", "usbip")
+                
+            if doctor_stderr:
+                add_log_entry("DEBUG", f"doctor.sh STDERR: {doctor_stderr}", "usbip")
+        except Exception as e:
+            logger.error(f"Ошибка при добавлении лога: {str(e)}")
+        
         if doctor_return_code == 0:
             # Пытаемся найти секцию с устройствами в выводе doctor.sh
             devices_section = ""
@@ -301,12 +333,25 @@ def get_local_usb_devices():
             
             # Если нашли секцию с устройствами, парсим ее
             if devices_section:
+                try:
+                    from app import add_log_entry
+                    add_log_entry("DEBUG", f"Извлеченная секция устройств: {devices_section[:500]}", "usbip")
+                except Exception as e:
+                    logger.error(f"Ошибка при добавлении лога секции устройств: {str(e)}")
+                
                 devices = parse_local_usb_devices(devices_section)
                 logger.debug(f"Распознано {len(devices)} устройств из вывода doctor.sh")
                 
-                # Подробный лог каждого устройства
-                for i, device in enumerate(devices):
-                    logger.debug(f"Устройство {i+1}: {device}")
+                try:
+                    from app import add_log_entry
+                    add_log_entry("DEBUG", f"Распознано {len(devices)} устройств из вывода doctor.sh", "usbip")
+                    
+                    # Подробный лог каждого устройства
+                    for i, device in enumerate(devices):
+                        logger.debug(f"Устройство {i+1}: {device}")
+                        add_log_entry("DEBUG", f"Устройство {i+1}: {str(device)[:500]}", "usbip")
+                except Exception as e:
+                    logger.error(f"Ошибка при добавлении лога устройств: {str(e)}")
                 
                 if devices:
                     return devices
