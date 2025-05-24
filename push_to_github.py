@@ -88,7 +88,7 @@ def main():
         "usbip_utils.py"
     ]
     
-    commit_message = "Изменен doctor.sh для отображения только проводных, WiFi и tailscale соединений"
+    commit_message = "Добавлен специальный парсер для вывода doctor.sh с поддержкой формата показа устройств"
     
     print("Отправляем изменения в GitHub...")
     
