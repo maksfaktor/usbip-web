@@ -1,0 +1,22 @@
+Logs
+Time	Level	source	Message
+24.05.2025 22:30:10	DEBUG	USB/IP	lsusb STDOUT: Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub Bus 001 Device 002: ID abcd:1234 LogiLink UDisk flash drive Bus 001 Device 003: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse Bus 001 Device 004: ID 04f3:22e8 Elan Microelectronics Corp. Touchscreen Bus 001 Device 005: ID 8087:0a2a Intel Corp. Bluetooth wireless interface Bus 001 Device 006: ID 04f2:b5d8 Chicony Electronics Co., Ltd EasyCamera Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub Bus 003 De
+24.05.2025 22:30:09	DEBUG	USB/IP	Получаем список устройств через lsusb
+24.05.2025 22:30:08	DEBUG	USB/IP	Device 4-1 NOT marked as published
+24.05.2025 22:30:08	DEBUG	USB/IP	Device 3-1 NOT marked as published
+24.05.2025 22:30:08	DEBUG	USB/IP	Device 2-1 NOT marked as published
+24.05.2025 22:30:08	DEBUG	USB/IP	Device 1-6 NOT marked as published
+24.05.2025 22:30:08	DEBUG	USB/IP	Device 1-5 NOT marked as published
+24.05.2025 22:30:07	DEBUG	USB/IP	Device 1-4 NOT marked as published
+24.05.2025 22:30:07	DEBUG	USB/IP	Device 1-3 NOT marked as published
+24.05.2025 22:30:07	DEBUG	USB/IP	Device 1-2 NOT marked as published
+24.05.2025 22:30:07	DEBUG	USB/IP	Device 1-1 NOT marked as published
+24.05.2025 22:30:07	DEBUG	USB/IP	Published devices: []
+24.05.2025 22:30:05	DEBUG	USB/IP	lsusb STDOUT: Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub Bus 001 Device 002: ID abcd:1234 LogiLink UDisk flash drive Bus 001 Device 003: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse Bus 001 Device 004: ID 04f3:22e8 Elan Microelectronics Corp. Touchscreen Bus 001 Device 005: ID 8087:0a2a Intel Corp. Bluetooth wireless interface Bus 001 Device 006: ID 04f2:b5d8 Chicony Electronics Co., Ltd EasyCamera Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub Bus 003 De
+24.05.2025 22:30:05	DEBUG	USB/IP	Получаем список устройств через lsusb
+24.05.2025 22:30:04	DEBUG	USB/IP	Device 4-1 NOT marked as published
+24.05.2025 22:30:04	DEBUG	USB/IP	Device 3-1 NOT marked as published
+24.05.2025 22:30:04	DEBUG	USB/IP	Device 2-1 NOT marked as published
+24.05.2025 22:30:03	DEBUG	USB/IP	Device 1-6 NOT marked as published
+24.05.2025 22:30:02	DEBUG	USB/IP	Device 1-5 NOT marked as published
+24.05.2025 22:30:01	DEBUG	USB/IP	Device 1-4 NOT marked as published
