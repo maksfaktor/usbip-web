@@ -94,6 +94,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('usb_devices') %}active{% endif %}" href="{{ url_for('usb_devices') }}">
+                            <i class="bi bi-usb-drive"></i> {{ t('usb_devices') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if request.path == url_for('remote') %}active{% endif %}" href="{{ url_for('remote') }}">
                             <i class="bi bi-broadcast"></i> {{ t('remote_devices') }}
                         </a>
