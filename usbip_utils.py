@@ -5,6 +5,34 @@ import os
 
 logger = logging.getLogger(__name__)
 
+def normalize_busid(busid):
+    """
+    Нормализует busid к стандартному формату без ведущих нулей.
+    Например, '001-002' превращается в '1-2'.
+    
+    Args:
+        busid (str): Исходный busid
+        
+    Returns:
+        str: Нормализованный busid
+    """
+    # Проверяем, что это действительно busid в формате X-Y
+    if not busid:
+        return busid
+        
+    match = re.match(r'^(\d+)-(\d+)$', str(busid))
+    if match:
+        try:
+            bus = int(match.group(1))
+            device = int(match.group(2))
+            normalized = f"{bus}-{device}"
+            if normalized != busid:
+                logger.debug(f"Нормализация busid: {busid} -> {normalized}")
+            return normalized
+        except (ValueError, IndexError):
+            logger.warning(f"Не удалось нормализовать busid: {busid}")
+    return busid
+
 def run_command(command, use_sudo=True, no_interactive=True):
     """
     Выполняет команду shell с поддержкой sudo
@@ -159,6 +187,8 @@ def parse_local_usb_devices(output):
                 devices.append(current_device)
                 
             busid = doctor_match.group(1)
+            # Нормализуем busid для обеспечения единообразия
+            busid = normalize_busid(busid)
             vendor_id = doctor_match.group(2)
             product_id = doctor_match.group(3)
             
