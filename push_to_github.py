@@ -87,7 +87,8 @@ def main():
         "main.py",
         "app.py",
         "replit.md",
-        "debug_service.sh"
+        "debug_service.sh",
+        "fix_dependencies.sh"
     ]
     
     commit_message = "Исправлена ошибка 500 после авторизации - возврат к SQLite конфигурации"
