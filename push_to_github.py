@@ -94,7 +94,7 @@ def main():
         "README.md"
     ]
     
-    commit_message = "Исправлена работа однострочной команды check_and_remove.sh - улучшено определение пользователя и добавлены множественные методы fallback"
+    commit_message = "Упрощен check_and_remove.sh - используется точно такая же логика определения пользователя как в install_debian.sh"
     
     print("Отправляем изменения в GitHub...")
     
