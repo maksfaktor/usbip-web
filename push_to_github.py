@@ -94,7 +94,7 @@ def main():
         "README.md"
     ]
     
-    commit_message = "Добавлен интерактивный скрипт check_and_remove.sh для проверки и удаления Orange USB/IP службы и приложения"
+    commit_message = "Добавлена однострочная команда для запуска check_and_remove.sh в README.md"
     
     print("Отправляем изменения в GitHub...")
     

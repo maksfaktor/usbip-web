@@ -40,10 +40,11 @@ sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-we
 
 ### Interactive Service and Application Removal:
 ```bash
-# Download and run interactive removal script
-curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh -o check_and_remove.sh
-chmod +x check_and_remove.sh
-sudo ./check_and_remove.sh
+# One-line command (recommended):
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh)"
+
+# Alternative - download and run:
+curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh -o check_and_remove.sh && chmod +x check_and_remove.sh && sudo ./check_and_remove.sh
 ```
 
 This script provides:
