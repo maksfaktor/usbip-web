@@ -40,6 +40,7 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Checks for application directories in multiple locations with size reporting
   - Terminates running processes with user approval
   - Provides detailed status reporting and final system verification
+  - **Final Command**: Confirmed only working command: `curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh -o check_and_remove.sh && chmod +x check_and_remove.sh && sudo ./check_and_remove.sh`
 - **Terminal Page Implementation**: Created comprehensive web terminal with command execution
   - Added `TerminalCommand` model for storing custom command buttons
   - Implemented terminal interface with keyboard support and command history
