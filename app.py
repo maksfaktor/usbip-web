@@ -549,6 +549,8 @@ def bind_device_route():
         add_log_entry('DEBUG', f'Bind device request received from user: {current_user.username}', 'usbip')
         add_log_entry('DEBUG', f'Request content type: {request.content_type}', 'usbip')
         add_log_entry('DEBUG', f'Request method: {request.method}', 'usbip')
+        add_log_entry('DEBUG', f'Request headers: {dict(request.headers)}', 'usbip')
+        add_log_entry('DEBUG', f'Request form data: {dict(request.form)}', 'usbip')
         
         # Получаем данные из form или JSON
         busid = None

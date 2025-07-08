@@ -253,13 +253,20 @@ document.addEventListener('DOMContentLoaded', function() {
 // Функция для обработки публикации устройства
 window.handleBindDevice = function(event, busid) {
     event.preventDefault();
+    console.log('handleBindDevice called with busid:', busid);
     
     const button = event.target.querySelector('button[type="submit"]');
     const originalText = button.innerHTML;
+    console.log('Button found:', button);
     
     // Показываем индикатор загрузки
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Publishing...';
+    
+    const requestData = {
+        busid: busid
+    };
+    console.log('Request data:', requestData);
     
     // Отправляем AJAX запрос
     fetch('{{ url_for("bind_device_route") }}', {
@@ -267,17 +274,17 @@ window.handleBindDevice = function(event, busid) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            busid: busid
-        })
+        body: JSON.stringify(requestData)
     })
     .then(response => {
+        console.log('Response received:', response);
         if (!response.ok) {
             throw new Error('HTTP error! status: ' + response.status);
         }
         return response.json();
     })
     .then(data => {
+        console.log('Response data:', data);
         if (data.success) {
             // Успешная публикация
             button.className = 'btn btn-success disabled';
@@ -288,7 +295,7 @@ window.handleBindDevice = function(event, busid) {
             showNotification('success', 'Device published successfully!');
             
             // Обновляем страницу через 2 секунды
-            setTimeout(() => {
+            setTimeout(function() {
                 window.location.reload();
             }, 2000);
         } else {
@@ -299,7 +306,7 @@ window.handleBindDevice = function(event, busid) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Fetch error:', error);
         button.disabled = false;
         button.innerHTML = originalText;
         showNotification('error', 'Network error: ' + error.message);
