@@ -29,6 +29,11 @@ A comprehensive USB/IP device management web interface designed for robust devic
 ## Recent Changes
 
 ### July 8, 2025
+- **Device Publication Fix**: Fixed JavaScript syntax errors preventing device publication
+  - Replaced ES6 template literals with compatible string concatenation
+  - Added proper AJAX handling for device publication with visual feedback
+  - Fixed SyntaxError in notification system and fetch requests
+  - Publication button now shows loading spinner and success/error notifications
 - **SQLAlchemy Compatibility Fix**: Updated code to work with SQLAlchemy 1.4.50 (Ubuntu system version)
   - Changed import from `DeclarativeBase` to `declarative_base` for compatibility
   - Fixed base class creation to use `declarative_base()` instead of class inheritance
