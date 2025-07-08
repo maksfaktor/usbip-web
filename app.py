@@ -1101,10 +1101,35 @@ def terminal():
     """
     Страница веб-терминала с кнопками команд
     """
-    # Получаем команды пользователя
-    user_commands = TerminalCommand.query.filter_by(user_id=current_user.id).order_by(TerminalCommand.created_at.desc()).all()
-    
-    return render_template('terminal.html', user_commands=user_commands)
+    try:
+        add_log_entry('DEBUG', f'Terminal page accessed by user: {current_user.username}', 'terminal')
+        
+        # Проверяем, существует ли модель TerminalCommand
+        try:
+            add_log_entry('DEBUG', 'Checking TerminalCommand model availability', 'terminal')
+            user_commands = TerminalCommand.query.filter_by(user_id=current_user.id).order_by(TerminalCommand.created_at.desc()).all()
+            add_log_entry('DEBUG', f'Found {len(user_commands)} terminal commands for user', 'terminal')
+        except Exception as e:
+            add_log_entry('ERROR', f'TerminalCommand model error: {str(e)}', 'terminal')
+            user_commands = []
+        
+        # Проверяем доступность шаблона
+        try:
+            add_log_entry('DEBUG', 'Attempting to render terminal.html template', 'terminal')
+            result = render_template('terminal.html', user_commands=user_commands)
+            add_log_entry('DEBUG', 'Terminal template rendered successfully', 'terminal')
+            return result
+        except Exception as e:
+            add_log_entry('ERROR', f'Template rendering error: {str(e)}', 'terminal')
+            raise
+            
+    except Exception as e:
+        add_log_entry('ERROR', f'Terminal page error: {str(e)}', 'terminal')
+        # Возвращаем простую страницу с ошибкой
+        return render_template('error.html', 
+                             error_code=500,
+                             error_message="Ошибка загрузки терминала",
+                             error_details=str(e))
 
 
 @app.route('/terminal/execute', methods=['POST'])
