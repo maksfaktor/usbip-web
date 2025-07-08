@@ -157,7 +157,6 @@ if [ "$1" == "--uninstall" ]; then
 fi
 
 # Continue with installation process
-set -e  # Stop execution on errors
 
 # Function for displaying colored text
 echo_color() {
@@ -323,6 +322,9 @@ echo ""
 
 # Clean up any previous installations
 cleanup_previous_installation
+
+# Enable strict error handling after cleanup operations
+set -e
 
 TOTAL_STEPS=11
 CURRENT_STEP=0
