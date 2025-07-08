@@ -305,14 +305,21 @@ fi
 
 # Initial system check
 check_system_requirements
+echo_color "blue" "Debug: System requirements check completed"
 
 # Determine the real user (not sudo)
+echo_color "blue" "Debug: Determining real user..."
 if [ -n "$SUDO_USER" ]; then
     REAL_USER=$SUDO_USER
+    echo_color "blue" "Debug: Using SUDO_USER: $REAL_USER"
 else
     REAL_USER=$(whoami)
+    echo_color "blue" "Debug: Using whoami: $REAL_USER"
 fi
-USER_HOME=$(eval echo ~$REAL_USER)
+
+echo_color "blue" "Debug: Getting user home directory..."
+USER_HOME=$(eval echo ~$REAL_USER 2>/dev/null || echo "/home/$REAL_USER")
+echo_color "blue" "Debug: USER_HOME set to: $USER_HOME"
 
 echo_color "green" "===================================================="
 echo_color "green" "  Orange USBIP Automatic Installation for Debian    "

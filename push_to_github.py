@@ -93,7 +93,7 @@ def main():
         "README.md"
     ]
     
-    commit_message = "Добавлена отладочная информация и исправлены проблемы systemctl в функции cleanup_previous_installation"
+    commit_message = "Исправлена критическая ошибка в определении USER_HOME - добавлена защита от сбоя eval команды"
     
     print("Отправляем изменения в GitHub...")
     
