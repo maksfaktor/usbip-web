@@ -84,11 +84,11 @@ def update_file(file_path, message):
 # Основная функция
 def main():
     files_to_update = [
-        "install_debian.sh",
+        "doctor.sh",
         "replit.md"
     ]
     
-    commit_message = "Исправлено зависание установки - убран автоматический запуск usbipd службы во время установки"
+    commit_message = "Удален раздел сетевого тестирования из doctor.sh - убрана интерактивная проверка удаленного сервера"
     
     print("Отправляем изменения в GitHub...")
     

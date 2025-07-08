@@ -46,6 +46,10 @@ A comprehensive USB/IP device management web interface designed for robust devic
     - Installation now only checks service status without attempting to start it
     - Service is enabled during installation and can be started manually after completion
     - Provides clear instructions for manual service management if needed
+  - **Doctor.sh Simplification**: Removed interactive network connection test section
+    - Deleted Section 9 "Network Connection Test" from doctor.sh diagnostic script
+    - Eliminated user prompt for remote server IP address testing
+    - Streamlined diagnostic flow to focus on local system checks only
 - **Terminal Page Implementation**: Created comprehensive web terminal with command execution
   - Added `TerminalCommand` model for storing custom command buttons
   - Implemented terminal interface with keyboard support and command history
