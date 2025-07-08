@@ -85,11 +85,10 @@ def update_file(file_path, message):
 def main():
     files_to_update = [
         "install_debian.sh",
-        "install_debian_old.sh",
         "replit.md"
     ]
     
-    commit_message = "Исправлено зависание установки на запуске usbipd - добавлен таймаут 10 секунд"
+    commit_message = "Исправлено зависание установки - убран автоматический запуск usbipd службы во время установки"
     
     print("Отправляем изменения в GitHub...")
     

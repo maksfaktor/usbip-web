@@ -523,19 +523,20 @@ EOF
         systemctl enable usbipd
     fi
     
-    # Запуск службы с таймаутом
-    echo_color "blue" "Starting usbipd service..."
-    if timeout 10 systemctl start usbipd; then
-        # Проверка запуска службы
-        sleep 2
-        if systemctl is-active --quiet usbipd; then
-            echo_color "green" "✓ usbipd service started successfully"
-        else
-            echo_color "yellow" "⚠ usbipd service started but not active, continuing installation"
-        fi
+    # Проверка состояния службы без попытки запуска
+    echo_color "blue" "Checking usbipd service status..."
+    
+    if systemctl is-active --quiet usbipd; then
+        echo_color "green" "✓ usbipd service is already running"
+    elif systemctl is-enabled --quiet usbipd; then
+        echo_color "yellow" "⚠ usbipd service is enabled but not active"
+        echo_color "blue" "Note: Service will start automatically on next boot or you can start it manually"
+        echo_color "blue" "To start manually: sudo systemctl start usbipd"
     else
-        echo_color "yellow" "⚠ usbipd service start timed out, continuing installation"
-        echo_color "blue" "Note: usbipd service may start automatically later or can be started manually"
+        echo_color "yellow" "⚠ usbipd service is configured but not enabled"
+        echo_color "blue" "Note: You can enable and start it manually later if needed"
+        echo_color "blue" "To enable: sudo systemctl enable usbipd"
+        echo_color "blue" "To start: sudo systemctl start usbipd"
     fi
 fi
 
