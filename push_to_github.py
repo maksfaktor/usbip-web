@@ -94,7 +94,7 @@ def main():
         "README.md"
     ]
     
-    commit_message = "Добавлена однострочная команда для запуска check_and_remove.sh в README.md"
+    commit_message = "Исправлен баг зависания check_and_remove.sh - добавлены таймауты и отладочная информация"
     
     print("Отправляем изменения в GitHub...")
     
