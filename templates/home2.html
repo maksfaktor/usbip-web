@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}{{ translate('home_title', 'Orange USB/IP - Dashboard') }}{% endblock %}
+{% block title %}{{ t('home_title') }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>{{ translate('local_devices', 'Local USB Devices') }}</h2>
+    <h2>{{ t('local_devices', 'Local USB Devices') }}</h2>
     
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">{{ translate('available_devices', 'Available Devices') }}</h5>
+            <h5 class="mb-0">{{ t('available_devices', 'Available Devices') }}</h5>
             <div>
                 <a href="{{ url_for('home2') }}" class="btn btn-sm btn-primary refresh-btn">
-                    <i class="fas fa-sync-alt me-1"></i>{{ translate('refresh', 'Refresh') }}
+                    <i class="fas fa-sync-alt me-1"></i>{{ t('refresh', 'Refresh') }}
                 </a>
                 <button class="btn btn-sm btn-outline-secondary diagnostic-btn">
-                    <i class="fas fa-stethoscope me-1"></i>{{ translate('diagnostic', 'Diagnostic') }}
+                    <i class="fas fa-stethoscope me-1"></i>{{ t('diagnostic', 'Diagnostic') }}
                 </button>
             </div>
         </div>
@@ -24,10 +24,10 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>{{ translate('busid', 'Bus ID') }}</th>
-                                <th>{{ translate('device', 'Device') }}</th>
-                                <th>{{ translate('status', 'Status') }}</th>
-                                <th>{{ translate('actions', 'Actions') }}</th>
+                                <th>{{ t('busid', 'Bus ID') }}</th>
+                                <th>{{ t('device', 'Device') }}</th>
+                                <th>{{ t('status', 'Status') }}</th>
+                                <th>{{ t('actions', 'Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -35,7 +35,7 @@
                             <tr {% if device.is_virtual %}class="table-primary"{% endif %}>
                                 <td>{{ device.busid }}
                                     {% if device.is_virtual %}
-                                    <span class="badge bg-primary">{{ translate('virtual', 'Virtual') }}</span>
+                                    <span class="badge bg-primary">{{ t('virtual', 'Virtual') }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -44,9 +44,9 @@
                                 </td>
                                 <td>
                                     {% if device.is_published %}
-                                    <span class="badge bg-success">{{ translate('published', 'Published') }}</span>
+                                    <span class="badge bg-success">{{ t('published', 'Published') }}</span>
                                     {% else %}
-                                    <span class="badge bg-secondary">{{ translate('not_published', 'Not Published') }}</span>
+                                    <span class="badge bg-secondary">{{ t('not_published', 'Not Published') }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -57,9 +57,9 @@
                                                     {% if device.is_published %}disabled{% endif %}>
                                                 <i class="fas {% if device.is_published %}fa-check{% else %}fa-share{% endif %} me-1"></i>
                                                 {% if device.is_published %}
-                                                    {{ translate('published', 'Published') }}
+                                                    {{ t('published', 'Published') }}
                                                 {% else %}
-                                                    {{ translate('publish', 'Publish') }}
+                                                    {{ t('publish', 'Publish') }}
                                                 {% endif %}
                                             </button>
                                         </form>
@@ -70,7 +70,7 @@
                                                 data-bs-target="#aliasModal"
                                                 data-busid="{{ device.busid }}"
                                                 data-device="{{ device.device_name|default(device.info.split(':')[1]|trim|default('Unknown device'), true) }}">
-                                            <i class="fas fa-tag me-1"></i>{{ translate('set_name', 'Set Name') }}
+                                            <i class="fas fa-tag me-1"></i>{{ t('set_name', 'Set Name') }}
                                         </button>
                                         {% endif %}
                                     </div>
@@ -82,17 +82,17 @@
                 </div>
             {% else %}
                 <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>{{ translate('no_local_devices', 'No local USB devices found') }}
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ t('no_local_devices', 'No local USB devices found') }}
                 </div>
             {% endif %}
         </div>
     </div>
     
     <!-- Attached Remote Devices Section -->
-    <h2>{{ translate('attached_remote_devices', 'Attached Remote Devices') }}</h2>
+    <h2>{{ t('attached_remote_devices', 'Attached Remote Devices') }}</h2>
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="mb-0">{{ translate('connected_devices', 'Connected Devices') }}</h5>
+            <h5 class="mb-0">{{ t('connected_devices', 'Connected Devices') }}</h5>
         </div>
         <div class="card-body">
             {% if attached_devices %}
@@ -100,10 +100,10 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>{{ translate('port', 'Port') }}</th>
-                                <th>{{ translate('device', 'Device') }}</th>
-                                <th>{{ translate('remote', 'Remote') }}</th>
-                                <th>{{ translate('actions', 'Actions') }}</th>
+                                <th>{{ t('port', 'Port') }}</th>
+                                <th>{{ t('device', 'Device') }}</th>
+                                <th>{{ t('remote', 'Remote') }}</th>
+                                <th>{{ t('actions', 'Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -119,7 +119,7 @@
                                     <form method="post" action="{{ url_for('detach_device_route') }}">
                                         <input type="hidden" name="port" value="{{ device.port }}">
                                         <button type="submit" class="btn btn-danger btn-sm">
-                                            <i class="fas fa-unlink me-1"></i>{{ translate('disconnect', 'Disconnect') }}
+                                            <i class="fas fa-unlink me-1"></i>{{ t('disconnect', 'Disconnect') }}
                                         </button>
                                     </form>
                                 </td>
@@ -130,7 +130,7 @@
                 </div>
             {% else %}
                 <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>{{ translate('no_remote_devices', 'No remote devices attached') }}
+                    <i class="fas fa-info-circle me-2"></i>{{ t('no_remote_devices', 'No remote devices attached') }}
                 </div>
             {% endif %}
         </div>
@@ -143,20 +143,20 @@
         <div class="modal-content">
             <form method="post" action="{{ url_for('device_alias') }}">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="aliasModalLabel">{{ translate('set_device_alias', 'Set Device Alias') }}</h5>
+                    <h5 class="modal-title" id="aliasModalLabel">{{ t('set_device_alias', 'Set Device Alias') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="busid" id="alias_busid">
                     <input type="hidden" name="device_info" id="alias_device_info">
                     <div class="mb-3">
-                        <label for="alias_name" class="form-label">{{ translate('alias', 'Alias') }}</label>
+                        <label for="alias_name" class="form-label">{{ t('alias', 'Alias') }}</label>
                         <input type="text" class="form-control" id="alias_name" name="alias" required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('cancel', 'Cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ translate('save', 'Save') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel', 'Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ t('save', 'Save') }}</button>
                 </div>
             </form>
         </div>
@@ -168,21 +168,21 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="diagnosticModalLabel">{{ translate('diagnostic_results', 'Diagnostic Results') }}</h5>
+                <h5 class="modal-title" id="diagnosticModalLabel">{{ t('diagnostic_results', 'Diagnostic Results') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="text-center py-4 d-none" id="diagnosticSpinner">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">{{ translate('loading', 'Loading...') }}</span>
+                        <span class="visually-hidden">{{ t('loading', 'Loading...') }}</span>
                     </div>
-                    <p class="mt-2">{{ translate('running_diagnostic', 'Running diagnostic...') }}</p>
+                    <p class="mt-2">{{ t('running_diagnostic', 'Running diagnostic...') }}</p>
                 </div>
                 <pre class="bg-dark text-light p-3 rounded d-none" id="diagnosticOutput" style="max-height: 400px; overflow-y: auto;"></pre>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('close', 'Close') }}</button>
-                <button type="button" class="btn btn-primary refresh-after-diagnostic d-none">{{ translate('refresh_devices', 'Refresh Devices') }}</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('close', 'Close') }}</button>
+                <button type="button" class="btn btn-primary refresh-after-diagnostic d-none">{{ t('refresh_devices', 'Refresh Devices') }}</button>
             </div>
         </div>
     </div>

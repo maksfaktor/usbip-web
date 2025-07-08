@@ -312,8 +312,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обработчик кнопки очистки
     clearBtn.addEventListener('click', function() {
         terminalOutput.innerHTML = `
-            <div class="text-success">{{ translate('terminal_welcome', 'Orange USB/IP Web Terminal') }}</div>
-            <div class="text-muted">{{ translate('terminal_help', 'Type commands below and press Enter to execute') }}</div>
+            <div class="text-success">{{ t('terminal_welcome', 'Orange USB/IP Web Terminal') }}</div>
+            <div class="text-muted">{{ t('terminal_help', 'Type commands below and press Enter to execute') }}</div>
             <div class="mb-2">---</div>
         `;
     });
