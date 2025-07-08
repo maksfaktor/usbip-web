@@ -84,11 +84,12 @@ def update_file(file_path, message):
 # Основная функция
 def main():
     files_to_update = [
-        "doctor.sh",
+        "main.py",
+        "app.py",
         "replit.md"
     ]
     
-    commit_message = "Удален раздел сетевого тестирования из doctor.sh - убрана интерактивная проверка удаленного сервера"
+    commit_message = "Исправлена ошибка 500 после авторизации - добавлена поддержка PostgreSQL и SQLite"
     
     print("Отправляем изменения в GitHub...")
     

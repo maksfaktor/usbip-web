@@ -1,0 +1,144 @@
+maxx@maxx-Lenovo:~$ sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)"
+====================================================
+  Orange USBIP Automatic Installation for Debian    
+====================================================
+
+This script will set up the USB/IP server and client on your system.
+
+[1/10] Checking operating system...
+✓ Architecture x86_64 is compatible (x86/x86_64).
+[2/10] Updating package list...
+✓ Repositories updated.
+[3/10] Installing required packages...
+Installing uv - modern Python package manager...
+  → Method 1/3: Using official installer script...
+    → Rust not found, installing Rust first...
+    ✓ Rust successfully installed.
+  ✓ uv successfully installed via official script.
+✓ uv package manager is ready to use.
+✓ Required packages installed.
+[4/10] Checking and configuring USB/IP...
+    → Determining kernel version...
+    → Detected kernel version: 6.8.0-63-generic
+    → Installing Linux Tools for current kernel...
+    → Found package linux-tools-6.8.0-63-generic
+✓ USB/IP successfully installed.
+[5/10] Configuring kernel modules for USB/IP...
+    → Loading module usbip-core...
+    → Loading module usbip-host...
+    → Loading module vhci-hcd...
+✓ USB/IP modules configured.
+[6/10] Configuring USB/IP daemon...
+Found usbipd at: /usr/lib/linux-tools-6.8.0-60/usbipd
+Creating usbipd service...
+Created symlink /etc/systemd/system/multi-user.target.wants/usbipd.service → /etc/systemd/system/usbipd.service.
+Checking usbipd service status...
+⚠ usbipd service is enabled but not active
+Note: Service will start automatically on next boot or you can start it manually
+To start manually: sudo systemctl start usbipd
+✓ USB/IP daemon configured.
+[7/10] Creating application directory...
+Cloning repository...
+Cloning into '.'...
+remote: Enumerating objects: 1355, done.
+remote: Counting objects: 100% (58/58), done.
+remote: Compressing objects: 100% (58/58), done.
+remote: Total 1355 (delta 45), reused 0 (delta 0), pack-reused 1297 (from 1)
+Receiving objects: 100% (1355/1355), 4.98 MiB | 3.29 MiB/s, done.
+Resolving deltas: 100% (1114/1114), done.
+✓ Repository successfully downloaded to /home/maxx/orange-usbip.
+[8/10] Setting up Python virtual environment...
+Using uv for fast dependency installation...
+Using Python 3.12.3 environment at: venv
+Resolved 1 package in 206ms
+Prepared 1 package in 2ms
+Uninstalled 1 package in 53ms
+Installed 1 package in 175ms
+ - pip==24.0
+ + pip==25.1.1
+Using Python 3.12.3 environment at: venv
+Resolved 38 packages in 762ms
+Installed 38 packages in 231ms
+ + babel==2.17.0
+ + blinker==1.9.0
+ + certifi==2025.6.15
+ + charset-normalizer==3.4.2
+ + click==8.2.1
+ + courlan==1.3.2
+ + dateparser==1.2.2
+ + dnspython==2.7.0
+ + email-validator==2.1.0
+ + flask==3.0.2
+ + flask-login==0.6.3
+ + flask-sqlalchemy==3.1.1
+ + flask-wtf==1.2.1
+ + greenlet==3.2.3
+ + gunicorn==23.0.0
+ + htmldate==1.9.3
+ + idna==3.10
+ + itsdangerous==2.2.0
+ + jinja2==3.1.6
+ + justext==3.0.2
+ + lxml==5.4.0
+ + lxml-html-clean==0.4.2
+ + markupsafe==3.0.2
+ + netifaces==0.11.0
+ + packaging==25.0
+ + python-dateutil==2.9.0.post0
+ + pytz==2025.2
+ + regex==2024.11.6
+ + requests==2.31.0
+ + six==1.17.0
+ + sqlalchemy==2.0.27
+ + tld==0.13.1
+ + trafilatura==1.6.3
+ + typing-extensions==4.14.1
+ + tzlocal==5.3.1
+ + urllib3==2.5.0
+ + werkzeug==3.0.1
+ + wtforms==3.2.1
+warning: `email-validator==2.1.0` is yanked (reason: "Forgot to drop Python 3.7 from python_requires, see https://github.com/JoshData/python-email-validator/pull/118")
+✓ Python virtual environment configured.
+[9/10] Creating systemd service...
+Created symlink /etc/systemd/system/multi-user.target.wants/orange-usbip.service → /etc/systemd/system/orange-usbip.service.
+✓ Systemd service created and started.
+[10/10] Configuring access rights for USB/IP...
+✓ Access rights configured.
+====================================================
+  Orange USBIP Installation Successfully Completed! 
+====================================================
+
+Service available at: http://192.168.0.212:5000
+Login: admin
+Password: admin
+
+IMPORTANT: Change your password after first login!
+Open the URL above in your web browser to access the interface
+
+Service management:
+ - Restart:      sudo systemctl restart orange-usbip
+ - Stop:         sudo systemctl stop orange-usbip
+ - Status:       sudo systemctl status orange-usbip
+ - Logs:         sudo journalctl -u orange-usbip
+
+Diagnostic tool:
+ - Run diagnostic: sudo ./doctor.sh
+ - From anywhere: sudo /home/maxx/orange-usbip/doctor.sh
+
+✓ Diagnostic and uninstall tools installed and ready to use.
+
+To uninstall this application:
+   cd ~/orange-usbip && chmod +x uninstall.sh && sudo ./uninstall.sh
+
+maxx@maxx-Lenovo:~$ sudo systemctl status orange-usbip
+● orange-usbip.service - Orange USBIP Web Interface
+     Loaded: loaded (/etc/systemd/system/orange-usbip.service; enabled; preset:>
+     Active: active (running) since Tue 2025-07-08 13:55:05 CDT; 25s ago
+   Main PID: 97316 (gunicorn)
+      Tasks: 2 (limit: 13996)
+     Memory: 67.4M (peak: 67.6M)
+        CPU: 1.774s
+     CGroup: /system.slice/orange-usbip.service
+             ├─97316 /home/maxx/orange-usbip/venv/bin/python3 /home/maxx/orange>
+             └─97342 /home/maxx/orange-usbip/venv/bin/python3 /home/maxx/orange>
+
