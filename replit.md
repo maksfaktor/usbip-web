@@ -89,6 +89,8 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Professional-grade service configuration with security hardening
   - Robust error handling with timeout protection and diagnostic feedback
   - Visual progress tracking and detailed status reporting
+  - Complete help system with --help option support
+- `install_debian_old.sh`: Backup of previous installation script version for rollback purposes
 - `install_arm.sh`: ARM-specific installation
 - `uninstall.sh`: Complete removal with backup
 - `doctor.sh`: System diagnostic tool for troubleshooting

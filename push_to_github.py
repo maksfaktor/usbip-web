@@ -87,10 +87,13 @@ def main():
         "static/orange-icon.svg",
         "templates/base.html",
         "templates/login.html",
-        "replit.md"
+        "replit.md",
+        "install_debian.sh",
+        "install_debian_old.sh",
+        "README.md"
     ]
     
-    commit_message = "Обновлен значок приложения на апельсин для соответствия Orange Pi брендингу"
+    commit_message = "Значительно улучшен установочный скрипт с профессиональными возможностями и добавлена резервная копия старой версии"
     
     print("Отправляем изменения в GitHub...")
     
