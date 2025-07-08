@@ -29,9 +29,17 @@ print_header() {
 check_root() {
     if [ "$EUID" -ne 0 ]; then
         print_color $RED "Error: This script must be run with superuser privileges (sudo)."
-        echo "Run: sudo $0"
+        echo "Examples:"
+        echo "  sudo bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh)\""
+        echo "  sudo ./check_and_remove.sh"
         exit 1
     fi
+    
+    # Show current execution context
+    print_color $BLUE "Script execution context:"
+    print_color $BLUE "  → Current user (EUID): $(whoami)"
+    print_color $BLUE "  → Original user (SUDO_USER): ${SUDO_USER:-'not set'}"
+    print_color $BLUE "  → Original UID (SUDO_UID): ${SUDO_UID:-'not set'}"
 }
 
 # Function to check service status
@@ -264,14 +272,54 @@ main() {
     fi
     echo ""
     
-    # Determine the real user (not sudo)
+    # Determine the real user (not sudo) - with multiple fallback methods
+    print_color $BLUE "=== Determining real user ==="
+    
+    REAL_USER=""
+    
+    # Method 1: Try SUDO_USER environment variable
     if [ -n "$SUDO_USER" ]; then
         REAL_USER=$SUDO_USER
+        print_color $BLUE "  → Using SUDO_USER: $REAL_USER"
+    # Method 2: Try to get original user from /proc/*/environ
+    elif [ -n "$SUDO_UID" ]; then
+        REAL_USER=$(getent passwd "$SUDO_UID" 2>/dev/null | cut -d: -f1)
+        print_color $BLUE "  → Using SUDO_UID lookup: $REAL_USER"
+    # Method 3: Try to get user from login session
+    elif command -v logname >/dev/null 2>&1; then
+        REAL_USER=$(logname 2>/dev/null)
+        print_color $BLUE "  → Using logname: $REAL_USER"
+    # Method 4: Try to get user from who command
+    elif command -v who >/dev/null 2>&1; then
+        REAL_USER=$(who am i 2>/dev/null | awk '{print $1}')
+        print_color $BLUE "  → Using who am i: $REAL_USER"
+    # Method 5: Fallback to current user
     else
         REAL_USER=$(whoami)
+        print_color $BLUE "  → Fallback to whoami: $REAL_USER"
     fi
-    USER_HOME=$(eval echo ~$REAL_USER)
+    
+    # Validate user exists
+    if [ -z "$REAL_USER" ] || ! id "$REAL_USER" >/dev/null 2>&1; then
+        print_color $YELLOW "  → Warning: Could not determine real user, using root"
+        REAL_USER="root"
+    fi
+    
+    # Get user home directory with fallback
+    if [ "$REAL_USER" = "root" ]; then
+        USER_HOME="/root"
+    else
+        USER_HOME=$(eval echo ~$REAL_USER 2>/dev/null)
+        if [ -z "$USER_HOME" ] || [ ! -d "$USER_HOME" ]; then
+            USER_HOME="/home/$REAL_USER"
+        fi
+    fi
+    
     APP_DIR="$USER_HOME/orange-usbip"
+    
+    print_color $GREEN "  → Real user: $REAL_USER"
+    print_color $GREEN "  → User home: $USER_HOME"
+    print_color $GREEN "  → App directory: $APP_DIR"
     
     # Check application directory
     print_color $BLUE "=== Checking application directory ==="
