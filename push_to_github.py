@@ -89,7 +89,8 @@ def main():
         "replit.md",
         "debug_service.sh",
         "fix_dependencies.sh",
-        "fix_sqlalchemy_conflict.sh"
+        "fix_sqlalchemy_conflict.sh",
+        "README.md"
     ]
     
     commit_message = "Исправлена ошибка 500 после авторизации - возврат к SQLite конфигурации"
