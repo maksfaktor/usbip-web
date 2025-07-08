@@ -51,7 +51,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <form method="post" action="{{ url_for('bind_device_route') }}" class="d-inline">
+                                        <form method="post" action="{{ url_for('bind_device_route') }}" class="d-inline" id="bind-form-{{ device.busid }}" onsubmit="return handleBindDevice(event, '{{ device.busid }}')">
                                             <input type="hidden" name="busid" value="{{ device.busid }}">
                                             <button type="submit" class="btn {% if device.is_published %}btn-success disabled{% else %}btn-primary{% endif %}"
                                                     {% if device.is_published %}disabled{% endif %}>
@@ -249,5 +249,87 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Функция для обработки публикации устройства
+window.handleBindDevice = function(event, busid) {
+    event.preventDefault();
+    
+    const button = event.target.querySelector('button[type="submit"]');
+    const originalText = button.innerHTML;
+    
+    // Показываем индикатор загрузки
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Publishing...';
+    
+    // Отправляем AJAX запрос
+    fetch('{{ url_for("bind_device_route") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            busid: busid
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Успешная публикация
+            button.className = 'btn btn-success disabled';
+            button.innerHTML = '<i class="fas fa-check me-1"></i>Published';
+            button.disabled = true;
+            
+            // Показываем уведомление
+            showNotification('success', 'Device published successfully!');
+            
+            // Обновляем страницу через 2 секунды
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            // Ошибка публикации
+            button.disabled = false;
+            button.innerHTML = originalText;
+            showNotification('error', data.message || 'Failed to publish device');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.disabled = false;
+        button.innerHTML = originalText;
+        showNotification('error', 'Network error: ' + error.message);
+    });
+    
+    return false;
+};
+
+// Функция для показа уведомлений
+function showNotification(type, message) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    
+    const notification = document.createElement('div');
+    notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+    notification.innerHTML = `
+        <i class="fas ${iconClass} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Автоматически убираем уведомление через 5 секунд
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
 </script>
 {% endblock %}

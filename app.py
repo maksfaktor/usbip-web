@@ -545,19 +545,37 @@ def port_name():
 @app.route('/bind-device', methods=['POST'])
 @login_required
 def bind_device_route():
-    # Получаем данные из JSON (не из form)
-    data = request.get_json()
-    busid = data.get('busid') if data else None
-    if not busid:
-        return jsonify({'success': False, 'message': 'Не указан busid устройства'}), 400
-    
-    success, message = bind_device(busid)
-    
-    # Запись в лог
-    level = 'INFO' if success else 'ERROR'
-    add_log_entry(level, f'Published device {busid}: {message}', 'usbip')
-    
-    return jsonify({'success': success, 'message': message})
+    try:
+        add_log_entry('DEBUG', f'Bind device request received from user: {current_user.username}', 'usbip')
+        add_log_entry('DEBUG', f'Request content type: {request.content_type}', 'usbip')
+        add_log_entry('DEBUG', f'Request method: {request.method}', 'usbip')
+        
+        # Получаем данные из form или JSON
+        busid = None
+        if request.content_type == 'application/json':
+            data = request.get_json()
+            busid = data.get('busid') if data else None
+            add_log_entry('DEBUG', f'JSON data received: {data}', 'usbip')
+        else:
+            busid = request.form.get('busid')
+            add_log_entry('DEBUG', f'Form data received: busid={busid}', 'usbip')
+        
+        if not busid:
+            add_log_entry('ERROR', 'No busid provided in request', 'usbip')
+            return jsonify({'success': False, 'message': 'Не указан busid устройства'}), 400
+        
+        add_log_entry('DEBUG', f'Attempting to bind device with busid: {busid}', 'usbip')
+        success, message = bind_device(busid)
+        
+        # Запись в лог
+        level = 'INFO' if success else 'ERROR'
+        add_log_entry(level, f'Published device {busid}: {message}', 'usbip')
+        
+        return jsonify({'success': success, 'message': message})
+        
+    except Exception as e:
+        add_log_entry('ERROR', f'Bind device route error: {str(e)}', 'usbip')
+        return jsonify({'success': False, 'message': f'Ошибка сервера: {str(e)}'}), 500
 
 @app.route('/remote')
 @login_required
