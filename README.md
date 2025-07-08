@@ -49,6 +49,23 @@ This script provides:
 - Running process termination with user confirmation
 - Comprehensive system status verification
 
+## 🔧 Troubleshooting Scripts
+
+### Fix Python Dependencies:
+```bash
+curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/fix_dependencies.sh -o fix_dependencies.sh && chmod +x fix_dependencies.sh && ./fix_dependencies.sh
+```
+
+### Fix SQLAlchemy Version Conflicts:
+```bash
+curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/fix_sqlalchemy_conflict.sh -o fix_sqlalchemy_conflict.sh && chmod +x fix_sqlalchemy_conflict.sh && ./fix_sqlalchemy_conflict.sh
+```
+
+### Debug Service Issues:
+```bash
+curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/debug_service.sh -o debug_service.sh && chmod +x debug_service.sh && ./debug_service.sh
+```
+
 ## What is Orange USBIP?
 
 Orange USBIP is a Flask-based web interface for USB/IP technology that allows you to use USB devices over a network. The project is designed for easy management of USB devices on all Linux platforms, including ARM (Raspberry Pi, Orange Pi), x86, x86_64, and ARM64.
