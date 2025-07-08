@@ -90,10 +90,11 @@ def main():
         "replit.md",
         "install_debian.sh",
         "install_debian_old.sh",
+        "check_and_remove.sh",
         "README.md"
     ]
     
-    commit_message = "Обновлен replit.md с информацией о восстановлении установочного скрипта"
+    commit_message = "Добавлен интерактивный скрипт check_and_remove.sh для проверки и удаления Orange USB/IP службы и приложения"
     
     print("Отправляем изменения в GitHub...")
     

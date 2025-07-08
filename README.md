@@ -38,6 +38,20 @@ sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-we
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/uninstall.sh)"
 ```
 
+### Interactive Service and Application Removal:
+```bash
+# Download and run interactive removal script
+curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh -o check_and_remove.sh
+chmod +x check_and_remove.sh
+sudo ./check_and_remove.sh
+```
+
+This script provides:
+- Interactive detection and removal of orange-usbip and usbipd services
+- Application directory cleanup with size reporting
+- Running process termination with user confirmation
+- Comprehensive system status verification
+
 ## What is Orange USBIP?
 
 Orange USBIP is a Flask-based web interface for USB/IP technology that allows you to use USB devices over a network. The project is designed for easy management of USB devices on all Linux platforms, including ARM (Raspberry Pi, Orange Pi), x86, x86_64, and ARM64.
