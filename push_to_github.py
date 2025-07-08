@@ -89,7 +89,7 @@ def main():
         "replit.md"
     ]
     
-    commit_message = "Исправлена ошибка 500 после авторизации - добавлена поддержка PostgreSQL и SQLite"
+    commit_message = "Исправлена ошибка 500 после авторизации - возврат к SQLite конфигурации"
     
     print("Отправляем изменения в GitHub...")
     

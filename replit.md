@@ -50,10 +50,10 @@ A comprehensive USB/IP device management web interface designed for robust devic
     - Deleted Section 9 "Network Connection Test" from doctor.sh diagnostic script
     - Eliminated user prompt for remote server IP address testing
     - Streamlined diagnostic flow to focus on local system checks only
-  - **Database Configuration Fix**: Fixed PostgreSQL/SQLite compatibility in main.py and app.py
+  - **Database Configuration Fix**: Fixed 500 error after login by correcting SQLite configuration
     - Resolved circular import issues between main.py and app.py
-    - Added automatic database type detection based on DATABASE_URL environment variable
-    - Fixed admin user creation logic to work with both PostgreSQL and SQLite
+    - Restored proper SQLite-only configuration (removed PostgreSQL references)
+    - Fixed admin user creation logic to work correctly with SQLite
     - Corrected 500 error after login on production installations
 - **Terminal Page Implementation**: Created comprehensive web terminal with command execution
   - Added `TerminalCommand` model for storing custom command buttons
