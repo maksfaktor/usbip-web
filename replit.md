@@ -41,6 +41,10 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Terminates running processes with user approval
   - Provides detailed status reporting and final system verification
   - **Final Command**: Confirmed only working command: `curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh -o check_and_remove.sh && chmod +x check_and_remove.sh && sudo ./check_and_remove.sh`
+  - **Installation Script Timeout Fix**: Added 10-second timeout to usbipd service start to prevent hanging
+    - Fixed issue where installation would hang indefinitely on `systemctl start usbipd`
+    - Installation now continues even if usbipd service fails to start within timeout
+    - Applied fix to both `install_debian.sh` and `install_debian_old.sh` for consistency
 - **Terminal Page Implementation**: Created comprehensive web terminal with command execution
   - Added `TerminalCommand` model for storing custom command buttons
   - Implemented terminal interface with keyboard support and command history
