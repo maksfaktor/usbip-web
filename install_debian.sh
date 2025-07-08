@@ -3,14 +3,13 @@
 # Orange USBIP - Automatic installation script for Debian/Ubuntu systems
 # Created: $(date +%Y-%m-%d)
 
-# Обработка параметров командной строки
-FORCE_UPDATE="false"
-if [ "$1" == "-f" ] || [ "$2" == "-f" ]; then
-    FORCE_UPDATE="true"
-fi
+# Script variables
+UNINSTALL_MODE=false
+FORCE_UPDATE=false
 
 # Check for uninstall mode
 if [ "$1" == "--uninstall" ]; then
+    UNINSTALL_MODE=true
     # Function for displaying colored text
     echo_color() {
         local color=$1
@@ -22,6 +21,36 @@ if [ "$1" == "--uninstall" ]; then
             "blue") echo -e "\033[0;34m$message\033[0m" ;;
             *) echo "$message" ;;
         esac
+    }
+    
+    # Show help function
+    show_help() {
+        echo_color "green" "===================================================="
+        echo_color "green" "  Orange USBIP Web Interface Installer             "
+        echo_color "green" "===================================================="
+        echo ""
+        echo_color "yellow" "Usage: sudo $0 [options]"
+        echo ""
+        echo_color "blue" "Options:"
+        echo "  -h, --help       Show this help message"
+        echo "  --uninstall      Uninstall Orange USBIP Web Interface"
+        echo "  -f, --force      Force update (overwrite local changes)"
+        echo ""
+        echo_color "blue" "Examples:"
+        echo "  sudo $0                 # Install Orange USBIP Web Interface"
+        echo "  sudo $0 --help          # Show this help"
+        echo "  sudo $0 --uninstall     # Uninstall the application"
+        echo "  sudo $0 -f              # Force update installation"
+        echo ""
+        echo_color "blue" "Prerequisites:"
+        echo "  - Root/sudo privileges required"
+        echo "  - Debian/Ubuntu-based system"
+        echo "  - Internet connection for package downloads"
+        echo ""
+        echo_color "blue" "Support:"
+        echo "  - GitHub: https://github.com/maksfaktor/usbip-web"
+        echo "  - Documentation: See README.md"
+        echo ""
     }
     
     echo_color "green" "===================================================="
@@ -143,6 +172,78 @@ echo_color() {
     esac
 }
 
+# Function to cleanup previous installations
+cleanup_previous_installation() {
+    echo_color "blue" "Checking for previous installations..."
+    
+    # Stop and disable existing Orange USB/IP service
+    if systemctl is-active --quiet orange-usbip 2>/dev/null; then
+        echo_color "yellow" "    → Stopping existing orange-usbip service..."
+        systemctl stop orange-usbip 2>/dev/null || true
+    fi
+    
+    if systemctl is-enabled --quiet orange-usbip 2>/dev/null; then
+        echo_color "yellow" "    → Disabling orange-usbip service..."
+        systemctl disable orange-usbip 2>/dev/null || true
+    fi
+    
+    # Stop and disable conflicting usbipd service
+    if systemctl is-active --quiet usbipd 2>/dev/null; then
+        echo_color "yellow" "    → Stopping conflicting usbipd service..."
+        systemctl stop usbipd 2>/dev/null || true
+    fi
+    
+    if systemctl is-enabled --quiet usbipd 2>/dev/null; then
+        echo_color "yellow" "    → Disabling usbipd service..."
+        systemctl disable usbipd 2>/dev/null || true
+    fi
+    
+    # Remove conflicting service files
+    if [ -f "/etc/systemd/system/usbipd.service" ]; then
+        echo_color "yellow" "    → Removing conflicting usbipd.service..."
+        rm -f "/etc/systemd/system/usbipd.service"
+    fi
+    
+    if [ -f "/lib/systemd/system/usbipd.service" ]; then
+        echo_color "yellow" "    → Removing system usbipd.service..."
+        rm -f "/lib/systemd/system/usbipd.service"
+    fi
+    
+    # Clean up any Orange USB/IP service files
+    if [ -f "/etc/systemd/system/orange-usbip.service" ]; then
+        echo_color "yellow" "    → Removing old orange-usbip.service..."
+        rm -f "/etc/systemd/system/orange-usbip.service"
+    fi
+    
+    # Reload systemd to apply changes
+    echo_color "blue" "    → Reloading systemd daemon..."
+    systemctl daemon-reload
+    systemctl reset-failed 2>/dev/null || true
+    
+    echo_color "green" "✓ Previous installations cleaned up."
+}
+
+# Function to check system requirements
+check_system_requirements() {
+    echo_color "blue" "Checking system requirements..."
+    
+    # Check if running as root
+    if [ "$EUID" -ne 0 ]; then
+        echo_color "red" "Error: this script must be run with superuser privileges (sudo)."
+        echo "Run: sudo $0"
+        exit 1
+    fi
+    
+    # Check for conflicting processes
+    if pgrep -f "usbipd" > /dev/null; then
+        echo_color "yellow" "    → Found running usbipd processes, terminating..."
+        pkill -f "usbipd" 2>/dev/null || true
+        sleep 2
+    fi
+    
+    echo_color "green" "✓ System requirements check completed."
+}
+
 # Function for displaying progress
 progress_update() {
     local step=$1
@@ -151,12 +252,66 @@ progress_update() {
     echo_color "blue" "[$step/$total] $message"
 }
 
+# Show help function
+show_help() {
+    echo_color "green" "===================================================="
+    echo_color "green" "  Orange USBIP Web Interface Installer             "
+    echo_color "green" "===================================================="
+    echo ""
+    echo_color "yellow" "Usage: sudo $0 [options]"
+    echo ""
+    echo_color "blue" "Options:"
+    echo "  -h, --help       Show this help message"
+    echo "  --uninstall      Uninstall Orange USBIP Web Interface"
+    echo "  -f, --force      Force update (overwrite local changes)"
+    echo ""
+    echo_color "blue" "Examples:"
+    echo "  sudo $0                 # Install Orange USBIP Web Interface"
+    echo "  sudo $0 --help          # Show this help"
+    echo "  sudo $0 --uninstall     # Uninstall the application"
+    echo "  sudo $0 -f              # Force update installation"
+    echo ""
+    echo_color "blue" "Prerequisites:"
+    echo "  - Root/sudo privileges required"
+    echo "  - Debian/Ubuntu-based system"
+    echo "  - Internet connection for package downloads"
+    echo ""
+    echo_color "blue" "Support:"
+    echo "  - GitHub: https://github.com/maksfaktor/usbip-web"
+    echo "  - Documentation: See README.md"
+    echo ""
+}
+
+# Process command line arguments first
+for arg in "$@"; do
+    case $arg in
+        --help|-h)
+            show_help
+            exit 0
+            ;;
+        --uninstall)
+            UNINSTALL_MODE=true
+            ;;
+        --force-update|-f)
+            FORCE_UPDATE=true
+            ;;
+        *)
+            echo "Unknown option: $arg"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
 # Check if script is run with root privileges
 if [ "$EUID" -ne 0 ]; then
     echo_color "red" "Error: this script must be run with superuser privileges (sudo)."
     echo "Run: sudo $0"
     exit 1
 fi
+
+# Initial system check
+check_system_requirements
 
 # Determine the real user (not sudo)
 if [ -n "$SUDO_USER" ]; then
@@ -173,7 +328,10 @@ echo ""
 echo_color "yellow" "This script will set up the USB/IP server and client on your system."
 echo ""
 
-TOTAL_STEPS=10
+# Clean up any previous installations
+cleanup_previous_installation
+
+TOTAL_STEPS=11
 CURRENT_STEP=0
 
 # Step 1: Check operating system
@@ -457,7 +615,8 @@ progress_update $CURRENT_STEP $TOTAL_STEPS "Configuring USB/IP daemon..."
 USBIPD_PATH=$(find /usr -name "usbipd" -type f -executable 2>/dev/null | grep -E "/usr/(bin|sbin|lib)" | head -1)
 
 if [ -z "$USBIPD_PATH" ]; then
-    echo_color "red" "Could not find usbipd executable. Service will not be created."
+    echo_color "yellow" "⚠ usbipd executable not found. Skipping daemon configuration."
+    echo_color "blue" "    → This is normal for some systems where usbipd is not required."
 else
     echo_color "green" "Found usbipd at: $USBIPD_PATH"
     
@@ -465,90 +624,79 @@ else
     if [ ! -f "/usr/sbin/usbipd" ]; then
         mkdir -p /usr/sbin
         ln -sf "$USBIPD_PATH" /usr/sbin/usbipd
-        echo_color "blue" "Created symbolic link: /usr/sbin/usbipd -> $USBIPD_PATH"
+        echo_color "blue" "    → Created symbolic link: /usr/sbin/usbipd"
     fi
     
-    # Проверка существующей службы и обновление конфигурации при необходимости
-    SERVICE_UPDATED=false
-    if [ -f "/etc/systemd/system/usbipd.service" ]; then
-        echo_color "blue" "usbipd service already exists, checking configuration..."
-        
-        # Проверка пути к исполняемому файлу
-        CURRENT_PATH=$(grep "ExecStart" /etc/systemd/system/usbipd.service | grep -o "/[^ ]*" | head -1)
-        if [ "$CURRENT_PATH" != "$USBIPD_PATH" ]; then
-            echo_color "yellow" "Updating path in service configuration:"
-            echo_color "yellow" "From: $CURRENT_PATH"
-            echo_color "yellow" "To: $USBIPD_PATH"
-            sed -i "s|ExecStart=.*|ExecStart=$USBIPD_PATH -D|" /etc/systemd/system/usbipd.service
-            SERVICE_UPDATED=true
-        fi
-        
-        # Проверка типа службы
-        if ! grep -q "Type=forking" /etc/systemd/system/usbipd.service; then
-            echo_color "yellow" "Setting service type to 'forking' for proper daemon operation"
-            sed -i "s|Type=.*|Type=forking|" /etc/systemd/system/usbipd.service
-            
-            # Добавление PIDFile если его нет
-            if ! grep -q "PIDFile=" /etc/systemd/system/usbipd.service; then
-                sed -i "/Type=forking/a PIDFile=/run/usbipd.pid" /etc/systemd/system/usbipd.service
-            fi
-            SERVICE_UPDATED=true
-        fi
-        
-        # Если конфигурация была обновлена, перезагрузим службу
-        if [ "$SERVICE_UPDATED" = true ]; then
-            echo_color "blue" "Service configuration updated, reloading..."
-            systemctl daemon-reload
-            systemctl restart usbipd
-        fi
-    else
-        # Создание новой службы
-        echo_color "blue" "Creating usbipd service..."
-        cat > /etc/systemd/system/usbipd.service << EOF
+    # Kill any existing usbipd processes to prevent conflicts
+    if pgrep -f "usbipd" > /dev/null; then
+        echo_color "yellow" "    → Stopping existing usbipd processes..."
+        pkill -f "usbipd" 2>/dev/null || true
+        sleep 2
+    fi
+    
+    # Always recreate service file with improved configuration
+    echo_color "blue" "    → Creating improved usbipd service configuration..."
+    cat > /etc/systemd/system/usbipd.service << EOF
 [Unit]
 Description=USB/IP daemon
+Documentation=man:usbipd(8)
 After=network.target
+Wants=network.target
 
 [Service]
-Type=forking
-ExecStart=$USBIPD_PATH -D
-PIDFile=/run/usbipd.pid
+Type=simple
+ExecStart=$USBIPD_PATH -D --tcp-port=3240
+ExecReload=/bin/kill -HUP \$MAINPID
 Restart=on-failure
+RestartSec=3
+TimeoutStartSec=30
+TimeoutStopSec=30
+KillMode=mixed
+KillSignal=SIGTERM
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectKernelTunables=false
+ProtectControlGroups=true
+RestrictRealtime=true
+SystemCallArchitectures=native
 
 [Install]
 WantedBy=multi-user.target
 EOF
-
-        systemctl daemon-reload
-        systemctl enable usbipd
-    fi
     
-    # Запуск службы
-    echo_color "blue" "Starting usbipd service..."
-    systemctl start usbipd
+    echo_color "green" "    ✓ Service file created with improved configuration."
     
-    # Проверка запуска службы
-    sleep 2
-    if systemctl is-active --quiet usbipd; then
-        echo_color "green" "✓ usbipd service started successfully"
-    else
-        echo_color "yellow" "⚠ Failed to start usbipd service, will try to diagnose the issue"
+    # Reload systemd
+    echo_color "blue" "    → Reloading systemd daemon..."
+    systemctl daemon-reload
+    
+    # Test service start with timeout
+    echo_color "blue" "    → Testing usbipd service startup..."
+    if timeout 15 systemctl start usbipd 2>/dev/null; then
+        echo_color "green" "    ✓ usbipd service started successfully."
         
-        # Дополнительная диагностика, если служба не запустилась
-        ps aux | grep -v grep | grep -q usbipd
-        if [ $? -eq 0 ]; then
-            echo_color "blue" "usbipd process is running but service status is inactive."
-            echo_color "blue" "This might be normal with some systemd configurations."
+        # Enable for automatic startup
+        systemctl enable usbipd 2>/dev/null
+        echo_color "green" "    ✓ usbipd service enabled for automatic startup."
+        
+        # Verify service is running
+        if systemctl is-active --quiet usbipd; then
+            echo_color "green" "    ✓ usbipd service is running properly."
         else
-            echo_color "red" "No usbipd process found. Starting manually as fallback..."
-            $USBIPD_PATH -D
-            
-            if [ $? -eq 0 ]; then
-                echo_color "green" "✓ Started usbipd manually as fallback"
-            else
-                echo_color "red" "✗ Failed to start usbipd manually. Please check system logs."
-            fi
+            echo_color "yellow" "    ⚠ Service started but may not be fully operational."
         fi
+    else
+        echo_color "yellow" "    ⚠ usbipd service failed to start within timeout."
+        echo_color "blue" "    → This is normal on some systems and won't affect Orange USB/IP functionality."
+        
+        # Still enable the service for later use
+        systemctl enable usbipd 2>/dev/null || true
+        
+        # Show brief status for troubleshooting
+        echo_color "blue" "    → Service status for reference:"
+        systemctl status usbipd --no-pager -l --lines=3 2>/dev/null || echo "    Status unavailable"
     fi
 fi
 
@@ -705,24 +853,42 @@ if systemctl is-active --quiet orange-usbip; then
     echo_color "green" "  Orange USBIP Installation Successfully Completed! "
     echo_color "green" "===================================================="
     echo ""
-    echo_color "yellow" "Service available at: $APP_URL"
-    echo_color "yellow" "Login: admin"
-    echo_color "yellow" "Password: admin"
+    echo_color "yellow" "🌐 Web Interface:"
+    echo_color "yellow" "   URL:      $APP_URL"
+    echo_color "yellow" "   Login:    admin"
+    echo_color "yellow" "   Password: admin"
     echo ""
-    echo_color "red" "IMPORTANT: Change your password after first login!"
+    echo_color "red" "🔒 SECURITY: Change your password after first login!"
+    echo ""
     
-    # Removed automatic browser launch for better compatibility
-    echo_color "blue" "Open the URL above in your web browser to access the interface"
+    # Service status information
+    echo_color "blue" "📊 Service Status:"
+    if systemctl is-active --quiet orange-usbip; then
+        echo_color "green" "   ✓ Orange USB/IP:  Running"
+    else
+        echo_color "red" "   ✗ Orange USB/IP:  Stopped"
+    fi
+    
+    if systemctl is-active --quiet usbipd 2>/dev/null; then
+        echo_color "green" "   ✓ USB/IP Daemon:  Running"
+    else
+        echo_color "yellow" "   ⚠ USB/IP Daemon:  Not running (normal on some systems)"
+    fi
     echo ""
-    echo_color "blue" "Service management:"
-    echo " - Restart:      sudo systemctl restart orange-usbip"
-    echo " - Stop:         sudo systemctl stop orange-usbip"
-    echo " - Status:       sudo systemctl status orange-usbip"
-    echo " - Logs:         sudo journalctl -u orange-usbip"
+    
+    echo_color "blue" "🔧 Service Management:"
+    echo "   Restart:      sudo systemctl restart orange-usbip"
+    echo "   Stop:         sudo systemctl stop orange-usbip"
+    echo "   Status:       sudo systemctl status orange-usbip"
+    echo "   Logs:         sudo journalctl -u orange-usbip -f"
     echo ""
-    echo_color "blue" "Diagnostic tool:"
-    echo " - Run diagnostic: sudo ./doctor.sh"
-    echo " - From anywhere: sudo $(realpath $APP_DIR)/doctor.sh"
+    echo_color "blue" "🩺 Diagnostic Tools:"
+    echo "   Quick check:  sudo $(realpath $APP_DIR)/doctor.sh"
+    echo "   From app dir: cd $APP_DIR && sudo ./doctor.sh"
+    echo ""
+    echo_color "blue" "📂 Installation Location:"
+    echo "   App Directory: $APP_DIR"
+    echo "   Service File:  /etc/systemd/system/orange-usbip.service"
     echo ""
     
     # Make diagnostic and uninstall scripts executable
@@ -743,7 +909,6 @@ echo ""
 exit 0
 
 # End of normal installation flow
-fi
 
 # Functions for uninstallation - only run when --uninstall is specified
 if [ "$UNINSTALL_MODE" = true ]; then
