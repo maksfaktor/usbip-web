@@ -112,7 +112,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == url_for('terminal') %}active{% endif %}" href="{{ url_for('terminal') }}">
-                            <i class="bi bi-terminal"></i> {{ translate('terminal', 'Terminal') }}
+                            <i class="bi bi-terminal"></i> {{ t('terminal') }}
                         </a>
                     </li>
                     {% if current_user.is_admin %}
