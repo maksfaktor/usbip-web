@@ -8,11 +8,11 @@ sudo systemctl stop orange-usbip
 # Попробуем установить через apt
 echo "1. Installing via apt..."
 sudo apt update
-sudo apt install -y python3-flask python3-flask-login python3-flask-sqlalchemy python3-flask-wtf python3-werkzeug python3-email-validator python3-requests python3-pip python3-gunicorn
+sudo apt install -y python3-flask python3-flask-login python3-flask-sqlalchemy python3-werkzeug python3-email-validator python3-requests python3-pip python3-gunicorn
 
 # Если что-то не установилось через apt, используем pip с --break-system-packages
 echo "2. Installing remaining packages via pip..."
-sudo pip3 install --break-system-packages trafilatura netifaces
+sudo pip3 install --break-system-packages flask-wtf trafilatura netifaces
 
 # Проверим импорт
 echo "3. Testing import..."
