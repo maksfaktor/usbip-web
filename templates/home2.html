@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error('HTTP error! status: ' + response.status);
                 }
                 return response.json();
             })
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Скрываем спиннер, показываем сообщение об ошибке
                 document.getElementById('diagnosticSpinner').classList.add('d-none');
                 document.getElementById('diagnosticOutput').classList.remove('d-none');
-                document.getElementById('diagnosticOutput').textContent = `Error: ${error.message}`;
+                document.getElementById('diagnosticOutput').textContent = 'Error: ' + error.message;
             });
         });
     }
@@ -273,7 +273,7 @@ window.handleBindDevice = function(event, busid) {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error('HTTP error! status: ' + response.status);
         }
         return response.json();
     })
@@ -314,13 +314,12 @@ function showNotification(type, message) {
     const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
     
     const notification = document.createElement('div');
-    notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+    notification.className = 'alert ' + alertClass + ' alert-dismissible fade show position-fixed';
     notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
-    notification.innerHTML = `
-        <i class="fas ${iconClass} me-2"></i>
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
+    notification.innerHTML = 
+        '<i class="fas ' + iconClass + ' me-2"></i>' +
+        message +
+        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
     
     document.body.appendChild(notification);
     
