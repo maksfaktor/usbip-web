@@ -29,6 +29,14 @@ A comprehensive USB/IP device management web interface designed for robust devic
 ## Recent Changes
 
 ### July 8, 2025
+- **Terminal Page Implementation**: Created comprehensive web terminal with command execution
+  - Added `TerminalCommand` model for storing custom command buttons
+  - Implemented terminal interface with keyboard support and command history
+  - Added command button management (create, edit, delete)
+  - Integrated multilingual support for terminal functionality
+- **Translation System Fixes**: Fixed all `translate()` function calls to use `t()` 
+  - Corrected function usage in `terminal.html`, `home2.html`, and navigation
+  - Added complete Russian and English translations for terminal features
 - **New Application Icon**: Created custom orange fruit SVG icon (`static/orange-icon.svg`) to match Orange Pi branding
 - **Updated Templates**: Modified `base.html` and `login.html` to use new orange icon
 - **Enhanced Home2 Page**: Added `/home2` route with simplified USB device management interface
