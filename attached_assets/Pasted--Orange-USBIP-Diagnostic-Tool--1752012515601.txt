@@ -1,0 +1,104 @@
+====================================================
+  Orange USBIP Diagnostic Tool
+====================================================
+
+
+====================================================
+  1. Operating System Check
+====================================================
+
+OS Name: Linux
+OS Version: 6.8.0-63-generic
+Architecture: x86_64
+
+====================================================
+  2. Required Commands Check
+====================================================
+
+✓ Command usbip is available
+✗ Command gunicorn is not available
+  → gunicorn должен быть установлен в виртуальном окружении автоматически
+  → Попробуйте: cd /root/orange-usbip && source venv/bin/activate && pip install gunicorn
+✓ Command python3 is available
+✓ Command systemctl is available
+✓ Command nc is available
+
+====================================================
+  3. Services Check
+====================================================
+
+Checking usbipd service:
+✗ usbipd service is not running
+  → Searching for usbipd executable...
+  → Found usbipd executable: /usr/lib/linux-tools-6.8.0-60/usbipd
+  → Checking for running usbipd process...
+  → usbipd process is not running
+  → Recommended: start usbipd manually: sudo /usr/lib/linux-tools-6.8.0-60/usbipd -D
+  → Or restart service: sudo systemctl restart usbipd
+Checking Orange USBIP service:
+✓ orange-usbip service is running
+
+====================================================
+  4. Kernel Modules Check
+====================================================
+
+Checking usbip-core module:
+✓ usbip-core module is loaded
+Checking usbip-host module:
+✓ usbip-host module is loaded
+Checking vhci-hcd module:
+✓ vhci-hcd module is loaded
+
+====================================================
+  5. Open Ports Check
+====================================================
+
+Checking port 3240 (usbipd):
+✗ Port 3240 is not listening
+  → usbipd service is not running or not listening on port
+  → Recommended: restart usbipd service: sudo systemctl restart usbipd
+Checking port 5000 (Orange USBIP Web):
+✓ Port 5000 is listening
+
+====================================================
+  6. Firewall Check
+====================================================
+
+UFW Status:
+UFW is inactive, ports are not blocked
+
+====================================================
+  7. Published Devices Check
+====================================================
+
+Local USB devices:
+✓ Found 4 devices
+
+   - busid 1-1 (062a:4101)
+     MosArt Semiconductor Corp. : Wireless Keyboard/Mouse (062a:4101)
+   - busid 1-6 (04f3:22e8)
+     Elan Microelectronics Corp. : unknown product (04f3:22e8)
+   - busid 1-7 (8087:0a2a)
+     Intel Corp. : Bluetooth wireless interface (8087:0a2a)
+   - busid 1-8 (04f2:b5d8)
+     Chicony Electronics Co., Ltd : unknown product (04f2:b5d8)
+
+Published devices:
+✗ No published devices
+  → To publish a device use: sudo usbip bind -b <busid>
+
+====================================================
+  8. Network Interfaces Check
+====================================================
+
+Available network interfaces:
+  enp1s0: 
+  wlp2s0: 192.168.0.212/24
+  tailscale0: fe80::738e:e591:f57b:ff24/64
+
+====================================================
+  Diagnostics Complete
+====================================================
+
+If you encountered any issues, please refer to documentation or support forum.
+For more information: https://github.com/maksfaktor/usbip-web
