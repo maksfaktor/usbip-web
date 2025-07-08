@@ -402,41 +402,7 @@ else
     ifconfig | grep -E "enp|wlp|tailscale" | grep -v "inet6" | sed 's/^/  /'
 fi
 
-#####################################################################
-# Section 9: Network Connection Test
-# Tests connectivity to a remote USB/IP server
-#####################################################################
-show_header "9. Network Connection Test"
-echo "Enter remote server IP address to test (or leave empty to skip):"
-read remote_ip
 
-if [ ! -z "$remote_ip" ]; then
-    # Test basic connectivity with ping
-    echo "Testing connectivity to $remote_ip via ping:"
-    ping -c 3 $remote_ip > /dev/null 2>&1
-    check_status "Server $remote_ip is reachable via ping" "Check network connection and firewall settings"
-    
-    # Test if USB/IP port is accessible
-    echo "Testing port 3240 on $remote_ip:"
-    nc -z -w 5 $remote_ip 3240 > /dev/null 2>&1
-    check_status "Port 3240 on $remote_ip is accessible" "Make sure usbipd is running on remote server and port 3240 is allowed"
-    
-    # Test USB/IP connection and list remote devices
-    echo "Testing connection to remote server via usbip:"
-    sudo usbip list -r $remote_ip > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        echo_color "green" "✓ Successfully connected to server $remote_ip"
-        echo ""
-        echo "Available devices on server $remote_ip:"
-        sudo usbip list -r $remote_ip | grep -A 1 "busid" | grep -v "\-\-" | sed 's/^/  /'
-    else
-        echo_color "red" "✗ Failed to get devices list from server $remote_ip"
-        echo_color "yellow" "  → Make sure that on remote server:"
-        echo_color "yellow" "    1. usbipd service is running"
-        echo_color "yellow" "    2. There are published devices"
-        echo_color "yellow" "    3. Connections to port 3240 are allowed"
-    fi
-fi
 
 #####################################################################
 # Conclusion
