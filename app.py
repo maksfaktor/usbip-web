@@ -94,22 +94,12 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "default_secret_key_for_development")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# Настройка базы данных
-database_url = os.environ.get("DATABASE_URL")
-if database_url:
-    # PostgreSQL конфигурация для продакшена
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_recycle": 300,
-        "pool_pre_ping": True,
-    }
-else:
-    # SQLite конфигурация для разработки
-    database_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'usbip_web.db')
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{database_path}"
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "connect_args": {"check_same_thread": False}
-    }
+# Настройка базы данных SQLite
+database_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'usbip_web.db')
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{database_path}"
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "connect_args": {"check_same_thread": False}
+}
 db.init_app(app)
 
 # Настройка Flask-Login
