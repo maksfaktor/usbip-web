@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}{{ translate('terminal', 'Terminal') }} - {{ translate('app_name', 'Orange USB/IP') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Terminal Section (Left) -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-terminal me-2"></i>{{ translate('terminal', 'Terminal') }}
+                    </h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary" id="clearTerminal">
+                            <i class="bi bi-trash"></i> {{ translate('clear', 'Clear') }}
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Terminal Output -->
+                    <div id="terminalOutput" class="bg-dark text-light p-3" style="height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 14px;">
+                        <div class="text-success">{{ translate('terminal_welcome', 'Orange USB/IP Web Terminal') }}</div>
+                        <div class="text-muted">{{ translate('terminal_help', 'Type commands below and press Enter to execute') }}</div>
+                        <div class="mb-2">---</div>
+                    </div>
+                    <!-- Terminal Input -->
+                    <div class="p-3 bg-dark border-top">
+                        <div class="input-group">
+                            <span class="input-group-text bg-success text-white">$</span>
+                            <input type="text" class="form-control bg-dark text-light border-0" 
+                                   id="terminalInput" 
+                                   placeholder="{{ translate('enter_command', 'Enter command...') }}"
+                                   autocomplete="off">
+                            <button class="btn btn-success" type="button" id="executeCommand">
+                                <i class="bi bi-play-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Command Buttons Section (Right) -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-collection me-2"></i>{{ translate('command_buttons', 'Command Buttons') }}
+                    </h5>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createCommandModal">
+                        <i class="bi bi-plus-lg"></i> {{ translate('add', 'Add') }}
+                    </button>
+                </div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    {% if user_commands %}
+                        {% for cmd in user_commands %}
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <button class="btn btn-outline-info btn-sm flex-grow-1 me-2 command-btn" 
+                                        data-command="{{ cmd.command }}" 
+                                        title="{{ cmd.description or cmd.command }}">
+                                    <i class="bi bi-play-circle me-1"></i>{{ cmd.name }}
+                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-secondary btn-sm edit-command-btn" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editCommandModal"
+                                            data-id="{{ cmd.id }}"
+                                            data-name="{{ cmd.name }}"
+                                            data-command="{{ cmd.command }}"
+                                            data-description="{{ cmd.description or '' }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm delete-command-btn" 
+                                            data-id="{{ cmd.id }}"
+                                            data-name="{{ cmd.name }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-muted text-center py-4">
+                            <i class="bi bi-collection display-4 d-block mb-3"></i>
+                            {{ translate('no_commands', 'No command buttons created yet') }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Command Modal -->
+<div class="modal fade" id="createCommandModal" tabindex="-1" aria-labelledby="createCommandModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{{ url_for('create_terminal_command') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createCommandModalLabel">
+                        {{ translate('create_command', 'Create Command Button') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="commandName" class="form-label">{{ translate('name', 'Name') }} *</label>
+                        <input type="text" class="form-control" id="commandName" name="name" required maxlength="64">
+                    </div>
+                    <div class="mb-3">
+                        <label for="commandCommand" class="form-label">{{ translate('command', 'Command') }} *</label>
+                        <textarea class="form-control" id="commandCommand" name="command" rows="3" required></textarea>
+                        <div class="form-text">{{ translate('command_help', 'Enter the shell command to execute') }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="commandDescription" class="form-label">{{ translate('description', 'Description') }}</label>
+                        <input type="text" class="form-control" id="commandDescription" name="description" maxlength="255">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        {{ translate('cancel', 'Cancel') }}
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        {{ translate('create', 'Create') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Command Modal -->
+<div class="modal fade" id="editCommandModal" tabindex="-1" aria-labelledby="editCommandModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" id="editCommandForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCommandModalLabel">
+                        {{ translate('edit_command', 'Edit Command Button') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editCommandName" class="form-label">{{ translate('name', 'Name') }} *</label>
+                        <input type="text" class="form-control" id="editCommandName" name="name" required maxlength="64">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCommandCommand" class="form-label">{{ translate('command', 'Command') }} *</label>
+                        <textarea class="form-control" id="editCommandCommand" name="command" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCommandDescription" class="form-label">{{ translate('description', 'Description') }}</label>
+                        <input type="text" class="form-control" id="editCommandDescription" name="description" maxlength="255">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        {{ translate('cancel', 'Cancel') }}
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        {{ translate('save', 'Save') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteCommandModal" tabindex="-1" aria-labelledby="deleteCommandModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" id="deleteCommandForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteCommandModalLabel">
+                        {{ translate('confirm_delete', 'Confirm Delete') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>{{ translate('delete_command_confirm', 'Are you sure you want to delete this command button?') }}</p>
+                    <p class="text-muted"><strong id="deleteCommandName"></strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        {{ translate('cancel', 'Cancel') }}
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        {{ translate('delete', 'Delete') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const terminalInput = document.getElementById('terminalInput');
+    const terminalOutput = document.getElementById('terminalOutput');
+    const executeBtn = document.getElementById('executeCommand');
+    const clearBtn = document.getElementById('clearTerminal');
+    const commandBtns = document.querySelectorAll('.command-btn');
+    
+    let commandHistory = [];
+    let historyIndex = -1;
+    
+    // Функция для добавления текста в терминал
+    function addToTerminal(text, className = '') {
+        const div = document.createElement('div');
+        if (className) {
+            div.className = className;
+        }
+        div.textContent = text;
+        terminalOutput.appendChild(div);
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    }
+    
+    // Функция для выполнения команды
+    function executeCommand(command) {
+        if (!command.trim()) return;
+        
+        // Добавляем команду в историю
+        commandHistory.unshift(command);
+        if (commandHistory.length > 50) {
+            commandHistory.pop();
+        }
+        historyIndex = -1;
+        
+        // Показываем команду в терминале
+        addToTerminal(`$ ${command}`, 'text-success');
+        
+        // Очищаем поле ввода
+        terminalInput.value = '';
+        
+        // Показываем индикатор выполнения
+        addToTerminal('Executing...', 'text-warning');
+        
+        // Выполняем команду через API
+        fetch('/terminal/execute', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ command: command })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Удаляем индикатор выполнения
+            terminalOutput.removeChild(terminalOutput.lastChild);
+            
+            if (data.success) {
+                // Выводим результат
+                if (data.output) {
+                    data.output.split('\n').forEach(line => {
+                        addToTerminal(line);
+                    });
+                }
+                if (data.error) {
+                    data.error.split('\n').forEach(line => {
+                        addToTerminal(line, 'text-danger');
+                    });
+                }
+                if (data.return_code !== 0) {
+                    addToTerminal(`Exit code: ${data.return_code}`, 'text-warning');
+                }
+            } else {
+                addToTerminal(`Error: ${data.message}`, 'text-danger');
+            }
+        })
+        .catch(error => {
+            // Удаляем индикатор выполнения
+            if (terminalOutput.lastChild.textContent === 'Executing...') {
+                terminalOutput.removeChild(terminalOutput.lastChild);
+            }
+            addToTerminal(`Network error: ${error.message}`, 'text-danger');
+        });
+    }
+    
+    // Обработчик Enter в поле ввода
+    terminalInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            executeCommand(this.value);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (historyIndex < commandHistory.length - 1) {
+                historyIndex++;
+                this.value = commandHistory[historyIndex];
+            }
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (historyIndex > 0) {
+                historyIndex--;
+                this.value = commandHistory[historyIndex];
+            } else if (historyIndex === 0) {
+                historyIndex = -1;
+                this.value = '';
+            }
+        }
+    });
+    
+    // Обработчик кнопки выполнения
+    executeBtn.addEventListener('click', function() {
+        executeCommand(terminalInput.value);
+    });
+    
+    // Обработчик кнопки очистки
+    clearBtn.addEventListener('click', function() {
+        terminalOutput.innerHTML = `
+            <div class="text-success">{{ translate('terminal_welcome', 'Orange USB/IP Web Terminal') }}</div>
+            <div class="text-muted">{{ translate('terminal_help', 'Type commands below and press Enter to execute') }}</div>
+            <div class="mb-2">---</div>
+        `;
+    });
+    
+    // Обработчики кнопок команд
+    commandBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const command = this.getAttribute('data-command');
+            terminalInput.value = command;
+            executeCommand(command);
+        });
+    });
+    
+    // Обработчик редактирования команды
+    document.querySelectorAll('.edit-command-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const command = this.getAttribute('data-command');
+            const description = this.getAttribute('data-description');
+            
+            document.getElementById('editCommandName').value = name;
+            document.getElementById('editCommandCommand').value = command;
+            document.getElementById('editCommandDescription').value = description;
+            document.getElementById('editCommandForm').action = `/terminal/commands/${id}`;
+        });
+    });
+    
+    // Обработчик удаления команды
+    document.querySelectorAll('.delete-command-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            
+            document.getElementById('deleteCommandName').textContent = name;
+            document.getElementById('deleteCommandForm').action = `/terminal/commands/${id}/delete`;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteCommandModal'));
+            deleteModal.show();
+        });
+    });
+    
+    // Автофокус на поле ввода
+    terminalInput.focus();
+});
+</script>
+{% endblock %}

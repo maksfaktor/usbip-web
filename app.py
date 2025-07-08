@@ -140,7 +140,7 @@ def inject_translation():
 from usbip_utils import get_local_usb_devices, bind_device, get_remote_usb_devices, attach_device, detach_device, get_attached_devices, get_published_devices
 
 # Импортирование моделей (после настройки db)
-from models import User, DeviceAlias, UsbPort, LogEntry, VirtualUsbDevice, VirtualUsbPort, VirtualUsbFile
+from models import User, DeviceAlias, UsbPort, LogEntry, VirtualUsbDevice, VirtualUsbPort, VirtualUsbFile, TerminalCommand
 
 # Импортирование модулей для управления виртуальным хранилищем
 from virtual_storage_utils import (
@@ -1093,6 +1093,222 @@ def run_doctor():
             'success': False,
             'message': f'Ошибка: {str(e)}'
         }), 500
+
+
+# ============== TERMINAL ROUTES ==============
+
+@app.route('/terminal')
+@login_required
+def terminal():
+    """
+    Страница веб-терминала с кнопками команд
+    """
+    # Получаем команды пользователя
+    user_commands = TerminalCommand.query.filter_by(user_id=current_user.id).order_by(TerminalCommand.created_at.desc()).all()
+    
+    return render_template('terminal.html', user_commands=user_commands)
+
+
+@app.route('/terminal/execute', methods=['POST'])
+@login_required
+def execute_terminal_command():
+    """
+    API для выполнения команд в терминале
+    """
+    try:
+        data = request.get_json()
+        command = data.get('command', '').strip()
+        
+        if not command:
+            return jsonify({
+                'success': False,
+                'message': 'Команда не может быть пустой'
+            }), 400
+        
+        # Запись в лог
+        add_log_entry('INFO', f'Terminal command executed: {command}', 'terminal')
+        
+        # Выполнение команды
+        try:
+            result = subprocess.run(
+                command,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=30,  # Таймаут 30 секунд
+                cwd=os.getcwd()
+            )
+            
+            output = result.stdout
+            error = result.stderr
+            return_code = result.returncode
+            
+            # Формируем ответ
+            response_data = {
+                'success': True,
+                'output': output,
+                'error': error,
+                'return_code': return_code,
+                'command': command
+            }
+            
+            return jsonify(response_data)
+            
+        except subprocess.TimeoutExpired:
+            return jsonify({
+                'success': False,
+                'message': 'Команда выполнялась слишком долго (таймаут 30 секунд)',
+                'command': command
+            }), 408
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'message': f'Ошибка выполнения команды: {str(e)}',
+                'command': command
+            }), 500
+            
+    except Exception as e:
+        add_log_entry('ERROR', f'Terminal API error: {str(e)}', 'terminal')
+        return jsonify({
+            'success': False,
+            'message': f'Ошибка сервера: {str(e)}'
+        }), 500
+
+
+@app.route('/terminal/commands', methods=['POST'])
+@login_required
+def create_terminal_command():
+    """
+    Создание новой кнопки команды
+    """
+    try:
+        name = request.form.get('name', '').strip()
+        command = request.form.get('command', '').strip()
+        description = request.form.get('description', '').strip()
+        
+        if not name or not command:
+            flash('Название и команда обязательны для заполнения', 'danger')
+            return redirect(url_for('terminal'))
+        
+        # Проверяем, не существует ли уже команда с таким именем у пользователя
+        existing_command = TerminalCommand.query.filter_by(
+            user_id=current_user.id,
+            name=name
+        ).first()
+        
+        if existing_command:
+            flash('Команда с таким названием уже существует', 'warning')
+            return redirect(url_for('terminal'))
+        
+        # Создаем новую команду
+        new_command = TerminalCommand(
+            name=name,
+            command=command,
+            description=description,
+            user_id=current_user.id
+        )
+        
+        db.session.add(new_command)
+        db.session.commit()
+        
+        flash(f'Команда "{name}" успешно создана', 'success')
+        add_log_entry('INFO', f'Terminal command created: {name}', 'terminal')
+        
+        return redirect(url_for('terminal'))
+        
+    except Exception as e:
+        db.session.rollback()
+        add_log_entry('ERROR', f'Error creating terminal command: {str(e)}', 'terminal')
+        flash(f'Ошибка при создании команды: {str(e)}', 'danger')
+        return redirect(url_for('terminal'))
+
+
+@app.route('/terminal/commands/<int:command_id>', methods=['POST'])
+@login_required
+def update_terminal_command(command_id):
+    """
+    Редактирование кнопки команды
+    """
+    try:
+        command_obj = TerminalCommand.query.filter_by(
+            id=command_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not command_obj:
+            flash('Команда не найдена', 'danger')
+            return redirect(url_for('terminal'))
+        
+        name = request.form.get('name', '').strip()
+        command = request.form.get('command', '').strip()
+        description = request.form.get('description', '').strip()
+        
+        if not name or not command:
+            flash('Название и команда обязательны для заполнения', 'danger')
+            return redirect(url_for('terminal'))
+        
+        # Проверяем, не существует ли уже другая команда с таким именем у пользователя
+        existing_command = TerminalCommand.query.filter_by(
+            user_id=current_user.id,
+            name=name
+        ).filter(TerminalCommand.id != command_id).first()
+        
+        if existing_command:
+            flash('Команда с таким названием уже существует', 'warning')
+            return redirect(url_for('terminal'))
+        
+        # Обновляем команду
+        command_obj.name = name
+        command_obj.command = command
+        command_obj.description = description
+        command_obj.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        flash(f'Команда "{name}" успешно обновлена', 'success')
+        add_log_entry('INFO', f'Terminal command updated: {name}', 'terminal')
+        
+        return redirect(url_for('terminal'))
+        
+    except Exception as e:
+        db.session.rollback()
+        add_log_entry('ERROR', f'Error updating terminal command: {str(e)}', 'terminal')
+        flash(f'Ошибка при обновлении команды: {str(e)}', 'danger')
+        return redirect(url_for('terminal'))
+
+
+@app.route('/terminal/commands/<int:command_id>/delete', methods=['POST'])
+@login_required
+def delete_terminal_command(command_id):
+    """
+    Удаление кнопки команды
+    """
+    try:
+        command_obj = TerminalCommand.query.filter_by(
+            id=command_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not command_obj:
+            flash('Команда не найдена', 'danger')
+            return redirect(url_for('terminal'))
+        
+        command_name = command_obj.name
+        db.session.delete(command_obj)
+        db.session.commit()
+        
+        flash(f'Команда "{command_name}" успешно удалена', 'success')
+        add_log_entry('INFO', f'Terminal command deleted: {command_name}', 'terminal')
+        
+        return redirect(url_for('terminal'))
+        
+    except Exception as e:
+        db.session.rollback()
+        add_log_entry('ERROR', f'Error deleting terminal command: {str(e)}', 'terminal')
+        flash(f'Ошибка при удалении команды: {str(e)}', 'danger')
+        return redirect(url_for('terminal'))
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
