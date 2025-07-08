@@ -87,6 +87,8 @@ def main():
         "main.py",
         "app.py",
         "models.py",
+        "translations.py",
+        "templates/error.html",
         "replit.md",
         "debug_service.sh",
         "fix_dependencies.sh",
