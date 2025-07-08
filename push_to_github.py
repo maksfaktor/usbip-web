@@ -86,6 +86,7 @@ def main():
     files_to_update = [
         "main.py",
         "app.py",
+        "models.py",
         "replit.md",
         "debug_service.sh",
         "fix_dependencies.sh",
