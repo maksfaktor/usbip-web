@@ -84,11 +84,12 @@ def update_file(file_path, message):
 # Основная функция
 def main():
     files_to_update = [
-        "README.md",
+        "install_debian.sh",
+        "install_debian_old.sh",
         "replit.md"
     ]
     
-    commit_message = "README.md: оставлена только рабочая команда для check_and_remove.sh"
+    commit_message = "Исправлено зависание установки на запуске usbipd - добавлен таймаут 10 секунд"
     
     print("Отправляем изменения в GitHub...")
     

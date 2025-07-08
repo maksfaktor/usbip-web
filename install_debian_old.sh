@@ -523,32 +523,19 @@ EOF
         systemctl enable usbipd
     fi
     
-    # Запуск службы
+    # Запуск службы с таймаутом
     echo_color "blue" "Starting usbipd service..."
-    systemctl start usbipd
-    
-    # Проверка запуска службы
-    sleep 2
-    if systemctl is-active --quiet usbipd; then
-        echo_color "green" "✓ usbipd service started successfully"
-    else
-        echo_color "yellow" "⚠ Failed to start usbipd service, will try to diagnose the issue"
-        
-        # Дополнительная диагностика, если служба не запустилась
-        ps aux | grep -v grep | grep -q usbipd
-        if [ $? -eq 0 ]; then
-            echo_color "blue" "usbipd process is running but service status is inactive."
-            echo_color "blue" "This might be normal with some systemd configurations."
+    if timeout 10 systemctl start usbipd; then
+        # Проверка запуска службы
+        sleep 2
+        if systemctl is-active --quiet usbipd; then
+            echo_color "green" "✓ usbipd service started successfully"
         else
-            echo_color "red" "No usbipd process found. Starting manually as fallback..."
-            $USBIPD_PATH -D
-            
-            if [ $? -eq 0 ]; then
-                echo_color "green" "✓ Started usbipd manually as fallback"
-            else
-                echo_color "red" "✗ Failed to start usbipd manually. Please check system logs."
-            fi
+            echo_color "yellow" "⚠ usbipd service started but not active, continuing installation"
         fi
+    else
+        echo_color "yellow" "⚠ usbipd service start timed out, continuing installation"
+        echo_color "blue" "Note: usbipd service may start automatically later or can be started manually"
     fi
 fi
 
