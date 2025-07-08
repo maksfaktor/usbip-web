@@ -34,6 +34,12 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Successfully restored stable version from `install_debian_old.sh`
   - Both files now contain identical, working installation script
   - Maintained backup system for future enhancements
+- **Interactive Removal Script**: Created `check_and_remove.sh` for service and application cleanup
+  - Comprehensive English-language interactive script for checking and removing Orange USB/IP
+  - Detects and removes orange-usbip and usbipd services with user confirmation
+  - Checks for application directories in multiple locations with size reporting
+  - Terminates running processes with user approval
+  - Provides detailed status reporting and final system verification
 - **Terminal Page Implementation**: Created comprehensive web terminal with command execution
   - Added `TerminalCommand` model for storing custom command buttons
   - Implemented terminal interface with keyboard support and command history
