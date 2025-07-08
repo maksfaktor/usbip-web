@@ -89,6 +89,7 @@ def main():
         "models.py",
         "translations.py",
         "templates/error.html",
+        "templates/terminal.html",
         "replit.md",
         "debug_service.sh",
         "fix_dependencies.sh",
