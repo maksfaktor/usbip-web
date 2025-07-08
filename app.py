@@ -542,7 +542,7 @@ def port_name():
 
 
 
-@app.route('/bind-device', methods=['POST'])
+@app.route('/bind_device', methods=['POST'])
 @login_required
 def bind_device_route():
     try:
