@@ -29,6 +29,14 @@ A comprehensive USB/IP device management web interface designed for robust devic
 ## Recent Changes
 
 ### July 8, 2025
+- **Major Installation Script Enhancement**: Completely rebuilt `install_debian.sh` with professional-grade features
+  - Added comprehensive system requirement checking and validation
+  - Implemented intelligent cleanup of previous installations before reinstalling
+  - Enhanced USB/IP daemon configuration with improved service management
+  - Added robust error handling with timeout protection and fallback mechanisms
+  - Implemented detailed diagnostic functions for troubleshooting
+  - Added professional installation progress tracking with visual feedback
+  - Improved service configuration with better security settings and restart policies
 - **Terminal Page Implementation**: Created comprehensive web terminal with command execution
   - Added `TerminalCommand` model for storing custom command buttons
   - Implemented terminal interface with keyboard support and command history
@@ -75,7 +83,12 @@ A comprehensive USB/IP device management web interface designed for robust devic
 - Comprehensive logging system for troubleshooting
 
 ## Installation Scripts
-- `install_debian.sh`: Debian/Ubuntu installation
+- `install_debian.sh`: Enhanced Debian/Ubuntu installation with comprehensive features:
+  - Automatic system requirement validation and dependency management
+  - Intelligent cleanup of previous installations before reinstallation
+  - Professional-grade service configuration with security hardening
+  - Robust error handling with timeout protection and diagnostic feedback
+  - Visual progress tracking and detailed status reporting
 - `install_arm.sh`: ARM-specific installation
 - `uninstall.sh`: Complete removal with backup
-- `doctor.sh`: System diagnostic tool
+- `doctor.sh`: System diagnostic tool for troubleshooting
