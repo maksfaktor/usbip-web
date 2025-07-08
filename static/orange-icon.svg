@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="orangeGradient" cx="0.4" cy="0.3" r="0.8">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#FFA500;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#FF8C00;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF6347;stop-opacity:1" />
+    </radialGradient>
+    <radialGradient id="leafGradient" cx="0.3" cy="0.3" r="0.7">
+      <stop offset="0%" style="stop-color:#90EE90;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#32CD32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#228B22;stop-opacity:1" />
+    </radialGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+  </defs>
+  
+  <!-- Orange body -->
+  <circle cx="64" cy="70" r="45" fill="url(#orangeGradient)" filter="url(#shadow)"/>
+  
+  <!-- Orange texture -->
+  <circle cx="64" cy="70" r="45" fill="none" stroke="#FF8C00" stroke-width="0.5" opacity="0.3"/>
+  <circle cx="64" cy="70" r="35" fill="none" stroke="#FFD700" stroke-width="0.3" opacity="0.2"/>
+  <circle cx="64" cy="70" r="25" fill="none" stroke="#FFA500" stroke-width="0.2" opacity="0.1"/>
+  
+  <!-- Orange peel texture dots -->
+  <circle cx="50" cy="55" r="1" fill="#FF8C00" opacity="0.4"/>
+  <circle cx="78" cy="60" r="1" fill="#FF8C00" opacity="0.4"/>
+  <circle cx="45" cy="75" r="1" fill="#FF8C00" opacity="0.4"/>
+  <circle cx="80" cy="80" r="1" fill="#FF8C00" opacity="0.4"/>
+  <circle cx="55" cy="90" r="1" fill="#FF8C00" opacity="0.4"/>
+  <circle cx="75" cy="95" r="1" fill="#FF8C00" opacity="0.4"/>
+  
+  <!-- Leaf -->
+  <ellipse cx="64" cy="25" rx="8" ry="20" fill="url(#leafGradient)" transform="rotate(-15 64 25)"/>
+  
+  <!-- Leaf vein -->
+  <path d="M 64 15 Q 66 25 64 35" stroke="#228B22" stroke-width="1" fill="none" opacity="0.6"/>
+  
+  <!-- USB connector symbol overlay -->
+  <g opacity="0.8">
+    <rect x="56" y="62" width="16" height="8" rx="2" fill="#333" opacity="0.7"/>
+    <rect x="58" y="64" width="12" height="4" rx="1" fill="#FFF" opacity="0.9"/>
+    <circle cx="60" cy="66" r="0.5" fill="#333"/>
+    <circle cx="70" cy="66" r="0.5" fill="#333"/>
+  </g>
+  
+  <!-- Highlight -->
+  <ellipse cx="55" cy="50" rx="8" ry="12" fill="#FFD700" opacity="0.3"/>
+</svg>

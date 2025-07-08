@@ -84,11 +84,13 @@ def update_file(file_path, message):
 # Основная функция
 def main():
     files_to_update = [
-        "app.py",
-        "templates/home2.html"
+        "static/orange-icon.svg",
+        "templates/base.html",
+        "templates/login.html",
+        "replit.md"
     ]
     
-    commit_message = "Добавлена новая упрощенная страница Home2 для отображения USB-устройств"
+    commit_message = "Обновлен значок приложения на апельсин для соответствия Orange Pi брендингу"
     
     print("Отправляем изменения в GitHub...")
     
