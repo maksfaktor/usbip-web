@@ -84,17 +84,11 @@ def update_file(file_path, message):
 # Основная функция
 def main():
     files_to_update = [
-        "static/orange-icon.svg",
-        "templates/base.html",
-        "templates/login.html",
-        "replit.md",
-        "install_debian.sh",
-        "install_debian_old.sh",
-        "check_and_remove.sh",
-        "README.md"
+        "README.md",
+        "replit.md"
     ]
     
-    commit_message = "Упрощен check_and_remove.sh - используется точно такая же логика определения пользователя как в install_debian.sh"
+    commit_message = "README.md: оставлена только рабочая команда для check_and_remove.sh"
     
     print("Отправляем изменения в GitHub...")
     

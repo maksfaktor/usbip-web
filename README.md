@@ -40,13 +40,6 @@ sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-we
 
 ### Interactive Service and Application Removal:
 ```bash
-# One-line command (recommended - preserves environment variables):
-sudo -E bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh)"
-
-# Alternative one-line (simple):
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh)"
-
-# Alternative - download and run:
 curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh -o check_and_remove.sh && chmod +x check_and_remove.sh && sudo ./check_and_remove.sh
 ```
 
