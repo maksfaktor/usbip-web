@@ -29,6 +29,11 @@ A comprehensive USB/IP device management web interface designed for robust devic
 ## Recent Changes
 
 ### July 8, 2025
+- **SQLAlchemy Compatibility Fix**: Updated code to work with SQLAlchemy 1.4.50 (Ubuntu system version)
+  - Changed import from `DeclarativeBase` to `declarative_base` for compatibility
+  - Fixed base class creation to use `declarative_base()` instead of class inheritance
+  - Resolved service startup failures caused by SQLAlchemy version conflicts
+  - Created diagnostic scripts (`fix_dependencies.sh`, `fix_sqlalchemy_conflict.sh`) for installation troubleshooting
 - **Installation Script Recovery**: Restored working `install_debian.sh` from backup after debugging issues
   - Identified critical bugs in enhanced version that caused premature script termination
   - Successfully restored stable version from `install_debian_old.sh`
