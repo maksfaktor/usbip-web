@@ -11,7 +11,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from translations import get_translation
 
@@ -83,8 +83,7 @@ def get_network_interfaces():
     return interfaces
 
 # Создание базового класса для SQLAlchemy
-class Base(DeclarativeBase):
-    pass
+Base = declarative_base()
 
 # Инициализация SQLAlchemy с базовым классом
 db = SQLAlchemy(model_class=Base)
