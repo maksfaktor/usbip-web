@@ -93,7 +93,7 @@ def main():
         "README.md"
     ]
     
-    commit_message = "Исправлен критический баг: удален set -e, вызывавший преждевременное завершение установочного скрипта"
+    commit_message = "Добавлена отладочная информация и исправлены проблемы systemctl в функции cleanup_previous_installation"
     
     print("Отправляем изменения в GitHub...")
     

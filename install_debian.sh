@@ -216,10 +216,11 @@ cleanup_previous_installation() {
     
     # Reload systemd to apply changes
     echo_color "blue" "    → Reloading systemd daemon..."
-    systemctl daemon-reload
+    systemctl daemon-reload 2>/dev/null || true
     systemctl reset-failed 2>/dev/null || true
     
     echo_color "green" "✓ Previous installations cleaned up."
+    echo_color "blue" "Debug: cleanup_previous_installation completed successfully"
 }
 
 # Function to check system requirements
@@ -321,10 +322,13 @@ echo_color "yellow" "This script will set up the USB/IP server and client on you
 echo ""
 
 # Clean up any previous installations
+echo_color "blue" "Debug: About to call cleanup_previous_installation..."
 cleanup_previous_installation
+echo_color "blue" "Debug: cleanup_previous_installation finished, enabling strict error handling..."
 
 # Enable strict error handling after cleanup operations
 set -e
+echo_color "blue" "Debug: Strict error handling enabled"
 
 TOTAL_STEPS=11
 CURRENT_STEP=0
