@@ -227,13 +227,6 @@ cleanup_previous_installation() {
 check_system_requirements() {
     echo_color "blue" "Checking system requirements..."
     
-    # Check if running as root
-    if [ "$EUID" -ne 0 ]; then
-        echo_color "red" "Error: this script must be run with superuser privileges (sudo)."
-        echo "Run: sudo $0"
-        exit 1
-    fi
-    
     # Check for conflicting processes
     if pgrep -f "usbipd" > /dev/null; then
         echo_color "yellow" "    → Found running usbipd processes, terminating..."
@@ -352,13 +345,10 @@ if [[ "$ARCH" == "arm"* ]] && [[ "$ARCH" != "armv7"* ]]; then
 elif [[ "$ARCH" == "aarch64" ]]; then
     echo_color "green" "✓ Architecture $ARCH is compatible (64-bit ARM)."
 elif [[ "$ARCH" == "armv7"* ]]; then
-    echo_color "yellow" "For 32-bit ARM systems (ARMv7), it is recommended to use the install_arm.sh script"
-    echo "Continue with installation? (y/n)"
-    read -r response
-    if [[ "$response" != "y" ]]; then
-        echo_color "yellow" "Installation aborted by user."
-        exit 0
-    fi
+    echo_color "yellow" "⚠ Architecture $ARCH detected (32-bit ARM)."
+    echo_color "yellow" "    For optimal compatibility, consider using install_arm.sh instead."
+    echo_color "blue" "    Continuing with generic installation..."
+    sleep 2
 elif [[ "$ARCH" == "x86_64" ]] || [[ "$ARCH" == "i686" ]]; then
     echo_color "green" "✓ Architecture $ARCH is compatible (x86/x86_64)."
 else
@@ -465,13 +455,8 @@ if [ "$UV_INSTALLED" = false ]; then
     echo_color "yellow" "  - Missing build dependencies (rustc, cargo)"
     echo_color "yellow" "  - Insufficient permissions"
     
-    echo "Do you want to continue installation using standard pip? (y/n)"
-    read -r response
-    if [[ "$response" != "y" ]]; then
-        echo_color "red" "Installation aborted by user."
-        exit 1
-    fi
-    echo_color "yellow" "Continuing installation with standard pip..."
+    echo_color "yellow" "⚠ UV installation failed. Continuing with standard pip installation..."
+    echo_color "blue" "    This is a fallback method and installation will proceed."
 else
     echo_color "green" "✓ uv package manager is ready to use."
 fi
@@ -530,12 +515,8 @@ if ! command -v usbip &> /dev/null; then
         echo_color "yellow" "⚠ On ARMv7, additional USB/IP installation steps may be required."
         echo_color "yellow" "   It is recommended to use the install_arm.sh script for this architecture."
         
-        echo "Do you want to continue installation without USB/IP? (y/n)"
-        read -r response
-        if [[ "$response" != "y" ]]; then
-            echo_color "blue" "Installation aborted. Use install_arm.sh script"
-            exit 0
-        fi
+        echo_color "blue" "    → Continuing installation without USB/IP for ARMv7."
+        echo_color "yellow" "    → Consider using install_arm.sh for better ARMv7 support."
     fi
     
     echo_color "red" "⚠ Failed to install USB/IP. Continuing installation without USB/IP."
@@ -594,12 +575,8 @@ if ([ "$MODULES_ADDED" = true ] || [ "$KERNEL_MODULES_INSTALLED" = true ]) && [ 
     echo_color "yellow" "Reboot command: sudo reboot"
     echo_color "yellow" ""
     
-    echo "Continue installation without rebooting? (y/n)"
-    read -r response
-    if [[ "$response" != "y" ]]; then
-        echo_color "blue" "Installation paused. Please reboot the system and run the script again."
-        exit 0
-    fi
+    echo_color "blue" "    → Continuing installation without reboot."
+    echo_color "yellow" "    → Some USB/IP features may require a system reboot to function properly."
     
     echo_color "yellow" "Continuing installation. Some features may not work until reboot."
 fi
