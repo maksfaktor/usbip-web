@@ -7,6 +7,8 @@ sudo systemctl stop orange-usbip
 
 echo "1. Removing user-installed SQLAlchemy packages..."
 pip3 uninstall -y sqlalchemy flask-sqlalchemy 2>/dev/null || true
+rm -rf /home/maxx/.local/lib/python3.12/site-packages/sqlalchemy*
+rm -rf /home/maxx/.local/lib/python3.12/site-packages/SQLAlchemy*
 
 echo "2. Removing system packages that might conflict..."
 sudo apt remove -y python3-sqlalchemy python3-flask-sqlalchemy
