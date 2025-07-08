@@ -44,24 +44,32 @@ check_service() {
     local service_active=false
     local service_enabled=false
     
+    print_color $BLUE "  → Checking service files for $service_name..."
     # Check if service files exist
     if [ -f "$service_file" ] || [ -f "$system_service_file" ]; then
         service_exists=true
+        print_color $BLUE "  → Service files found for $service_name"
     fi
     
+    print_color $BLUE "  → Checking if $service_name is active..."
     # Check if service is active
     if systemctl is-active --quiet "$service_name" 2>/dev/null; then
         service_active=true
+        print_color $BLUE "  → $service_name is active"
     fi
     
+    print_color $BLUE "  → Checking if $service_name is enabled..."
     # Check if service is enabled
     if systemctl is-enabled --quiet "$service_name" 2>/dev/null; then
         service_enabled=true
+        print_color $BLUE "  → $service_name is enabled"
     fi
     
-    # Check if service is loaded (even if inactive)
-    if systemctl list-unit-files | grep -q "^${service_name}.service"; then
+    print_color $BLUE "  → Checking systemd unit files for $service_name..."
+    # Check if service is loaded (even if inactive) - use timeout for faster execution
+    if timeout 5 systemctl list-unit-files 2>/dev/null | grep -q "^${service_name}.service"; then
         service_exists=true
+        print_color $BLUE "  → $service_name found in systemd unit files"
     fi
     
     echo "$service_exists:$service_active:$service_enabled"
@@ -214,7 +222,9 @@ main() {
     
     # Check orange-usbip service
     print_color $BLUE "=== Checking orange-usbip service ==="
+    print_color $BLUE "Debug: About to check orange-usbip service..."
     service_info=$(check_service "orange-usbip")
+    print_color $BLUE "Debug: orange-usbip service check completed"
     IFS=':' read -r exists active enabled <<< "$service_info"
     
     if [ "$exists" = "true" ]; then
