@@ -47,6 +47,14 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Fixed parsing function logs to use English
   - Standardized error messages and debug output language
   - Enhanced server-side logging for better troubleshooting
+- **Added Device Unpublish Functionality**: Implemented "Cancel" button to remove devices from publication
+  - Added `unbind_device()` function to usbip_utils.py with comprehensive error handling
+  - Created `/unbind_device` route in app.py with proper JSON response handling
+  - Updated home2.html template with conditional publish/unpublish buttons
+  - Added `handleUnbindDevice()` JavaScript function with real-time UI updates
+  - Enhanced `updateDeviceStatus()` function to handle both published and unpublished states
+  - Added multilingual support for "unpublish" button in translations.py
+  - Published devices now show yellow "Cancel" button instead of disabled green "Published" button
 
 ### July 8-9, 2025
 - **Device Publication Fix**: Fixed JavaScript syntax errors preventing device publication
