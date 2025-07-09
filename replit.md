@@ -45,6 +45,13 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Enhanced get_published_devices() function with detailed logging for status detection
   - Added proper multi-line parser for device name extraction from usbip output
   - **BACKUP CREATED**: orange-usbip-backup-20250709-012300.tar.gz with all latest fixes
+- **Full Device Names Integration**: Combined lsusb full names with usbip correct busid
+  - Enhanced get_local_usb_devices() to merge data from both lsusb and usbip list -l
+  - Now displays complete device names: "MosArt Semiconductor Corp. Wireless Keyboard/Mouse"
+  - Maintains correct busid format from usbip for proper device binding
+  - Shows VID:PID format consistently across interface
+  - Fallback system when either lsusb or usbip commands fail
+  - Updated home2.html template to display full_name field with proper formatting
 - **SQLAlchemy Compatibility Fix**: Updated code to work with SQLAlchemy 1.4.50 (Ubuntu system version)
   - Changed import from `DeclarativeBase` to `declarative_base` for compatibility
   - Fixed base class creation to use `declarative_base()` instead of class inheritance
