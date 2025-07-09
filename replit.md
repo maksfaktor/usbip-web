@@ -36,6 +36,12 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Added handleCancelDevice() function for consistent unpublish functionality
   - Updated both main page (/) and home2 page (/home2) with permanent Cancel buttons
   - Added Home2 navigation link to menu for easier access during testing
+- **Removed Home2 Page**: Cleaned up codebase by removing temporary testing page
+  - Deleted home2() function from app.py
+  - Removed Home2 navigation link from base.html
+  - Deleted templates/home2.html file
+  - Created backup on GitHub before removal
+  - Consolidated functionality into main page only
 - **Fixed Cancel Button Visibility on Main Page**: Resolved critical issue where unpublish functionality was missing from index.html
   - Added "Cancel" button to main page (index.html) for published devices instead of disabled "Published" button
   - Added handleUnbindDevice() JavaScript function to handle device unpublication on main page
