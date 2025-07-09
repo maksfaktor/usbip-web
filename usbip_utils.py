@@ -722,202 +722,129 @@ def get_published_devices():
 
 def get_local_usb_devices():
     """
-    Получает список локальных USB-устройств
+    Получает список локальных USB-устройств с полными названиями
     
     Returns:
         list: Список устройств
     """
     try:
-        # Сначала пробуем получить список через usbip list -l - правильный метод для usbip
-        # Это даст нам правильные busid для команд usbip bind
-        logger.debug("Пробуем получить список через usbip list -l")
+        logger.debug("Получаем список локальных USB-устройств с полными названиями")
         
-        try:
-            from app import add_log_entry
-            add_log_entry("DEBUG", "Получаем список устройств через usbip list -l", "usbip")
-        except Exception as e:
-            logger.error(f"Ошибка при добавлении лога: {str(e)}")
-            
-        # Выполняем команду usbip list -l с таймаутом
+        # Сначала получаем полные названия через lsusb
+        lsusb_info = {}
+        lsusb_stdout, lsusb_stderr, lsusb_return_code = run_command(['lsusb'], use_sudo=False)
+        
+        if lsusb_return_code == 0:
+            logger.debug("Получаем полные названия через lsusb")
+            for line in lsusb_stdout.split('\n'):
+                if not line.strip():
+                    continue
+                    
+                # Формат: Bus 001 Device 005: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse
+                match = re.match(r'Bus\s+(\d+)\s+Device\s+(\d+):\s+ID\s+([0-9a-f]{4}):([0-9a-f]{4})\s+(.+)', line)
+                if match:
+                    bus = match.group(1).lstrip('0') or '1'
+                    device = match.group(2).lstrip('0') or '1'
+                    vendor_id = match.group(3)
+                    product_id = match.group(4)
+                    full_name = match.group(5).strip()
+                    
+                    # Сохраняем информацию по VID:PID для сопоставления
+                    vid_pid_key = f"{vendor_id}:{product_id}"
+                    lsusb_info[vid_pid_key] = {
+                        'vendor_id': vendor_id,
+                        'product_id': product_id,
+                        'full_name': full_name,
+                        'lsusb_busid': f"{bus}-{device}"
+                    }
+                    logger.debug(f"lsusb: {vid_pid_key} = {full_name}")
+        
+        # Теперь получаем правильные busid через usbip list -l
         usbip_stdout, usbip_stderr, usbip_return_code = run_command(['usbip', 'list', '-l'], use_sudo=True)
         
-        try:
-            from app import add_log_entry
-            if usbip_stderr:
-                add_log_entry("DEBUG", f"usbip list -l STDERR: {usbip_stderr}", "usbip")
-            if usbip_stdout:
-                add_log_entry("DEBUG", f"usbip list -l STDOUT: {usbip_stdout[:500]}", "usbip")
-        except Exception as e:
-            logger.error(f"Ошибка при добавлении лога: {str(e)}")
-        
-        # Если usbip list -l сработал, парсим результат
         if usbip_return_code == 0 and usbip_stdout:
-            logger.debug("Парсим результат usbip list -l")
-            try:
-                devices = parse_local_usb_devices(usbip_stdout)
-                if devices:
-                    logger.debug(f"Найдено {len(devices)} устройств через usbip list -l")
-                    try:
-                        from app import add_log_entry
-                        add_log_entry("INFO", f"Обнаружено {len(devices)} USB устройств через usbip", "usbip")
-                    except Exception as e:
-                        logger.error(f"Ошибка при добавлении лога: {str(e)}")
-                    return devices
-            except Exception as e:
-                logger.error(f"Ошибка при парсинге usbip list -l: {str(e)}")
-        
-        # Если usbip list -l не сработал, пробуем lsusb как fallback
-        logger.debug("usbip list -l не сработал, пробуем lsusb как fallback")
-        lsusb_stdout, lsusb_stderr, lsusb_return_code = run_command(['lsusb'], use_sudo=True)
-        
-        try:
-            from app import add_log_entry
-            add_log_entry("WARNING", "Fallback: получаем список устройств через lsusb (busid могут быть неточными)", "usbip")
+            logger.debug("Получаем правильные busid через usbip list -l")
+            devices = parse_local_usb_devices(usbip_stdout)
             
-            if lsusb_stderr:
-                add_log_entry("DEBUG", f"lsusb STDERR: {lsusb_stderr}", "usbip")
+            # Обогащаем информацию полными названиями из lsusb
+            for device in devices:
+                vendor_id = device.get('vendor_id', '').lower()
+                product_id = device.get('product_id', '').lower()
+                vid_pid_key = f"{vendor_id}:{product_id}"
                 
-            if lsusb_stdout:
-                add_log_entry("DEBUG", f"lsusb STDOUT: {lsusb_stdout[:500]}", "usbip")
-        except Exception as e:
-            logger.error(f"Ошибка при добавлении лога: {str(e)}")
-        
-        # Создаем устройства из вывода lsusb
-        if lsusb_return_code == 0 and lsusb_stdout:
-            logger.debug("Создаем устройства из вывода lsusb (fallback)")
-            try:
-                devices = []
-                for line in lsusb_stdout.strip().split('\n'):
-                    # Формат строки: 'Bus 001 Device 002: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse'
-                    match = re.match(r'Bus (\d+) Device (\d+): ID ([0-9a-f]+):([0-9a-f]+)(.+)', line)
-                    if match:
-                        bus, device, vendor_id, product_id, desc = match.groups()
-                        # ВАЖНО: busid из lsusb может НЕ совпадать с busid для usbip
-                        # Это известная проблема - нужно использовать usbip list -l
-                        busid = f"{int(bus)}-{int(device)}"
-                        
-                        desc = desc.strip()
-                        if not desc:
-                            desc = "Unknown device"
-                        
-                        device_data = {
-                            'busid': busid,
-                            'vendor_id': vendor_id,
-                            'product_id': product_id,
-                            'device_name': desc,
-                            'info': f"{desc} ({vendor_id}:{product_id})",
-                            'is_fallback': True  # Флаг что это fallback данные
-                        }
-                        devices.append(device_data)
-                
-                if devices:
-                    logger.debug(f"Создано {len(devices)} устройств из вывода lsusb (fallback)")
-                    try:
-                        from app import add_log_entry
-                        add_log_entry("WARNING", f"Обнаружено {len(devices)} USB устройств через lsusb (busid могут быть неточными)", "usbip")
-                    except Exception as e:
-                        logger.error(f"Ошибка при добавлении лога: {str(e)}")
-                    return devices
-            except Exception as e:
-                logger.error(f"Ошибка при обработке вывода lsusb: {str(e)}")
-        
-        # Если lsusb не помог, пробуем запустить usbip list -l с таймаутом
-        # Это может быть полезно, если команда зависает
-        logger.debug("Пробуем получить список через usbip list -l")
-        try:
-            import subprocess
-            import time
+                # Ищем соответствие по VID:PID в lsusb
+                if vid_pid_key in lsusb_info:
+                    full_name = lsusb_info[vid_pid_key]['full_name']
+                    device['device_name'] = full_name
+                    device['full_name'] = full_name
+                    device['info'] = f"{full_name} ({vendor_id}:{product_id})"
+                    logger.debug(f"Обновлено устройство {device['busid']}: {full_name}")
+                else:
+                    # Если не найдено в lsusb, используем название из usbip
+                    current_name = device.get('device_name', 'Unknown Device')
+                    device['full_name'] = current_name
+                    device['info'] = f"{current_name} ({vendor_id}:{product_id})"
+                    logger.debug(f"Устройство {device['busid']}: используем название из usbip: {current_name}")
             
-            # Создаем процесс с таймаутом
-            process = subprocess.Popen(
-                ['sudo', '-n', '/usr/bin/usbip', 'list', '-l'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
-            
-            # Ждем с таймаутом
-            try:
-                stdout, stderr = process.communicate(timeout=5)  # 5 секунд таймаут
-                return_code = process.returncode
-                
-                # Если получили успешный вывод, парсим его
-                if return_code == 0 and stdout:
-                    devices = parse_local_usb_devices(stdout)
-                    if devices:
-                        logger.debug(f"Распознано {len(devices)} устройств из usbip list -l")
-                        return devices
-            except subprocess.TimeoutExpired:
-                # Процесс завис, убиваем его
-                process.kill()
-                logger.error("Команда usbip list -l зависла, прервана по таймауту")
-                try:
-                    from app import add_log_entry
-                    add_log_entry("ERROR", "Команда usbip list -l зависла, прервана по таймауту", "usbip")
-                except Exception as e:
-                    logger.error(f"Ошибка при добавлении лога: {str(e)}")
-        except Exception as e:
-            logger.error(f"Ошибка при выполнении usbip list -l: {str(e)}")
             try:
                 from app import add_log_entry
-                add_log_entry("ERROR", f"Ошибка при выполнении usbip list -l: {str(e)}", "usbip")
-            except Exception as ex:
-                logger.error(f"Ошибка при добавлении лога: {str(ex)}")
-                
-        # Как последнюю попытку, попробуем запустить doctor.sh для получения списка устройств
-        try:
-            logger.debug("Пробуем запустить doctor.sh для получения списка устройств")
-            # Сначала находим путь к doctor.sh (предполагаем, что он находится в текущей директории или рядом с usbip_utils.py)
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            doctor_path = os.path.join(script_dir, "doctor.sh")
+                add_log_entry("INFO", f"Обнаружено {len(devices)} USB устройств с полными названиями", "usbip")
+            except Exception as e:
+                logger.error(f"Ошибка при добавлении лога: {str(e)}")
             
-            if os.path.exists(doctor_path):
-                doctor_stdout, doctor_stderr, doctor_return_code = run_command([doctor_path], use_sudo=True)
-                if doctor_return_code == 0 and doctor_stdout:
-                    # Парсим вывод doctor.sh
-                    devices = parse_doctor_output(doctor_stdout)
-                    if devices:
-                        logger.debug(f"Распознано {len(devices)} устройств из doctor.sh")
-                        return devices
-        except Exception as e:
-            logger.error(f"Ошибка при запуске doctor.sh: {str(e)}")
+            logger.debug(f"Найдено {len(devices)} устройств с полными названиями")
+            return devices
+        else:
+            logger.warning(f"Ошибка выполнения usbip list -l: {usbip_stderr}")
         
-        # Если ничего не сработало, возвращаем ошибку
-        error_message = "Не удалось получить список устройств"
-        error_device = {
-            'busid': 'error',
-            'info': 'Ошибка: Служба USB/IP не запущена или не настроена',
-            'details': [
-                'Запустите doctor.sh для диагностики и устранения проблем.',
-                f'Детали ошибки: {error_message}',
-                'Убедитесь, что пользователь веб-сервера имеет права на выполнение команд без пароля.'
-            ],
-            'device_name': 'Ошибка USB/IP',
-            'vendor_id': '0000',
-            'product_id': '0000',
-            'is_error': True  # Специальный флаг для обработки в интерфейсе
-        }
+        # Fallback: если usbip list -l не работает, используем только lsusb
+        # Но предупреждаем о возможных проблемах с busid
+        if lsusb_return_code == 0 and lsusb_stdout:
+            logger.debug("Fallback: создаем устройства только из lsusb")
+            devices = []
+            
+            for line in lsusb_stdout.split('\n'):
+                if not line.strip():
+                    continue
+                    
+                match = re.match(r'Bus\s+(\d+)\s+Device\s+(\d+):\s+ID\s+([0-9a-f]{4}):([0-9a-f]{4})\s+(.+)', line)
+                if match:
+                    bus = match.group(1).lstrip('0') or '1'
+                    device = match.group(2).lstrip('0') or '1'
+                    vendor_id = match.group(3)
+                    product_id = match.group(4)
+                    full_name = match.group(5).strip()
+                    
+                    # ВАЖНО: busid из lsusb может НЕ совпадать с busid для usbip
+                    busid = f"{bus}-{device}"
+                    
+                    device_data = {
+                        'busid': busid,
+                        'vendor_id': vendor_id,
+                        'product_id': product_id,
+                        'device_name': full_name,
+                        'full_name': full_name,
+                        'info': f"{full_name} ({vendor_id}:{product_id})",
+                        'is_fallback': True  # Флаг что это fallback данные
+                    }
+                    devices.append(device_data)
+            
+            try:
+                from app import add_log_entry
+                add_log_entry("WARNING", f"Используем lsusb fallback: {len(devices)} устройств (busid могут быть неточными)", "usbip")
+            except Exception as e:
+                logger.error(f"Ошибка при добавлении лога: {str(e)}")
+            
+            logger.debug(f"Создано {len(devices)} устройств из lsusb (fallback)")
+            return devices
         
-        return [error_device]
-    
+        # Если ничего не сработало, возвращаем пустой список
+        logger.warning("Не удалось получить список устройств")
+        return []
+        
     except Exception as e:
-        logger.error(f"Неожиданная ошибка при получении списка USB устройств: {str(e)}")
-        
-        # В случае любой ошибки возвращаем информационное сообщение
-        error_device = {
-            'busid': 'error',
-            'info': 'Произошла ошибка при получении списка устройств',
-            'details': [
-                f'Детали ошибки: {str(e)}',
-                'Проверьте журнал отладки для получения дополнительной информации.'
-            ],
-            'device_name': 'Ошибка',
-            'vendor_id': '0000',
-            'product_id': '0000',
-            'is_error': True
-        }
-        
-        return [error_device]
+        logger.error(f"Ошибка получения списка устройств: {str(e)}")
+        return []
 
 def bind_device(busid):
     """
