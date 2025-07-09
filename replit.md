@@ -28,7 +28,7 @@ A comprehensive USB/IP device management web interface designed for robust devic
 
 ## Recent Changes
 
-### July 8, 2025
+### July 8-9, 2025
 - **Device Publication Fix**: Fixed JavaScript syntax errors preventing device publication
   - Replaced ES6 template literals with compatible string concatenation
   - Added proper AJAX handling for device publication with visual feedback
@@ -39,6 +39,12 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - **CRITICAL FIX**: Fixed busid mismatch - now uses `usbip list -l` instead of `lsusb`
   - Device busid from `lsusb` (1-5) didn't match `usbip` requirements (1-8)
   - Updated get_local_usb_devices() to prioritize usbip list -l for correct busid
+- **Device Name & Status Display Fix**: Fixed device name parsing and publication status detection
+  - Improved usbip list -l parsing to extract proper device names from multi-line format
+  - Fixed "Unknown Device" issue - now shows "Chicony Electronics Co., Ltd : unknown product"
+  - Enhanced get_published_devices() function with detailed logging for status detection
+  - Added proper multi-line parser for device name extraction from usbip output
+  - **BACKUP CREATED**: orange-usbip-backup-20250709-012300.tar.gz with all latest fixes
 - **SQLAlchemy Compatibility Fix**: Updated code to work with SQLAlchemy 1.4.50 (Ubuntu system version)
   - Changed import from `DeclarativeBase` to `declarative_base` for compatibility
   - Fixed base class creation to use `declarative_base()` instead of class inheritance
