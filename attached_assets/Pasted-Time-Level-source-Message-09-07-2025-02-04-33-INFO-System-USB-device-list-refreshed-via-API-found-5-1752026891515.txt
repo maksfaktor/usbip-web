@@ -1,0 +1,21 @@
+Time	Level	source	Message
+09.07.2025 02:04:33	INFO	System	USB device list refreshed via API, found 5 devices
+09.07.2025 02:04:33	DEBUG	USB/IP	API: Device 1-8 NOT marked as published
+09.07.2025 02:04:33	DEBUG	USB/IP	API: Device 1-7 NOT marked as published
+09.07.2025 02:04:33	DEBUG	USB/IP	API: Device 1-6 NOT marked as published
+09.07.2025 02:04:33	DEBUG	USB/IP	API: Device 1-1 NOT marked as published
+09.07.2025 02:04:32	DEBUG	USB/IP	API: Published devices: []
+09.07.2025 02:04:31	DEBUG	USB/IP	usbip list -b: code=1, stdout=usage: usbip list [-p|--parsable] <args> -p, --parsable Parsable list format -r, --remote=<host> List the exportable USB devices on <host> -l, --local List the local USB devices -d, --device List the local USB gadgets bound to usbip-vudc , stderr=
+09.07.2025 02:04:31	INFO	USB/IP	Обнаружено 4 USB устройств с полными названиями
+09.07.2025 02:04:31	DEBUG	USB/IP	Анализируемые строки: [' - busid 1-1 (062a:4101)', ' MosArt Semiconductor Corp. : Wireless Keyboard/Mouse (062a:4101)', '', ' - busid 1-6 (04f3:22e8)', ' Elan Microelectronics Corp. : unknown product (04f3:22e8)', '', ' - busid 1-7 (8087:0a2a)', ' Intel Corp. : Bluetooth wireless interface (8087:0a2a)', '', ' - busid 1-8 (04f2:b5d8)', ' Chicony Electronics Co., Ltd : unknown product (04f2:b5d8)', '', '']
+09.07.2025 02:04:31	DEBUG	USB/IP	Начинаем парсинг вывода usbip, длина текста: 353
+09.07.2025 02:04:30	INFO	USB/IP	Published device 1-8: Устройство 1-8 уже опубликовано
+09.07.2025 02:04:30	INFO	USB/IP	Устройство 1-8 уже опубликовано
+09.07.2025 02:04:30	DEBUG	USB/IP	Публикация устройства 1-8: код 1, stderr: usbip: error: device on busid 1-8 is already bound to usbip-host
+09.07.2025 02:04:29	DEBUG	USB/IP	Attempting to bind device with busid: 1-8
+09.07.2025 02:04:29	DEBUG	USB/IP	Form data received: busid=1-8
+09.07.2025 02:04:29	DEBUG	USB/IP	Request form data: {'busid': '1-8'}
+09.07.2025 02:04:29	DEBUG	USB/IP	Request headers: {'Host': '192.168.0.212:5000', 'Connection': 'keep-alive', 'Content-Length': '9', 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36', 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': '*/*', 'Origin': 'http://192.168.0.212:5000', 'Referer': 'http://192.168.0.212:5000/', 'Accept-Encoding': 'gzip, deflate', 'Accept-Language': 'en-US,en;q=0.9,ru;q=0.8', 'Cookie': 'theme=light; csrftoken=0A3teCExhhRqKQBwOIFWfVjuVCl0pxCU; sessionid=tq85lr23lv9ybjakh5jl2u2w17i9bj5w; tipi-locale=ru-RU; _pk_id.1.d5dd=17c14efd039bc7d7.1742790334.; session=.eJxNkMGOwyAMRH8l63NXwsYBkl_pRhUGs61UbaXQnKr--1JyyeUZZhhrxAsu5R7rVSvM5xcMzzbg_vi9_X3XLSWtFU7wsxlG-pDHD6128tDHbkg_l4O9K7lzj-UeYNuJh0C3ORwC-jWcCWeDM04LLO_l1IquWq8wP9dN2-2WYYYYrHcTBXIYc-aRCSk1zWjxJMEKBY0T5dYmOA1FMmo2o7fORJVEJIK2GIOxiaP3olPKLDaXwK2oRkvWiGcVIe-IJck0oi_tibRdrn3OZau67m0Q3v871F_K.aG3Nbw.qYmZtppAwsDbKBSO9tlH5WKH9IQ'}
+09.07.2025 02:04:29	DEBUG	USB/IP	Request method: POST
+09.07.2025 02:04:29	DEBUG	USB/IP	Request content type: application/x-www-form-urlencoded
+09.07.2025 02:04:29	DEBUG	USB/IP	Bind device request received from user: admin

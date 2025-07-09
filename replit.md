@@ -28,6 +28,26 @@ A comprehensive USB/IP device management web interface designed for robust devic
 
 ## Recent Changes
 
+### July 9, 2025
+- **Fixed Device Publication Status Detection**: Resolved critical bug where device status wasn't updating after publication
+  - Replaced complex `get_published_devices()` function with simpler, more reliable approach
+  - Method 1: Check `/sys/bus/usb/drivers/usbip-host/` directory for device links
+  - Method 2: Parse `doctor.sh` output for device status information
+  - Method 3: Test bind attempt to detect if device is already bound
+  - Removed non-existent `usbip list -b` command usage
+  - Fixed "already bound to usbip-host" error handling as success case
+- **Enhanced JavaScript UI Updates**: Fixed device status refresh after publication
+  - Added real-time device status updates without page reload
+  - Implemented `/api/devices/local` endpoint for AJAX device list refresh
+  - Added proper button state management for publish/unpublish actions
+  - Fixed notification system with proper success/error handling
+  - Added automatic device list refresh with visual feedback
+- **Improved Error Handling**: Fixed all Russian text in logging to English
+  - Updated all `bind_device()` function logs to English
+  - Fixed parsing function logs to use English
+  - Standardized error messages and debug output language
+  - Enhanced server-side logging for better troubleshooting
+
 ### July 8-9, 2025
 - **Device Publication Fix**: Fixed JavaScript syntax errors preventing device publication
   - Replaced ES6 template literals with compatible string concatenation

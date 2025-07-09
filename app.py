@@ -226,7 +226,7 @@ def logout():
     flash(message, 'info')
     return redirect(url_for('login'))
 
-@app.route('/api/local_devices')
+@app.route('/api/devices/local')
 @login_required
 def get_local_devices_api():
     """
@@ -275,7 +275,8 @@ def get_local_devices_api():
         
         return jsonify({
             'success': True,
-            'devices': local_devices
+            'devices': local_devices,
+            'published_devices': published_busids
         })
     except Exception as e:
         # Запись в лог
@@ -578,6 +579,7 @@ def bind_device_route():
     except Exception as e:
         add_log_entry('ERROR', f'Bind device route error: {str(e)}', 'usbip')
         return jsonify({'success': False, 'message': f'Ошибка сервера: {str(e)}'}), 500
+
 
 @app.route('/remote')
 @login_required
