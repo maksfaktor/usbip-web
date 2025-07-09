@@ -1,108 +1,475 @@
-{% extends 'base.html' %}
 
-{% block title %}OrangeUSB - {{ t('local_devices') }}{% endblock %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark" style="width: 100%; padding: 0; margin: 0; overflow-x: hidden;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrangeUSB - Local USB Devices</title>
+    <link rel="icon" href="/static/orange-icon.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="/static/orange-icon.jpg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* Глобальные стили для максимального использования пространства */
+        html, body {
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow-x: hidden !important;
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+        }
+        .container-fluid {
+            max-width: 100% !important;
+            width: 100% !important;
+            min-width: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        .card {
+            border-radius: 0 !important;
+            margin: 0 !important;
+        }
+        .col-lg-8, .col-lg-4 {
+            padding: 0 !important;
+        }
+        @media (min-width: 992px) {
+            .device-col {
+                padding-right: 5px !important;
+            }
+            .port-col {
+                padding-left: 5px !important;
+            }
+        }
+    </style>
+    
+</head>
+<body>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand" href="/">
+                <img src="/static/orange-icon.jpg" alt="OrangeUSB" width="34" height="34" class="d-inline-block align-text-top me-2" style="border-radius: 50%; object-fit: cover;">
+                OrangeUSB
+            </a>
+            
+            <div class="network-interfaces d-flex align-items-center mx-auto">
+                
+                    
+                        <div class="iface-group mx-3">
+                            <span class="text-light fw-bold">WiFi:</span>
+                            <div class="interface-list">
+                                
+                                    <a href="http://192.168.0.212:5000" class="text-light text-decoration-none small ms-2" target="_blank">
+                                        <i class="bi bi-wifi"></i>
+                                        192.168.0.212
+                                    </a>
+                                
+                            </div>
+                        </div>
+                    
+                
+                    
+                        <div class="iface-group mx-3">
+                            <span class="text-light fw-bold">Ethernet:</span>
+                            <div class="interface-list">
+                                
+                                    <a href="http://192.168.122.1:5000" class="text-light text-decoration-none small ms-2" target="_blank">
+                                        <i class="bi bi-ethernet"></i>
+                                        192.168.122.1
+                                    </a>
+                                
+                            </div>
+                        </div>
+                    
+                
+            </div>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">
+                            <i class="bi bi-house-door"></i> Home
+                        </a>
+                    </li>
 
-{% block content %}
+                    <li class="nav-item">
+                        <a class="nav-link " href="/remote">
+                            <i class="bi bi-broadcast"></i> Remote Devices
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link " href="/virtual_devices">
+                            <i class="bi bi-cpu"></i> Virtual Devices
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link " href="/logs">
+                            <i class="bi bi-journal-text"></i> Logs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link " href="/terminal">
+                            <i class="bi bi-terminal"></i> Terminal
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link " href="/admin">
+                            <i class="bi bi-gear"></i> Admin Panel
+                        </a>
+                    </li>
+                    
+                </ul>
+                <div class="d-flex navbar-nav">
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="interfacesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-ethernet"></i> Network
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="interfacesDropdown">
+                            <li><h6 class="dropdown-header">Available interfaces:</h6></li>
+                            
+                                
+                                    
+                                        <li>
+                                            <a class="dropdown-item" href="http://192.168.0.212:5000" target="_blank">
+                                                <i class="bi bi-wifi me-2"></i>
+                                                WiFi: 192.168.0.212
+                                            </a>
+                                        </li>
+                                    
+                                
+                            
+                                
+                                    
+                                        <li>
+                                            <a class="dropdown-item" href="http://192.168.122.1:5000" target="_blank">
+                                                <i class="bi bi-ethernet me-2"></i>
+                                                Ethernet: 192.168.122.1
+                                            </a>
+                                        </li>
+                                    
+                                
+                            
+                        </ul>
+                    </li>
+                    
+                    
+                    <!-- Language selector -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-translate"></i> Language
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                            <li>
+                                <a class="dropdown-item active" href="/set_language/en">
+                                    <i class="bi bi-check2 me-2 "></i> 
+                                    English
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item " href="/set_language/ru">
+                                    <i class="bi bi-check2 me-2 invisible"></i> 
+                                    Russian
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <span class="nav-link text-light">
+                        <i class="bi bi-person-circle"></i> admin
+                    </span>
+                    <a class="nav-link" href="/logout">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+
+    <div class="container-fluid mt-4 px-3">
+        
 <div class="row">
     <!-- Колонка с локальными устройствами -->
     <div class="col-lg-6 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><i class="fas fa-hdd me-2"></i>{{ t('local_usb_devices') }}</h4>
+                <h4 class="mb-0"><i class="fas fa-hdd me-2"></i>Local USB Devices</h4>
                 <div class="btn-group">
                     <button class="btn btn-sm btn-outline-warning run-doctor-btn">
-                        <i class="fas fa-stethoscope me-1"></i>{{ t('diagnose') }}
+                        <i class="fas fa-stethoscope me-1"></i>Diagnose
                     </button>
                     <button class="btn btn-sm btn-outline-primary refresh-devices-btn">
-                        <i class="fas fa-sync-alt me-1"></i>{{ t('refresh') }}
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
                     </button>
                 </div>
             </div>
             <div class="card-body p-0">
                 <div class="local-devices-container">
-                    {% if local_devices %}
+                    
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>{{ t('busid') }}</th>
-                                        <th>{{ t('device') }}</th>
-                                        <th>{{ t('actions') }}</th>
+                                        <th>Bus ID</th>
+                                        <th>device</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for device in local_devices %}
+                                    
                                     <tr 
-                                        {% if device.is_virtual %}class="table-primary"{% endif %}
-                                        {% if device.is_error %}class="table-danger"{% endif %}
-                                        {% if device.is_info %}class="table-warning"{% endif %}
+                                        
+                                        
+                                        
                                     >
                                         <td>
-                                            {% if device.is_error %}
-                                                <i class="fas fa-exclamation-triangle text-danger"></i>
-                                            {% elif device.is_info %}
-                                                <i class="fas fa-info-circle text-warning"></i>
-                                            {% else %}
-                                                {{ device.busid }}
-                                                {% if device.is_virtual %}
-                                                <span class="badge bg-primary">{{ t('virtual') }}</span>
-                                                {% endif %}
-                                            {% endif %}
+                                            
+                                                1-1
+                                                
+                                            
                                         </td>
                                         <td>
-                                            <div>{{ device.device_name }}</div>
-                                            {% if device.is_error or device.is_info %}
-                                                {% for detail in device.details %}
-                                                    <small class="d-block">{{ detail }}</small>
-                                                {% endfor %}
-                                            {% else %}
-                                                <small class="text-muted">{{ device.vendor_id }}:{{ device.product_id }}</small>
-                                            {% endif %}
+                                            <div>MosArt Semiconductor Corp. Wireless Keyboard/Mouse</div>
+                                            
+                                                <small class="text-muted">062a:4101</small>
+                                            
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                {% if device.is_error or device.is_info %}
-                                                    <button class="btn btn-warning run-doctor-btn">
-                                                        <i class="fas fa-stethoscope me-1"></i>Запустить doctor.sh
-                                                    </button>
-                                                {% else %}
-                                                    {% if device.is_published %}
-                                                        <form method="post" action="{{ url_for('unbind_device_route') }}" class="d-inline" id="unbind-form-{{ device.busid }}" onsubmit="return handleUnbindDevice(event, '{{ device.busid }}')">
-                                                            <input type="hidden" name="busid" value="{{ device.busid }}">
-                                                            <button type="submit" class="btn btn-warning">
-                                                                <i class="fas fa-times me-1"></i>{{ t('unpublish', 'Cancel') }}
-                                                            </button>
-                                                        </form>
-                                                    {% else %}
-                                                        <button class="btn btn-primary bind-device-btn" 
-                                                                data-busid="{{ device.busid }}"
-                                                                {% if device.is_virtual %}
-                                                                data-is-virtual="true" 
-                                                                data-virtual-id="{{ device.virtual_id }}"
-                                                                {% endif %}>
-                                                            <i class="fas fa-share me-1"></i>{{ t('publish') }}
+                                                
+                                                    
+                                                        <button class="btn btn-success" disabled>
+                                                            <i class="fas fa-check me-1"></i>Published
                                                         </button>
-                                                    {% endif %}
-                                                    {% if not device.is_virtual %}
+                                                    
+                                                    
                                                     <button class="btn btn-outline-info set-alias-btn" 
-                                                            data-busid="{{ device.busid }}" 
-                                                            data-device="{{ device.device_name }}">
-                                                        <i class="fas fa-tag me-1"></i>{{ t('set_name') }}
+                                                            data-busid="1-1" 
+                                                            data-device="MosArt Semiconductor Corp. Wireless Keyboard/Mouse">
+                                                        <i class="fas fa-tag me-1"></i>set_name
                                                     </button>
-                                                    {% endif %}
-                                                {% endif %}
+                                                    
+                                                
                                             </div>
                                         </td>
                                     </tr>
-                                    {% endfor %}
+                                    
+                                    <tr 
+                                        
+                                        
+                                        
+                                    >
+                                        <td>
+                                            
+                                                1-3
+                                                
+                                            
+                                        </td>
+                                        <td>
+                                            <div>YICHIP Wireless Device</div>
+                                            
+                                                <small class="text-muted">3151:3020</small>
+                                            
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                
+                                                    
+                                                        <button class="btn btn-primary bind-device-btn" 
+                                                                data-busid="1-3"
+                                                                >
+                                                            <i class="fas fa-share me-1"></i>Publish
+                                                        </button>
+                                                    
+                                                    
+                                                    <button class="btn btn-outline-info set-alias-btn" 
+                                                            data-busid="1-3" 
+                                                            data-device="YICHIP Wireless Device">
+                                                        <i class="fas fa-tag me-1"></i>set_name
+                                                    </button>
+                                                    
+                                                
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr 
+                                        
+                                        
+                                        
+                                    >
+                                        <td>
+                                            
+                                                1-6
+                                                
+                                            
+                                        </td>
+                                        <td>
+                                            <div>Elan Microelectronics Corp. Touchscreen</div>
+                                            
+                                                <small class="text-muted">04f3:22e8</small>
+                                            
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                
+                                                    
+                                                        <button class="btn btn-primary bind-device-btn" 
+                                                                data-busid="1-6"
+                                                                >
+                                                            <i class="fas fa-share me-1"></i>Publish
+                                                        </button>
+                                                    
+                                                    
+                                                    <button class="btn btn-outline-info set-alias-btn" 
+                                                            data-busid="1-6" 
+                                                            data-device="Elan Microelectronics Corp. Touchscreen">
+                                                        <i class="fas fa-tag me-1"></i>set_name
+                                                    </button>
+                                                    
+                                                
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr 
+                                        
+                                        
+                                        
+                                    >
+                                        <td>
+                                            
+                                                1-7
+                                                
+                                            
+                                        </td>
+                                        <td>
+                                            <div>Intel Corp. Bluetooth wireless interface</div>
+                                            
+                                                <small class="text-muted">8087:0a2a</small>
+                                            
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                
+                                                    
+                                                        <button class="btn btn-primary bind-device-btn" 
+                                                                data-busid="1-7"
+                                                                >
+                                                            <i class="fas fa-share me-1"></i>Publish
+                                                        </button>
+                                                    
+                                                    
+                                                    <button class="btn btn-outline-info set-alias-btn" 
+                                                            data-busid="1-7" 
+                                                            data-device="Intel Corp. Bluetooth wireless interface">
+                                                        <i class="fas fa-tag me-1"></i>set_name
+                                                    </button>
+                                                    
+                                                
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr 
+                                        
+                                        
+                                        
+                                    >
+                                        <td>
+                                            
+                                                1-8
+                                                
+                                            
+                                        </td>
+                                        <td>
+                                            <div>Chicony Electronics Co., Ltd EasyCamera</div>
+                                            
+                                                <small class="text-muted">04f2:b5d8</small>
+                                            
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                
+                                                    
+                                                        <button class="btn btn-success" disabled>
+                                                            <i class="fas fa-check me-1"></i>Published
+                                                        </button>
+                                                    
+                                                    
+                                                    <button class="btn btn-outline-info set-alias-btn" 
+                                                            data-busid="1-8" 
+                                                            data-device="Chicony Electronics Co., Ltd EasyCamera">
+                                                        <i class="fas fa-tag me-1"></i>set_name
+                                                    </button>
+                                                    
+                                                
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr 
+                                        class="table-primary"
+                                        
+                                        
+                                    >
+                                        <td>
+                                            
+                                                v-1
+                                                
+                                                <span class="badge bg-primary">virtual</span>
+                                                
+                                            
+                                        </td>
+                                        <td>
+                                            <div>flash (Виртуальное)</div>
+                                            
+                                                <small class="text-muted">933e:7608</small>
+                                            
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                
+                                                    
+                                                        <button class="btn btn-primary bind-device-btn" 
+                                                                data-busid="v-1"
+                                                                
+                                                                data-is-virtual="true" 
+                                                                data-virtual-id="1"
+                                                                >
+                                                            <i class="fas fa-share me-1"></i>Publish
+                                                        </button>
+                                                    
+                                                    
+                                                
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
                                 </tbody>
                             </table>
                         </div>
-                    {% else %}
-                        <div class="alert alert-info m-3">
-                            <i class="fas fa-info-circle me-2"></i>{{ t('no_local_devices') }}
-                        </div>
-                    {% endif %}
+                    
                 </div>
             </div>
         </div>
@@ -112,62 +479,15 @@
     <div class="col-lg-6">
         <div class="card mb-4">
             <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>{{ t('attached_devices') }}</h4>
+                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>Attached Remote Devices</h4>
             </div>
             <div class="card-body p-0">
                 <div class="attached-devices-container">
-                    {% if attached_devices %}
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>{{ t('port') }}</th>
-                                        <th>{{ t('device') }}</th>
-                                        <th>{{ t('actions') }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for device in attached_devices %}
-                                    <tr {% if device.is_virtual %}class="table-info"{% endif %}>
-                                        <td>{{ device.port }}</td>
-                                        <td>
-                                            <div>{{ device.device_name }}</div>
-                                            <small class="text-muted">{{ device.remote_busid }} 
-                                                {% if device.is_virtual %}
-                                                    ({{ t('virtual') }})
-                                                {% else %}
-                                                    ({{ device.remote_host }})
-                                                {% endif %}
-                                            </small>
-                                        </td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-danger detach-device-btn" 
-                                                        data-port="{{ device.port }}"
-                                                        {% if device.is_virtual %}
-                                                        data-is-virtual="true" 
-                                                        data-virtual-port-id="{{ device.virtual_port_id }}"
-                                                        {% endif %}>
-                                                    <i class="fas fa-unlink me-1"></i>{{ t('disconnect') }}
-                                                </button>
-                                                {% if not device.is_virtual %}
-                                                <button class="btn btn-outline-info set-port-name-btn" 
-                                                        data-port="{{ device.port }}">
-                                                    <i class="fas fa-tag me-1"></i>{{ t('port_name') }}
-                                                </button>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
+                    
                         <div class="alert alert-info m-3">
-                            <i class="fas fa-info-circle me-2"></i>{{ t('no_attached_devices') }}
+                            <i class="fas fa-info-circle me-2"></i>No remote devices attached
                         </div>
-                    {% endif %}
+                    
                 </div>
             </div>
         </div>
@@ -181,27 +501,27 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="setAliasModalLabel">{{ t('set_device_name') }}</h5>
+                <h5 class="modal-title" id="setAliasModalLabel">set_device_name</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" action="{{ url_for('device_alias') }}">
+            <form method="POST" action="/device_alias">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="busid" class="form-label">{{ t('busid') }}</label>
+                        <label for="busid" class="form-label">Bus ID</label>
                         <input type="text" class="form-control" id="alias_busid" name="busid" readonly>
                     </div>
                     <div class="mb-3">
-                        <label for="alias" class="form-label">{{ t('device_name') }}</label>
+                        <label for="alias" class="form-label">Device Name</label>
                         <input type="text" class="form-control" id="alias_name" name="alias" required>
                     </div>
                     <div class="mb-3">
-                        <label for="device_info" class="form-label">{{ t('additional_info') }}</label>
+                        <label for="device_info" class="form-label">additional_info</label>
                         <textarea class="form-control" id="device_info" name="device_info" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('save') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
@@ -215,24 +535,24 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="setPortNameModalLabel">{{ t('set_port_name') }}</h5>
+                <h5 class="modal-title" id="setPortNameModalLabel">Set Port Name</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" action="{{ url_for('port_name') }}">
+            <form method="POST" action="/port_name">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="port_number" class="form-label">{{ t('port_number') }}</label>
+                        <label for="port_number" class="form-label">Port Number</label>
                         <input type="text" class="form-control" id="port_number_field" name="port_number" readonly>
                     </div>
                     <div class="mb-3">
-                        <label for="custom_name" class="form-label">{{ t('port_name') }}</label>
+                        <label for="custom_name" class="form-label">Port Name</label>
                         <input type="text" class="form-control" id="port_custom_name" name="custom_name" required>
-                        <div class="form-text">{{ t('port_example') }}</div>
+                        <div class="form-text">port_example</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('save') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
@@ -244,65 +564,68 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="connectVirtualDeviceModalLabel">{{ t('connect_virtual_device') }}</h5>
+                <h5 class="modal-title" id="connectVirtualDeviceModalLabel">connect_virtual_device</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" action="{{ url_for('connect_virtual_device') }}">
+            <form method="POST" action="/connect_virtual_device">
                 <div class="modal-body">
                     <input type="hidden" id="virtual_device_id" name="device_id">
                     
                     <div class="mb-3">
-                        <label for="connect_virtual_port_id" class="form-label">{{ t('select_virtual_port') }}</label>
+                        <label for="connect_virtual_port_id" class="form-label">select_virtual_port</label>
                         <select class="form-select" id="connect_virtual_port_id" name="port_id" required>
-                            <option value="" selected disabled>{{ t('select_port') }}</option>
-                            {% for port in available_virtual_ports %}
-                                <option value="{{ port.id }}">{{ port.name }} ({{ port.port_number or t('no_number') }})</option>
-                            {% endfor %}
+                            <option value="" selected disabled>Select Port</option>
+                            
                         </select>
                         <div class="form-text">
-                            {{ t('no_available_ports') }}
+                            no_available_ports
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('connect') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Connect</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/app.js"></script>
+    
 <script>
 // Константы URL для API
 const URLS = {
-    bind_device: "{{ url_for('bind_device_route') }}",
-    get_remote_devices: "{{ url_for('get_remote_devices_route') }}",
-    attach_device: "{{ url_for('attach_device_route') }}",
-    detach_device: "{{ url_for('detach_device_route') }}"
+    bind_device: "/bind_device",
+    get_remote_devices: "/get_remote_devices",
+    attach_device: "/attach_device",
+    detach_device: "/detach_device"
 }
 
 // Обработчик для кнопки публикации устройства
 // Тексты сообщений для использования в JS
 const messages = {
-    busid_not_specified: "{{ t('busid_not_specified') }}",
-    publishing: "{{ t('publishing') }}",
-    publish_success: "{{ t('publish_success') }}",
-    error: "{{ t('error') }}",
-    port_not_specified: "{{ t('port_not_specified') }}",
-    refreshing: "{{ t('refreshing') }}",
-    devices_refreshed: "{{ t('devices_refreshed') }}",
-    busid: "{{ t('busid') }}",
-    device: "{{ t('device') }}",
-    actions: "{{ t('actions') }}",
-    virtual: "{{ t('virtual') }}",
-    publish: "{{ t('publish') }}",
-    set_name: "{{ t('set_name') }}",
-    no_local_devices: "{{ t('no_local_devices') }}",
-    running_doctor: "{{ t('running_doctor') }}",
-    doctor_results: "{{ t('doctor_results') }}"
+    busid_not_specified: "busid_not_specified",
+    publishing: "Publishing...",
+    publish_success: "publish_success",
+    error: "Error",
+    port_not_specified: "port_not_specified",
+    refreshing: "refreshing",
+    devices_refreshed: "devices_refreshed",
+    busid: "Bus ID",
+    device: "device",
+    actions: "Actions",
+    virtual: "virtual",
+    publish: "Publish",
+    set_name: "set_name",
+    no_local_devices: "No local USB devices found",
+    running_doctor: "Running diagnostics...",
+    doctor_results: "Diagnostic Results"
 };
 
 document.querySelectorAll('.bind-device-btn').forEach(button => {
@@ -376,13 +699,13 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
         
         if (isVirtual && virtualPortId) {
             // Для виртуальных портов отправляем запрос на отключение виртуального устройства
-            if (!confirm(`{{ t('confirm_disconnect_virtual') }}`)) {
+            if (!confirm(`confirm_disconnect_virtual`)) {
                 return;
             }
             
             // Меняем состояние кнопки
             const originalText = this.innerHTML;
-            this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>{{ t('disconnecting') }}`;
+            this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>disconnecting`;
             this.disabled = true;
             
             // Отправляем форму на отключение виртуального устройства
@@ -397,11 +720,11 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
             })
             .then(response => {
                 if (response.ok) {
-                    showNotification('{{ t('virtual_device_disconnected') }}', 'success');
+                    showNotification('virtual_device_disconnected', 'success');
                     // Перезагружаем страницу для обновления списка
                     window.location.reload();
                 } else {
-                    showNotification('{{ t('virtual_device_disconnect_error') }}', 'danger');
+                    showNotification('virtual_device_disconnect_error', 'danger');
                     // Восстанавливаем состояние кнопки
                     this.innerHTML = originalText;
                     this.disabled = false;
@@ -418,13 +741,13 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
         }
         
         // Для реальных устройств выполняем обычное отключение через USBIP
-        if (!confirm(`{{ t('confirm_disconnect') }} ${port}?`)) {
+        if (!confirm(`confirm_disconnect ${port}?`)) {
             return;
         }
         
         // Меняем состояние кнопки
         const originalText = this.innerHTML;
-        this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>{{ t('disconnecting') }}`;
+        this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>disconnecting`;
         this.disabled = true;
         
         // Отправляем запрос на отключение
@@ -440,14 +763,14 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showNotification(`{{ t('device_disconnected') }} ${port}`, 'success');
+                showNotification(`Device disconnected from port ${port}`, 'success');
                 // Удаляем строку из таблицы
                 this.closest('tr').remove();
                 // Если таблица пуста, показываем сообщение
                 if (document.querySelectorAll('.attached-devices-container tbody tr').length === 0) {
                     document.querySelector('.attached-devices-container').innerHTML = `
                         <div class="alert alert-info m-3">
-                            <i class="fas fa-info-circle me-2"></i>{{ t('no_attached_devices') }}
+                            <i class="fas fa-info-circle me-2"></i>No remote devices attached
                         </div>
                     `;
                 }
@@ -573,7 +896,7 @@ function refreshDevicesList() {
                             </div>
                             <div class="mt-3">
                                 <button class="btn btn-warning run-doctor-btn">
-                                    <i class="fas fa-stethoscope me-1"></i>{{ t('run_doctor') }}
+                                    <i class="fas fa-stethoscope me-1"></i>Run Diagnostics
                                 </button>
                             </div>
                         </div>
@@ -601,56 +924,6 @@ function refreshDevicesList() {
             refreshBtn.innerHTML = originalBtnText;
             refreshBtn.disabled = false;
         });
-}
-
-// Функция для обработки отмены публикации устройства
-function handleUnbindDevice(event, busid) {
-    event.preventDefault();
-    
-    if (!busid) {
-        showNotification(messages.busid_not_specified, 'danger');
-        return false;
-    }
-    
-    // Получаем кнопку из формы
-    const form = event.target;
-    const button = form.querySelector('button[type="submit"]');
-    
-    // Меняем состояние кнопки
-    const originalText = button.innerHTML;
-    button.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>${messages.publishing}`;
-    button.disabled = true;
-    
-    // Отправляем запрос на отмену публикации
-    fetch('/unbind_device', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-            'busid': busid
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showNotification(`Device ${busid} unpublished successfully`, 'success');
-            // Обновляем список устройств
-            refreshDevicesList();
-        } else {
-            showNotification(`Error: ${data.message}`, 'danger');
-        }
-    })
-    .catch(error => {
-        showNotification(`Error: ${error}`, 'danger');
-    })
-    .finally(() => {
-        // Восстанавливаем состояние кнопки
-        button.innerHTML = originalText;
-        button.disabled = false;
-    });
-    
-    return false;
 }
 
 // Функция для прикрепления обработчиков к кнопкам публикации
@@ -855,4 +1128,6 @@ document.querySelectorAll('.set-port-name-btn').forEach(button => {
 
 
 </script>
-{% endblock %}
+
+</body>
+</html>

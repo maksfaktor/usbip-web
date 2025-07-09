@@ -48,7 +48,6 @@
                                     {% else %}
                                     <span class="badge bg-secondary">{{ t('not_published', 'Not Published') }}</span>
                                     {% endif %}
-                                    <!-- DEBUG: is_published = {{ device.is_published }} -->
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
@@ -67,7 +66,6 @@
                                                 <i class="fas fa-times me-1"></i>{{ t('unpublish', 'Cancel') }}
                                             </button>
                                         </form>
-                                        <!-- DEBUG: busid={{ device.busid }}, is_published={{ device.is_published }} -->
                                         
                                         {% if not device.is_virtual %}
                                         <button class="btn btn-outline-info btn-sm set-alias-btn" 

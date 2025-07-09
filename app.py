@@ -415,9 +415,7 @@ def home2():
     logger.debug(f"Home2: Local devices: {local_devices}")
     logger.debug(f"Home2: Attached devices: {attached_devices}")
     
-    # Дополнительная отладка для проверки is_published для каждого устройства
-    for device in local_devices:
-        add_log_entry('DEBUG', f'Home2: Device {device.get("busid", "N/A")} is_published: {device.get("is_published", "N/A")}', 'system')
+
     
     return render_template('home2.html',
                            local_devices=local_devices,
