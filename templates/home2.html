@@ -294,10 +294,13 @@ window.handleBindDevice = function(event, busid) {
             // Показываем уведомление
             showNotification('success', 'Device published successfully!');
             
-            // Обновляем страницу через 2 секунды
+            // Обновляем статус устройства сразу же
+            updateDeviceStatus(busid, true);
+            
+            // Добавляем небольшую задержку для визуального эффекта
             setTimeout(function() {
-                window.location.reload();
-            }, 2000);
+                refreshDeviceList();
+            }, 1000);
         } else {
             // Ошибка публикации
             button.disabled = false;
@@ -337,5 +340,50 @@ function showNotification(type, message) {
         }
     }, 5000);
 }
+
+// Функция для обновления статуса устройства
+function updateDeviceStatus(busid, isPublished) {
+    const form = document.getElementById('bind-form-' + busid);
+    if (form) {
+        const button = form.querySelector('button[type="submit"]');
+        if (button && isPublished) {
+            button.className = 'btn btn-success disabled';
+            button.innerHTML = '<i class="fas fa-check me-1"></i>Published';
+            button.disabled = true;
+        }
+    }
+}
+
+// Функция для обновления списка устройств
+function refreshDeviceList() {
+    console.log('Refreshing device list...');
+    
+    fetch('/api/devices/local')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Device list refreshed:', data);
+            if (data.devices && data.published_devices) {
+                // Обновляем статус кнопок на основе актуальных данных
+                data.devices.forEach(device => {
+                    if (device.busid) {
+                        updateDeviceStatus(device.busid, device.is_published);
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error refreshing device list:', error);
+        });
+}
+
+// Добавляем обработчик для кнопки обновления
+document.addEventListener('DOMContentLoaded', function() {
+    const refreshButton = document.querySelector('.refresh-devices-btn');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            refreshDeviceList();
+        });
+    }
+});
 </script>
 {% endblock %}
