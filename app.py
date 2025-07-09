@@ -415,6 +415,8 @@ def home2():
     logger.debug(f"Home2: Local devices: {local_devices}")
     logger.debug(f"Home2: Attached devices: {attached_devices}")
     
+
+    
     return render_template('home2.html',
                            local_devices=local_devices,
                            attached_devices=attached_devices)
