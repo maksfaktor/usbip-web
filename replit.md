@@ -29,6 +29,13 @@ A comprehensive USB/IP device management web interface designed for robust devic
 ## Recent Changes
 
 ### July 9, 2025
+- **Added Permanent Cancel Button**: Replaced temporary Cancel button with permanent solution to prevent disappearing buttons
+  - Replaced "Set Name" button with permanent "Cancel" button that's always visible
+  - Cancel button is disabled (gray) for unpublished devices, active (yellow) for published devices
+  - Fixed auto-refresh issue where Cancel buttons would disappear after API updates
+  - Added handleCancelDevice() function for consistent unpublish functionality
+  - Updated both main page (/) and home2 page (/home2) with permanent Cancel buttons
+  - Added Home2 navigation link to menu for easier access during testing
 - **Fixed Cancel Button Visibility on Main Page**: Resolved critical issue where unpublish functionality was missing from index.html
   - Added "Cancel" button to main page (index.html) for published devices instead of disabled "Published" button
   - Added handleUnbindDevice() JavaScript function to handle device unpublication on main page
