@@ -472,7 +472,7 @@ function refreshDevicesList() {
     refreshBtn.disabled = true;
     
     // Запрашиваем список устройств через API
-    fetch('/api/local_devices')
+    fetch('/api/devices/local')
         .then(response => {
             // Проверяем, успешен ли ответ
             if (!response.ok) {
