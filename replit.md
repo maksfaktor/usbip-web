@@ -61,6 +61,12 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Added proper error handling for device list refresh operations
   - Fixed orange-icon.jpg path resolution for favicon and branding
   - Enhanced notification system with Russian language error messages
+- **Critical JavaScript Fixes**: Fixed JavaScript functions preventing Cancel buttons from appearing
+  - Fixed `handleBindDevice()` and `handleUnbindDevice()` functions to properly handle form events
+  - Corrected button element selection to use form.querySelector() instead of event.target
+  - Fixed badge status update logic to use proper DOM traversal methods
+  - Resolved busid='error' issue by improving event handling and form data extraction
+  - Cancel buttons now properly appear for published devices after page refresh
 
 ### July 8-9, 2025
 - **Device Publication Fix**: Fixed JavaScript syntax errors preventing device publication
