@@ -36,6 +36,9 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Publication button now shows loading spinner and success/error notifications
   - Added comprehensive debugging and console logging for troubleshooting
   - Enhanced server-side request logging with detailed headers and form data
+  - **CRITICAL FIX**: Fixed busid mismatch - now uses `usbip list -l` instead of `lsusb`
+  - Device busid from `lsusb` (1-5) didn't match `usbip` requirements (1-8)
+  - Updated get_local_usb_devices() to prioritize usbip list -l for correct busid
 - **SQLAlchemy Compatibility Fix**: Updated code to work with SQLAlchemy 1.4.50 (Ubuntu system version)
   - Changed import from `DeclarativeBase` to `declarative_base` for compatibility
   - Fixed base class creation to use `declarative_base()` instead of class inheritance
