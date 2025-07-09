@@ -1,0 +1,20 @@
+09.07.2025 00:51:35	INFO	terminal	Terminal command executed: lsusb
+09.07.2025 00:51:13	DEBUG	terminal	Terminal template rendered successfully
+09.07.2025 00:51:13	DEBUG	terminal	Attempting to render terminal.html template
+09.07.2025 00:51:13	DEBUG	terminal	Found 0 terminal commands for user
+09.07.2025 00:51:13	DEBUG	terminal	Checking TerminalCommand model availability
+09.07.2025 00:51:13	DEBUG	terminal	Terminal page accessed by user: admin
+09.07.2025 00:49:19	ERROR	USB/IP	Published device 1-5: Устройство с ID 1-5 не существует или недоступно
+09.07.2025 00:49:19	ERROR	USB/IP	Устройство с ID 1-5 не существует или недоступно
+09.07.2025 00:49:19	DEBUG	USB/IP	Attempting to bind device with busid: 1-5
+09.07.2025 00:49:19	DEBUG	USB/IP	Form data received: busid=1-5
+09.07.2025 00:49:18	DEBUG	USB/IP	Request form data: {'busid': '1-5'}
+09.07.2025 00:49:18	DEBUG	USB/IP	Request headers: {'Host': '192.168.0.212:5000', 'Connection': 'keep-alive', 'Content-Length': '9', 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36', 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': '*/*', 'Origin': 'http://192.168.0.212:5000', 'Referer': 'http://192.168.0.212:5000/', 'Accept-Encoding': 'gzip, deflate', 'Accept-Language': 'en-US,en;q=0.9,ru;q=0.8', 'Cookie': 'theme=light; csrftoken=0A3teCExhhRqKQBwOIFWfVjuVCl0pxCU; sessionid=tq85lr23lv9ybjakh5jl2u2w17i9bj5w; tipi-locale=ru-RU; _pk_id.1.d5dd=17c14efd039bc7d7.1742790334.; session=.eJxNkM2OwyAMhF8l63NXAmN-wqt0owqD2VaqtlJoTlXffSm55PIZZhhrxAsu9Z7aVRrE8wumZx9wf_ze_r7blrO0Bif42RRp_JDsh0YGaRpjN3ic68HelTK4x8oIkBnUh8CwKRwC8jWd9RwpRIsLLO_l1Iuu0q4Qn-sm_XYrECEF492MAZ1OpZAl1Ji7pqR65GAYg6QZS28TnITKRUtR1hunknBGZNamKqVTF633LHMuxKbUQL2oJINGsSdhRu-QOPNsta_9Cfddrn_OZWuy7m00vP8BRklf2Q.aG28dA.3uV_rW-76BpapJ6H8rZTU6P8gUY'}
+09.07.2025 00:49:18	DEBUG	USB/IP	Request method: POST
+09.07.2025 00:49:18	DEBUG	USB/IP	Request content type: application/x-www-form-urlencoded
+09.07.2025 00:49:18	DEBUG	USB/IP	Bind device request received from user: admin
+09.07.2025 00:48:58	INFO	System	USB device list refreshed via API, found 9 devices
+09.07.2025 00:48:58	DEBUG	USB/IP	API: Device 4-1 NOT marked as published
+09.07.2025 00:48:57	DEBUG	USB/IP	API: Device 3-1 NOT marked as published
+09.07.2025 00:48:57	DEBUG	USB/IP	API: Device 2-1 NOT marked as published
+09.07.2025 00:48:57	DEBUG	USB/IP	API: Device 1-5 NOT marked as published
