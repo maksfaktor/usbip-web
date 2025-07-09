@@ -29,6 +29,12 @@ A comprehensive USB/IP device management web interface designed for robust devic
 ## Recent Changes
 
 ### July 9, 2025
+- **Fixed Cancel Button Visibility on Main Page**: Resolved critical issue where unpublish functionality was missing from index.html
+  - Added "Cancel" button to main page (index.html) for published devices instead of disabled "Published" button
+  - Added handleUnbindDevice() JavaScript function to handle device unpublication on main page
+  - Now both main page (/) and simplified page (/home2) support device unpublication
+  - Published devices show yellow "Cancel" button that allows removing device from publication
+  - Automatic device list refresh after unpublication with proper UI feedback
 - **Fixed Device Publication Status Detection**: Resolved critical bug where device status wasn't updating after publication
   - Replaced complex `get_published_devices()` function with simpler, more reliable approach
   - Method 1: Check `/sys/bus/usb/drivers/usbip-host/` directory for device links
