@@ -171,8 +171,9 @@ def parse_local_usb_devices(output):
     except Exception as e:
         logger.error(f"Ошибка при добавлении лога парсинга: {str(e)}")
     
-    # Проверка на наличие шаблона busid как в выводе doctor.sh
-    doctor_pattern = re.compile(r'^\s*-\s+busid\s+(\d+-\d+)\s+\(([0-9a-f]{4}):([0-9a-f]{4})\)')
+    # Проверка на наличие шаблона busid как в выводе usbip list -l
+    # Формат: " - busid 1-8 (04f2:b5d8)"
+    usbip_pattern = re.compile(r'^\s*-\s+busid\s+(\d+-\d+)\s+\(([0-9a-f]{4}):([0-9a-f]{4})\)')
     
     # Стандартный шаблон для usbip list -l
     standard_pattern = re.compile(r'^\s*(\d+-\d+):\s*(.+)')
@@ -180,33 +181,48 @@ def parse_local_usb_devices(output):
     # Дополнительный шаблон для более широкого захвата
     flexible_pattern = re.compile(r'.*?(\d+-\d+).*?([0-9a-f]{4}):([0-9a-f]{4}).*')
     
+    lines = output.split('\n')
     line_num = 0
-    for line in output.split('\n'):
+    
+    while line_num < len(lines):
+        line = lines[line_num].strip()
         line_num += 1
-        line = line.strip()
+        
         if not line:
             continue
             
         logger.debug(f"Обрабатываем строку {line_num}: '{line}'")
         
-        # Пробуем матчить по шаблону doctor.sh
-        doctor_match = doctor_pattern.match(line)
-        if doctor_match:
-            logger.debug(f"Найдено соответствие по шаблону doctor.sh: '{line}'")
+        # Пробуем матчить по шаблону usbip list -l
+        usbip_match = usbip_pattern.match(line)
+        if usbip_match:
+            logger.debug(f"Найдено соответствие по шаблону usbip list -l: '{line}'")
             if current_device:
                 devices.append(current_device)
                 
-            busid = doctor_match.group(1)
+            busid = usbip_match.group(1)
             # Нормализуем busid для обеспечения единообразия
             busid = normalize_busid(busid)
-            vendor_id = doctor_match.group(2)
-            product_id = doctor_match.group(3)
+            vendor_id = usbip_match.group(2)
+            product_id = usbip_match.group(3)
             
-            # Попытка извлечь имя устройства
+            # Ищем имя устройства в следующей строке
             device_name = "Unknown Device"
-            name_match = re.search(r'\(.+\)\s*(.+)', line)
-            if name_match:
-                device_name = name_match.group(1).strip()
+            if line_num < len(lines):
+                next_line = lines[line_num].strip()
+                if next_line and not next_line.startswith('-'):
+                    # Формат: "   Chicony Electronics Co., Ltd : unknown product (04f2:b5d8)"
+                    # Извлекаем часть до " : "
+                    name_parts = next_line.split(' : ')
+                    if len(name_parts) >= 2:
+                        manufacturer = name_parts[0].strip()
+                        product = name_parts[1].split(' (')[0].strip()
+                        device_name = f"{manufacturer} : {product}"
+                    else:
+                        device_name = next_line.split(' (')[0].strip()
+                    
+                    line_num += 1  # Пропускаем следующую строку, так как мы её уже обработали
+                    logger.debug(f"Извлечено имя устройства: '{device_name}'")
             
             current_device = {
                 'busid': busid,
@@ -488,10 +504,17 @@ def get_published_devices():
         # Мы убираем временное решение для корректной работы на реальной системе
         
         # Метод 1: Через usbip list -b
-        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-b'], use_sudo=True)
+        logger.debug("Пробуем получить список опубликованных устройств через usbip list -b")
+        stdout, stderr, return_code = run_command(['usbip', 'list', '-b'], use_sudo=True)
+        
+        try:
+            from app import add_log_entry
+            add_log_entry("DEBUG", f"usbip list -b: code={return_code}, stdout={stdout}, stderr={stderr}", "usbip")
+        except Exception as e:
+            logger.error(f"Ошибка при добавлении лога: {str(e)}")
         
         if return_code == 0 and stdout:
-            # Пример строки: "1-1: unknown vendor : unknown product (0000:0000)"
+            # Пример строки: "1-8: Chicony Electronics Co., Ltd : unknown product (04f2:b5d8)"
             for line in stdout.strip().split('\n'):
                 if not line or "usbip:" in line:
                     continue
@@ -504,6 +527,7 @@ def get_published_devices():
                     busid = normalize_busid(busid)
                     if busid not in published_devices:
                         published_devices.append(busid)
+                        logger.debug(f"Найдено опубликованное устройство: {busid}")
             
             logger.debug(f"Метод 1 (usbip list -b): Найдено {len(published_devices)} опубликованных устройств: {published_devices}")
         else:
