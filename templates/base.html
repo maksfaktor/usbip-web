@@ -94,11 +94,6 @@
                             <i class="bi bi-house-door"></i> {{ t('main_page') }}
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == url_for('home2') %}active{% endif %}" href="{{ url_for('home2') }}">
-                            <i class="bi bi-house-door-fill"></i> Home2 (Simple)
-                        </a>
-                    </li>
 
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == url_for('remote') %}active{% endif %}" href="{{ url_for('remote') }}">
