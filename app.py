@@ -541,6 +541,49 @@ def port_name():
     
     return redirect(url_for('index'))
 
+@app.route('/unbind_device', methods=['POST'])
+@login_required
+def unbind_device_route():
+    try:
+        add_log_entry('DEBUG', f'Unbind device request received from user: {current_user.username}', 'usbip')
+        add_log_entry('DEBUG', f'Request content type: {request.content_type}', 'usbip')
+        add_log_entry('DEBUG', f'Request method: {request.method}', 'usbip')
+        add_log_entry('DEBUG', f'Request headers: {dict(request.headers)}', 'usbip')
+        add_log_entry('DEBUG', f'Request form data: {dict(request.form)}', 'usbip')
+        
+        # Получаем данные из form или JSON
+        busid = None
+        if request.content_type == 'application/json':
+            data = request.get_json()
+            busid = data.get('busid') if data else None
+            add_log_entry('DEBUG', f'JSON data received: {data}', 'usbip')
+        else:
+            busid = request.form.get('busid')
+            add_log_entry('DEBUG', f'Form data received: busid={busid}', 'usbip')
+        
+        if not busid:
+            add_log_entry('ERROR', 'No busid provided in unbind request', 'usbip')
+            return jsonify({'success': False, 'message': 'Не указан busid устройства'}), 400
+        
+        add_log_entry('DEBUG', f'Attempting to unbind device with busid: {busid}', 'usbip')
+        
+        # Импорт функции unbind_device из usbip_utils
+        from usbip_utils import unbind_device
+        
+        # Отвязываем устройство
+        success, message = unbind_device(busid)
+        
+        add_log_entry('INFO' if success else 'ERROR', f'Unbind device {busid} result: {message}', 'usbip')
+        
+        if success:
+            return jsonify({'success': True, 'message': message})
+        else:
+            return jsonify({'success': False, 'message': message}), 400
+            
+    except Exception as e:
+        error_msg = f'Error unbinding device: {str(e)}'
+        add_log_entry('ERROR', error_msg, 'usbip')
+        return jsonify({'success': False, 'message': error_msg}), 500
 
 
 @app.route('/bind_device', methods=['POST'])

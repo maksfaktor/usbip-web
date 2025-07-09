@@ -51,18 +51,23 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <form method="post" action="{{ url_for('bind_device_route') }}" class="d-inline" id="bind-form-{{ device.busid }}" onsubmit="return handleBindDevice(event, '{{ device.busid }}')">
+                                        {% if device.is_published %}
+                                        <!-- Unpublish Button -->
+                                        <form method="post" action="{{ url_for('unbind_device_route') }}" class="d-inline" id="unbind-form-{{ device.busid }}" onsubmit="return handleUnbindDevice(event, '{{ device.busid }}')">
                                             <input type="hidden" name="busid" value="{{ device.busid }}">
-                                            <button type="submit" class="btn {% if device.is_published %}btn-success disabled{% else %}btn-primary{% endif %}"
-                                                    {% if device.is_published %}disabled{% endif %}>
-                                                <i class="fas {% if device.is_published %}fa-check{% else %}fa-share{% endif %} me-1"></i>
-                                                {% if device.is_published %}
-                                                    {{ t('published', 'Published') }}
-                                                {% else %}
-                                                    {{ t('publish', 'Publish') }}
-                                                {% endif %}
+                                            <button type="submit" class="btn btn-warning">
+                                                <i class="fas fa-times me-1"></i>{{ t('unpublish', 'Cancel') }}
                                             </button>
                                         </form>
+                                        {% else %}
+                                        <!-- Publish Button -->
+                                        <form method="post" action="{{ url_for('bind_device_route') }}" class="d-inline" id="bind-form-{{ device.busid }}" onsubmit="return handleBindDevice(event, '{{ device.busid }}')">
+                                            <input type="hidden" name="busid" value="{{ device.busid }}">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-share me-1"></i>{{ t('publish', 'Publish') }}
+                                            </button>
+                                        </form>
+                                        {% endif %}
                                         
                                         {% if not device.is_virtual %}
                                         <button class="btn btn-outline-info btn-sm set-alias-btn" 
@@ -318,6 +323,74 @@ window.handleBindDevice = function(event, busid) {
     return false;
 };
 
+// Функция для обработки отмены публикации устройства
+window.handleUnbindDevice = function(event, busid) {
+    event.preventDefault();
+    console.log('handleUnbindDevice called with busid:', busid);
+    
+    const button = event.target.querySelector('button[type="submit"]');
+    const originalText = button.innerHTML;
+    console.log('Button found:', button);
+    
+    // Показываем индикатор загрузки
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Unpublishing...';
+    
+    const requestData = {
+        busid: busid
+    };
+    console.log('Request data:', requestData);
+    
+    // Отправляем AJAX запрос
+    fetch('{{ url_for("unbind_device_route") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => {
+        console.log('Response received:', response);
+        if (!response.ok) {
+            throw new Error('HTTP error! status: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            // Успешная отмена публикации
+            button.className = 'btn btn-primary';
+            button.innerHTML = '<i class="fas fa-share me-1"></i>Publish';
+            button.disabled = false;
+            
+            // Показываем уведомление
+            showNotification('success', 'Device unpublished successfully!');
+            
+            // Обновляем статус устройства сразу же
+            updateDeviceStatus(busid, false);
+            
+            // Добавляем небольшую задержку для визуального эффекта
+            setTimeout(function() {
+                refreshDeviceList();
+            }, 1000);
+        } else {
+            // Ошибка отмены публикации
+            button.disabled = false;
+            button.innerHTML = originalText;
+            showNotification('error', data.message || 'Failed to unpublish device');
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        button.disabled = false;
+        button.innerHTML = originalText;
+        showNotification('error', 'Network error: ' + error.message);
+    });
+    
+    return false;
+};
+
 // Функция для показа уведомлений
 function showNotification(type, message) {
     const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
@@ -343,13 +416,30 @@ function showNotification(type, message) {
 
 // Функция для обновления статуса устройства
 function updateDeviceStatus(busid, isPublished) {
-    const form = document.getElementById('bind-form-' + busid);
-    if (form) {
-        const button = form.querySelector('button[type="submit"]');
-        if (button && isPublished) {
-            button.className = 'btn btn-success disabled';
-            button.innerHTML = '<i class="fas fa-check me-1"></i>Published';
-            button.disabled = true;
+    const bindForm = document.getElementById('bind-form-' + busid);
+    const unbindForm = document.getElementById('unbind-form-' + busid);
+    
+    if (isPublished) {
+        // Устройство опубликовано - показываем кнопку отмены
+        if (bindForm) bindForm.style.display = 'none';
+        if (unbindForm) unbindForm.style.display = 'inline';
+        
+        // Обновляем badge статуса
+        const statusBadge = document.querySelector(`tr:has(#bind-form-${busid}) .badge, tr:has(#unbind-form-${busid}) .badge`);
+        if (statusBadge) {
+            statusBadge.className = 'badge bg-success';
+            statusBadge.textContent = 'Published';
+        }
+    } else {
+        // Устройство не опубликовано - показываем кнопку публикации
+        if (bindForm) bindForm.style.display = 'inline';
+        if (unbindForm) unbindForm.style.display = 'none';
+        
+        // Обновляем badge статуса
+        const statusBadge = document.querySelector(`tr:has(#bind-form-${busid}) .badge, tr:has(#unbind-form-${busid}) .badge`);
+        if (statusBadge) {
+            statusBadge.className = 'badge bg-secondary';
+            statusBadge.textContent = 'Not Published';
         }
     }
 }

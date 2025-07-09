@@ -1,0 +1,21 @@
+
+Time	Level	source	Message
+09.07.2025 02:24:15	DEBUG	USB/IP	Device 1-8 marked as published
+09.07.2025 02:24:15	DEBUG	USB/IP	Device 1-7 NOT marked as published
+09.07.2025 02:24:15	DEBUG	USB/IP	Device 1-6 NOT marked as published
+09.07.2025 02:24:15	DEBUG	USB/IP	Device 1-1 marked as published
+09.07.2025 02:24:14	DEBUG	USB/IP	Published devices: ['1-1', '1-8']
+09.07.2025 02:24:14	DEBUG	USB/IP	Published devices found: ['1-1', '1-8']
+09.07.2025 02:24:14	INFO	USB/IP	Found 4 USB devices with full names
+09.07.2025 02:24:14	DEBUG	USB/IP	Analyzing lines: [' - busid 1-1 (062a:4101)', ' MosArt Semiconductor Corp. : Wireless Keyboard/Mouse (062a:4101)', '', ' - busid 1-6 (04f3:22e8)', ' Elan Microelectronics Corp. : unknown product (04f3:22e8)', '', ' - busid 1-7 (8087:0a2a)', ' Intel Corp. : Bluetooth wireless interface (8087:0a2a)', '', ' - busid 1-8 (04f2:b5d8)', ' Chicony Electronics Co., Ltd : unknown product (04f2:b5d8)', '', '']
+09.07.2025 02:24:13	DEBUG	USB/IP	Starting usbip output parsing, text length: 353
+09.07.2025 02:24:13	INFO	USB/IP	Found 4 USB devices with full names
+09.07.2025 02:24:12	DEBUG	USB/IP	Analyzing lines: [' - busid 1-1 (062a:4101)', ' MosArt Semiconductor Corp. : Wireless Keyboard/Mouse (062a:4101)', '', ' - busid 1-6 (04f3:22e8)', ' Elan Microelectronics Corp. : unknown product (04f3:22e8)', '', ' - busid 1-7 (8087:0a2a)', ' Intel Corp. : Bluetooth wireless interface (8087:0a2a)', '', ' - busid 1-8 (04f2:b5d8)', ' Chicony Electronics Co., Ltd : unknown product (04f2:b5d8)', '', '']
+09.07.2025 02:24:12	DEBUG	USB/IP	Starting usbip output parsing, text length: 353
+09.07.2025 02:24:12	INFO	Authorization	User admin logged in successfully
+09.07.2025 02:24:06	INFO	Authorization	User admin logged out
+24.04.2025 20:58:27	INFO	virtual	Created virtual device: flash (933e:7608) with system folder /run (1024 MB)
+24.04.2025 20:27:38	INFO	Authorization	User admin logged in successfully
+24.04.2025 19:34:50	INFO	Authorization	User admin logged out
+24.04.2025 19:20:43	INFO	Authorization	User admin logged in successfully
+24.04.2025 19:20:25	WARNING	Authorization	Failed login attempt for user admin
