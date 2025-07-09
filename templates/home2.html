@@ -39,8 +39,8 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div>{{ device.device_name|default(device.info.split(':')[1]|trim|default('Unknown device'), true) }}</div>
-                                    <small class="text-muted">{{ device.idVendor|default(device.vendor_id, true) }}:{{ device.idProduct|default(device.product_id, true) }}</small>
+                                    <div>{{ device.full_name|default(device.device_name|default(device.info.split(':')[1]|trim|default('Unknown device'), true), true) }}</div>
+                                    <small class="text-muted">{{ device.vendor_id }}:{{ device.product_id }}</small>
                                 </td>
                                 <td>
                                     {% if device.is_published %}
@@ -69,7 +69,7 @@
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#aliasModal"
                                                 data-busid="{{ device.busid }}"
-                                                data-device="{{ device.device_name|default(device.info.split(':')[1]|trim|default('Unknown device'), true) }}">
+                                                data-device="{{ device.full_name|default(device.device_name|default(device.info.split(':')[1]|trim|default('Unknown device'), true), true) }}">
                                             <i class="fas fa-tag me-1"></i>{{ t('set_name', 'Set Name') }}
                                         </button>
                                         {% endif %}
