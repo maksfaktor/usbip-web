@@ -258,9 +258,11 @@ window.handleBindDevice = function(event, busid) {
     event.preventDefault();
     console.log('handleBindDevice called with busid:', busid);
     
-    const button = event.target.querySelector('button[type="submit"]');
+    const form = event.target;
+    const button = form.querySelector('button[type="submit"]');
     const originalText = button.innerHTML;
     console.log('Button found:', button);
+    console.log('Form element:', form);
     
     // Показываем индикатор загрузки
     button.disabled = true;
@@ -326,9 +328,11 @@ window.handleUnbindDevice = function(event, busid) {
     event.preventDefault();
     console.log('handleUnbindDevice called with busid:', busid);
     
-    const button = event.target.querySelector('button[type="submit"]');
+    const form = event.target;
+    const button = form.querySelector('button[type="submit"]');
     const originalText = button.innerHTML;
     console.log('Button found:', button);
+    console.log('Form element:', form);
     
     // Показываем индикатор загрузки
     button.disabled = true;
@@ -423,7 +427,10 @@ function updateDeviceStatus(busid, isPublished) {
         if (unbindForm) unbindForm.style.display = 'inline';
         
         // Обновляем badge статуса
-        const statusBadge = document.querySelector(`tr:has(#bind-form-${busid}) .badge, tr:has(#unbind-form-${busid}) .badge`);
+        const bindFormElement = document.getElementById('bind-form-' + busid);
+        const unbindFormElement = document.getElementById('unbind-form-' + busid);
+        const statusBadge = bindFormElement ? bindFormElement.closest('tr').querySelector('.badge') : 
+                           unbindFormElement ? unbindFormElement.closest('tr').querySelector('.badge') : null;
         if (statusBadge) {
             statusBadge.className = 'badge bg-success';
             statusBadge.textContent = 'Published';
@@ -434,7 +441,10 @@ function updateDeviceStatus(busid, isPublished) {
         if (unbindForm) unbindForm.style.display = 'none';
         
         // Обновляем badge статуса
-        const statusBadge = document.querySelector(`tr:has(#bind-form-${busid}) .badge, tr:has(#unbind-form-${busid}) .badge`);
+        const bindFormElement = document.getElementById('bind-form-' + busid);
+        const unbindFormElement = document.getElementById('unbind-form-' + busid);
+        const statusBadge = bindFormElement ? bindFormElement.closest('tr').querySelector('.badge') : 
+                           unbindFormElement ? unbindFormElement.closest('tr').querySelector('.badge') : null;
         if (statusBadge) {
             statusBadge.className = 'badge bg-secondary';
             statusBadge.textContent = 'Not Published';
