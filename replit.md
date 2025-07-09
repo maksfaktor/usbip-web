@@ -55,6 +55,12 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Enhanced `updateDeviceStatus()` function to handle both published and unpublished states
   - Added multilingual support for "unpublish" button in translations.py
   - Published devices now show yellow "Cancel" button instead of disabled green "Published" button
+- **UI Bug Fixes**: Fixed critical JavaScript and API endpoint issues
+  - Corrected API endpoint URL from `/api/local_devices` to `/api/devices/local` in index.html
+  - Fixed conditional display logic for publish/unpublish buttons in home2.html
+  - Added proper error handling for device list refresh operations
+  - Fixed orange-icon.jpg path resolution for favicon and branding
+  - Enhanced notification system with Russian language error messages
 
 ### July 8-9, 2025
 - **Device Publication Fix**: Fixed JavaScript syntax errors preventing device publication
