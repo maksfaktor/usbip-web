@@ -52,6 +52,7 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Shows VID:PID format consistently across interface
   - Fallback system when either lsusb or usbip commands fail
   - Updated home2.html template to display full_name field with proper formatting
+  - **CONFIRMED WORKING**: User reports full device names now display correctly
 - **SQLAlchemy Compatibility Fix**: Updated code to work with SQLAlchemy 1.4.50 (Ubuntu system version)
   - Changed import from `DeclarativeBase` to `declarative_base` for compatibility
   - Fixed base class creation to use `declarative_base()` instead of class inheritance
