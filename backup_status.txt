@@ -1,0 +1,16 @@
+=== BACKUP STATUS ===
+Date: Wed Jul  9 04:25:44 AM UTC 2025
+Project: Orange USB/IP Web Interface
+
+Backup completed with following features:
+✅ Permanent Cancel buttons for device unpublishing
+✅ Fixed auto-refresh issue - buttons no longer disappear
+✅ Removed home2 page - code cleanup completed
+✅ Multilingual support (Russian/English)
+✅ Full device names from lsusb + usbip integration
+✅ Comprehensive logging system
+✅ Virtual USB device support
+✅ Terminal page with command execution
+
+GitHub backup: usbip-web-updates.tar.gz
+All critical files synchronized to GitHub repository
