@@ -88,12 +88,44 @@ A comprehensive USB/IP device management web interface designed for robust devic
 
 ## 🚀 Quick Start
 
-### Installation on Debian/Ubuntu (x86_64 and ARM)
+### 📌 Quick One-line Installation
 
+**For x86, x86_64, ARM64 (Raspberry Pi 64-bit):**
+```bash
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)"
+```
+
+**For ARMv7 (Orange Pi, Raspberry Pi 32-bit):**
+```bash
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh)"
+```
+
+**Installation Options:**
+```bash
+# Show help and all options
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)" -- --help
+
+# Force update (overwrite local changes)
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)" -- -f
+
+# Use stable backup version if needed
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian_old.sh)"
+```
+
+### Alternative: Manual Installation
+
+**Debian/Ubuntu (x86_64 and ARM64):**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh -o install_debian.sh
 chmod +x install_debian.sh
 sudo ./install_debian.sh
+```
+
+**ARM platforms (Orange Pi, Raspberry Pi 32-bit):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh -o install_arm.sh
+chmod +x install_arm.sh
+sudo ./install_arm.sh
 ```
 
 **Installation script features:**
@@ -104,14 +136,6 @@ sudo ./install_debian.sh
 - Robust error handling with timeout protection
 - Visual progress tracking
 - Complete help system (`--help` option)
-
-### Installation on ARM (Orange Pi, Raspberry Pi)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh -o install_arm.sh
-chmod +x install_arm.sh
-sudo ./install_arm.sh
-```
 
 ## 🎯 Usage
 
@@ -168,26 +192,32 @@ sudo ./doctor.sh
 
 ## 🗑️ Uninstallation
 
-### Interactive Removal
+### Quick One-line Uninstallation
 
+```bash
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/uninstall.sh)"
+```
+
+### Interactive Removal (with confirmation prompts)
+
+**One-line command:**
+```bash
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh)"
+```
+
+**Or download and run:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh -o check_and_remove.sh
 chmod +x check_and_remove.sh
 sudo ./check_and_remove.sh
 ```
 
-**Removal script features:**
+**Interactive removal features:**
 - Detects and removes orange-usbip and usbipd services
 - Checks application directories with size reporting
-- Terminates running processes
+- Terminates running processes with user confirmation
 - Detailed status reporting
 - Final system verification
-
-### Complete Removal
-
-```bash
-sudo ./uninstall.sh
-```
 
 ## 📁 File Structure
 
