@@ -602,6 +602,20 @@ if [ ! -d "venv" ]; then
     sudo -u $REAL_USER python3 -m venv venv
 fi
 
+# Verify requirements-deploy.txt exists
+if [ ! -f "requirements-deploy.txt" ]; then
+    echo_color "yellow" "  ⚠ requirements-deploy.txt not found, downloading from GitHub..."
+    sudo -u $REAL_USER curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/requirements-deploy.txt -o requirements-deploy.txt
+    if [ -f "requirements-deploy.txt" ]; then
+        echo_color "green" "  ✓ requirements-deploy.txt downloaded successfully."
+    else
+        echo_color "red" "  ✗ Failed to download requirements-deploy.txt. Installation cannot continue."
+        exit 1
+    fi
+else
+    echo_color "green" "  ✓ requirements-deploy.txt found."
+fi
+
 # Install dependencies using uv or pip
 if command -v uv &> /dev/null || [ -f "$HOME/.cargo/bin/uv" ]; then
     # Make sure uv is in PATH for the installation process
