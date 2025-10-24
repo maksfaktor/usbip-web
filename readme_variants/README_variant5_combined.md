@@ -33,12 +33,6 @@ A comprehensive USB/IP device management web interface designed for robust devic
   - Mobile-friendly responsive layout
   - Beautiful, functional, production-ready design
 
-- **🌍 Internationalization**
-  - Full Russian/English language support
-  - Easy to add new languages
-  - Context-aware translations
-  - Internationalized user interface supporting multiple languages
-
 - **🔐 Security**
   - User authentication system (Flask-Login)
   - Session management
@@ -75,9 +69,6 @@ A comprehensive USB/IP device management web interface designed for robust devic
 
 - **Virtual Storage** (`virtual_storage_utils.py`)  
   Virtual USB device file management
-
-- **Translation System** (`translations.py`)  
-  Multilingual support system with translation functions
 
 ### Technology Stack
 
