@@ -67,12 +67,9 @@
                                                     </button>
                                                 {% else %}
                                                     {% if device.is_published %}
-                                                        <form method="post" action="{{ url_for('unbind_device_route') }}" class="d-inline" id="unbind-form-{{ device.busid }}" onsubmit="return handleUnbindDevice(event, '{{ device.busid }}')">
-                                                            <input type="hidden" name="busid" value="{{ device.busid }}">
-                                                            <button type="submit" class="btn btn-warning">
-                                                                <i class="fas fa-times me-1"></i>{{ t('unpublish', 'Cancel') }}
-                                                            </button>
-                                                        </form>
+                                                        <button class="btn btn-success" disabled>
+                                                            <i class="fas fa-check me-1"></i>{{ t('published') }}
+                                                        </button>
                                                     {% else %}
                                                         <button class="btn btn-primary bind-device-btn" 
                                                                 data-busid="{{ device.busid }}"
@@ -84,11 +81,10 @@
                                                         </button>
                                                     {% endif %}
                                                     {% if not device.is_virtual %}
-                                                    <button class="btn btn-outline-warning cancel-device-btn" 
+                                                    <button class="btn btn-outline-info set-alias-btn" 
                                                             data-busid="{{ device.busid }}" 
-                                                            onclick="handleCancelDevice('{{ device.busid }}')"
-                                                            {% if not device.is_published %}disabled{% endif %}>
-                                                        <i class="fas fa-times me-1"></i>{{ t('unpublish', 'Cancel') }}
+                                                            data-device="{{ device.device_name }}">
+                                                        <i class="fas fa-tag me-1"></i>{{ t('set_name') }}
                                                     </button>
                                                     {% endif %}
                                                 {% endif %}
@@ -300,7 +296,6 @@ const messages = {
     actions: "{{ t('actions') }}",
     virtual: "{{ t('virtual') }}",
     publish: "{{ t('publish') }}",
-    unpublish: "{{ t('unpublish', 'Cancel') }}",
     set_name: "{{ t('set_name') }}",
     no_local_devices: "{{ t('no_local_devices') }}",
     running_doctor: "{{ t('running_doctor') }}",
@@ -477,7 +472,7 @@ function refreshDevicesList() {
     refreshBtn.disabled = true;
     
     // Запрашиваем список устройств через API
-    fetch('/api/devices/local')
+    fetch('/api/local_devices')
         .then(response => {
             // Проверяем, успешен ли ответ
             if (!response.ok) {
@@ -531,11 +526,10 @@ function refreshDevicesList() {
                                         ${device.is_published ? (messages.published || 'Опубликовано') : (messages.publish || 'Опубликовать')}
                                     </button>
                                     ${!isVirtual ? `
-                                    <button class="btn btn-outline-warning cancel-device-btn" 
+                                    <button class="btn btn-outline-info set-alias-btn" 
                                             data-busid="${busid}" 
-                                            onclick="handleCancelDevice('${busid}')"
-                                            ${!device.is_published ? 'disabled' : ''}>
-                                        <i class="fas fa-times me-1"></i>${messages.unpublish || 'Cancel'}
+                                            data-device="${deviceName}">
+                                        <i class="fas fa-tag me-1"></i>${messages.set_name || 'Задать имя'}
                                     </button>
                                     ` : ''}
                                 </div>
@@ -552,6 +546,7 @@ function refreshDevicesList() {
                     
                     // Переназначаем обработчики событий для новых кнопок
                     attachBindButtonHandlers();
+                    attachAliasButtonHandlers();
                     
                 } else {
                     // Если устройств нет
@@ -603,105 +598,6 @@ function refreshDevicesList() {
             refreshBtn.innerHTML = originalBtnText;
             refreshBtn.disabled = false;
         });
-}
-
-// Функция для обработки отмены публикации устройства
-function handleUnbindDevice(event, busid) {
-    event.preventDefault();
-    
-    if (!busid) {
-        showNotification(messages.busid_not_specified, 'danger');
-        return false;
-    }
-    
-    // Получаем кнопку из формы
-    const form = event.target;
-    const button = form.querySelector('button[type="submit"]');
-    
-    // Меняем состояние кнопки
-    const originalText = button.innerHTML;
-    button.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>${messages.publishing}`;
-    button.disabled = true;
-    
-    // Отправляем запрос на отмену публикации
-    fetch('/unbind_device', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-            'busid': busid
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showNotification(`Device ${busid} unpublished successfully`, 'success');
-            // Обновляем список устройств
-            refreshDevicesList();
-        } else {
-            showNotification(`Error: ${data.message}`, 'danger');
-        }
-    })
-    .catch(error => {
-        showNotification(`Error: ${error}`, 'danger');
-    })
-    .finally(() => {
-        // Восстанавливаем состояние кнопки
-        button.innerHTML = originalText;
-        button.disabled = false;
-    });
-    
-    return false;
-}
-
-// Функция для обработки отмены публикации устройства (постоянная кнопка)
-function handleCancelDevice(busid) {
-    if (!busid) {
-        showNotification(messages.busid_not_specified, 'danger');
-        return;
-    }
-    
-    // Находим кнопку по busid
-    const button = document.querySelector(`button[data-busid="${busid}"].cancel-device-btn`);
-    if (!button) {
-        showNotification('Button not found', 'danger');
-        return;
-    }
-    
-    // Меняем состояние кнопки
-    const originalText = button.innerHTML;
-    button.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>Unpublishing...`;
-    button.disabled = true;
-    
-    // Отправляем запрос на отмену публикации
-    fetch('/unbind_device', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-            'busid': busid
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showNotification(`Device ${busid} unpublished successfully`, 'success');
-            // Обновляем список устройств
-            refreshDevicesList();
-        } else {
-            showNotification(`Error: ${data.message}`, 'danger');
-        }
-    })
-    .catch(error => {
-        showNotification(`Error: ${error}`, 'danger');
-    })
-    .finally(() => {
-        // Восстанавливаем состояние кнопки
-        button.innerHTML = originalText;
-        button.disabled = false;
-    });
 }
 
 // Функция для прикрепления обработчиков к кнопкам публикации

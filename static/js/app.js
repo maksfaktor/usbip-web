@@ -57,8 +57,7 @@ function initializeTooltips() {
  * Обработчик для формы публикации USB устройства
  */
 function bindDevice(busid) {
-    // Используем URL из констант, переданных через шаблон
-    fetch(URLS.bind_device, {
+    fetch('/bind-device', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -95,7 +94,7 @@ function getRemoteDevices() {
     document.getElementById('remote-devices-spinner').classList.remove('d-none');
     document.getElementById('remote-devices-list').innerHTML = '';
     
-    fetch(URLS.get_remote_devices, {
+    fetch('/get-remote-devices', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -143,7 +142,7 @@ function getRemoteDevices() {
  * Обработчик для формы подключения удаленного устройства
  */
 function attachDevice(ip, busid) {
-    fetch(URLS.attach_device, {
+    fetch('/attach-device', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -169,7 +168,7 @@ function attachDevice(ip, busid) {
  * Обработчик для отключения устройства
  */
 function detachDevice(port) {
-    fetch(URLS.detach_device, {
+    fetch('/detach-device', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

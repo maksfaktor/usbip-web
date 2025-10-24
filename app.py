@@ -226,7 +226,7 @@ def logout():
     flash(message, 'info')
     return redirect(url_for('login'))
 
-@app.route('/api/devices/local')
+@app.route('/api/local_devices')
 @login_required
 def get_local_devices_api():
     """
@@ -275,8 +275,7 @@ def get_local_devices_api():
         
         return jsonify({
             'success': True,
-            'devices': local_devices,
-            'published_devices': published_busids
+            'devices': local_devices
         })
     except Exception as e:
         # Запись в лог
@@ -353,6 +352,71 @@ def index():
                           available_virtual_ports=available_virtual_ports,
                           network_interfaces=network_interfaces)
 
+
+@app.route('/home2')
+@login_required
+def home2():
+    """
+    Новая упрощенная страница для отображения USB устройств.
+    Используется более простой подход для минимизации ошибок.
+    """
+    # Получаем список локальных USB устройств
+    local_devices = get_local_usb_devices()
+    
+    # Получаем список опубликованных устройств - с выводом подробной отладочной информации
+    published_busids = get_published_devices()
+    add_log_entry('DEBUG', f'Home2: Published devices: {published_busids}', 'usbip')
+    
+    # Помечаем опубликованные устройства с подробной отладкой
+    for device in local_devices:
+        # Нормализуем busid устройства для правильного сравнения
+        if 'busid' in device:
+            from usbip_utils import normalize_busid
+            device_busid = normalize_busid(device['busid'])
+            if device_busid in published_busids:
+                device['is_published'] = True
+                add_log_entry('DEBUG', f'Home2: Device {device["busid"]} ({device_busid}) marked as published', 'usbip')
+            else:
+                device['is_published'] = False
+                add_log_entry('DEBUG', f'Home2: Device {device["busid"]} ({device_busid}) NOT marked as published', 'usbip')
+        else:
+            device['is_published'] = False
+    
+    # Получаем список подключенных устройств
+    attached_devices = get_attached_devices()
+    
+    # Добавляем виртуальные устройства в список локальных устройств
+    virtual_devices = VirtualUsbDevice.query.filter_by(is_active=False).all()
+    
+    for device in virtual_devices:
+        local_devices.append({
+            'busid': f'v-{device.id}',
+            'device_name': device.name,
+            'idVendor': device.vendor_id,
+            'idProduct': device.product_id,
+            'is_virtual': True,
+            'virtual_id': device.id,
+            'is_published': False  # Виртуальные устройства не публикуются
+        })
+    
+    # Получаем алиасы устройств
+    device_aliases = {alias.busid: alias.alias for alias in DeviceAlias.query.all()}
+    
+    # Применяем алиасы к списку устройств
+    for device in local_devices:
+        if 'busid' in device and device['busid'] in device_aliases:
+            device['device_name'] = device_aliases[device['busid']]
+    
+    # Запись в лог
+    add_log_entry('INFO', f'Home2: USB device list refreshed, found {len(local_devices)} devices', 'system')
+    
+    # Отладочная информация в консоль для проверки
+    logger.debug(f"Home2: Local devices: {local_devices}")
+    logger.debug(f"Home2: Attached devices: {attached_devices}")
+    
+    return render_template('home2.html',
+                           local_devices=local_devices,
+                           attached_devices=attached_devices)
 
 
 @app.route('/admin', methods=['GET', 'POST'])
@@ -476,88 +540,24 @@ def port_name():
     
     return redirect(url_for('index'))
 
-@app.route('/unbind_device', methods=['POST'])
-@login_required
-def unbind_device_route():
-    try:
-        add_log_entry('DEBUG', f'Unbind device request received from user: {current_user.username}', 'usbip')
-        add_log_entry('DEBUG', f'Request content type: {request.content_type}', 'usbip')
-        add_log_entry('DEBUG', f'Request method: {request.method}', 'usbip')
-        add_log_entry('DEBUG', f'Request headers: {dict(request.headers)}', 'usbip')
-        add_log_entry('DEBUG', f'Request form data: {dict(request.form)}', 'usbip')
-        
-        # Получаем данные из form или JSON
-        busid = None
-        if request.content_type == 'application/json':
-            data = request.get_json()
-            busid = data.get('busid') if data else None
-            add_log_entry('DEBUG', f'JSON data received: {data}', 'usbip')
-        else:
-            busid = request.form.get('busid')
-            add_log_entry('DEBUG', f'Form data received: busid={busid}', 'usbip')
-        
-        if not busid:
-            add_log_entry('ERROR', 'No busid provided in unbind request', 'usbip')
-            return jsonify({'success': False, 'message': 'Не указан busid устройства'}), 400
-        
-        add_log_entry('DEBUG', f'Attempting to unbind device with busid: {busid}', 'usbip')
-        
-        # Импорт функции unbind_device из usbip_utils
-        from usbip_utils import unbind_device
-        
-        # Отвязываем устройство
-        success, message = unbind_device(busid)
-        
-        add_log_entry('INFO' if success else 'ERROR', f'Unbind device {busid} result: {message}', 'usbip')
-        
-        if success:
-            return jsonify({'success': True, 'message': message})
-        else:
-            return jsonify({'success': False, 'message': message}), 400
-            
-    except Exception as e:
-        error_msg = f'Error unbinding device: {str(e)}'
-        add_log_entry('ERROR', error_msg, 'usbip')
-        return jsonify({'success': False, 'message': error_msg}), 500
 
 
-@app.route('/bind_device', methods=['POST'])
+@app.route('/bind-device', methods=['POST'])
 @login_required
 def bind_device_route():
-    try:
-        add_log_entry('DEBUG', f'Bind device request received from user: {current_user.username}', 'usbip')
-        add_log_entry('DEBUG', f'Request content type: {request.content_type}', 'usbip')
-        add_log_entry('DEBUG', f'Request method: {request.method}', 'usbip')
-        add_log_entry('DEBUG', f'Request headers: {dict(request.headers)}', 'usbip')
-        add_log_entry('DEBUG', f'Request form data: {dict(request.form)}', 'usbip')
-        
-        # Получаем данные из form или JSON
-        busid = None
-        if request.content_type == 'application/json':
-            data = request.get_json()
-            busid = data.get('busid') if data else None
-            add_log_entry('DEBUG', f'JSON data received: {data}', 'usbip')
-        else:
-            busid = request.form.get('busid')
-            add_log_entry('DEBUG', f'Form data received: busid={busid}', 'usbip')
-        
-        if not busid:
-            add_log_entry('ERROR', 'No busid provided in request', 'usbip')
-            return jsonify({'success': False, 'message': 'Не указан busid устройства'}), 400
-        
-        add_log_entry('DEBUG', f'Attempting to bind device with busid: {busid}', 'usbip')
-        success, message = bind_device(busid)
-        
-        # Запись в лог
-        level = 'INFO' if success else 'ERROR'
-        add_log_entry(level, f'Published device {busid}: {message}', 'usbip')
-        
-        return jsonify({'success': success, 'message': message})
-        
-    except Exception as e:
-        add_log_entry('ERROR', f'Bind device route error: {str(e)}', 'usbip')
-        return jsonify({'success': False, 'message': f'Ошибка сервера: {str(e)}'}), 500
-
+    # Получаем данные из JSON (не из form)
+    data = request.get_json()
+    busid = data.get('busid') if data else None
+    if not busid:
+        return jsonify({'success': False, 'message': 'Не указан busid устройства'}), 400
+    
+    success, message = bind_device(busid)
+    
+    # Запись в лог
+    level = 'INFO' if success else 'ERROR'
+    add_log_entry(level, f'Published device {busid}: {message}', 'usbip')
+    
+    return jsonify({'success': success, 'message': message})
 
 @app.route('/remote')
 @login_required

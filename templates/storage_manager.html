@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ t('file_management') }} - {{ device.name }} - OrangeUSB{% endblock %}
+{% block title %}Управление файлами - {{ device.name }} - OrangeUSB{% endblock %}
 
 {% block content %}
 <div class="row mb-3">
     <div class="col-12">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url_for('virtual_devices') }}">{{ t('virtual_devices') }}</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{{ t('storage_for_device') }}: {{ device.name }}</li>
+                <li class="breadcrumb-item"><a href="{{ url_for('virtual_devices') }}">Виртуальные устройства</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Файловое хранилище: {{ device.name }}</li>
             </ol>
         </nav>
     </div>
@@ -18,27 +18,27 @@
     <div class="col-md-4 mb-4">
         <div class="card h-100">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-hdd me-2"></i>{{ t('device_info') }}</h5>
+                <h5 class="mb-0"><i class="bi bi-hdd me-2"></i>Информация об устройстве</h5>
             </div>
             <div class="card-body">
                 {% if not stats.storage_available %}
                 <div class="alert alert-warning mb-3">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <strong>{{ t('attention') }}!</strong> {{ t('physical_storage_unavailable') }}
-                    <p class="mb-0 small mt-1">{{ t('can_view_but_cannot_download') }}</p>
+                    <strong>Внимание!</strong> Физическое хранилище недоступно. 
+                    <p class="mb-0 small mt-1">Вы можете просматривать файлы, но загрузка и скачивание файлов временно недоступны.</p>
                 </div>
                 {% endif %}
                 
                 <div class="mb-3">
-                    <h6 class="card-subtitle mb-2 text-muted">{{ t('basic_information') }}</h6>
+                    <h6 class="card-subtitle mb-2 text-muted">Основная информация</h6>
                     <dl class="row">
-                        <dt class="col-sm-4">{{ t('name') }}:</dt>
+                        <dt class="col-sm-4">Название:</dt>
                         <dd class="col-sm-8">{{ device.name }}</dd>
                         
-                        <dt class="col-sm-4">{{ t('type') }}:</dt>
+                        <dt class="col-sm-4">Тип:</dt>
                         <dd class="col-sm-8">
                             {% if device.device_type == 'storage' %}
-                                <span class="badge bg-info">{{ t('storage_device_badge') }}</span>
+                                <span class="badge bg-info">Хранилище</span>
                             {% else %}
                                 <span class="badge bg-secondary">{{ device.device_type }}</span>
                             {% endif %}
@@ -47,29 +47,29 @@
                         <dt class="col-sm-4">VID:PID:</dt>
                         <dd class="col-sm-8"><code>{{ device.vendor_id }}:{{ device.product_id }}</code></dd>
                         
-                        <dt class="col-sm-4">{{ t('serial_number_short') }}:</dt>
-                        <dd class="col-sm-8">{{ device.serial_number or t('not_specified') }}</dd>
+                        <dt class="col-sm-4">Серийный №:</dt>
+                        <dd class="col-sm-8">{{ device.serial_number or 'Не указан' }}</dd>
                         
-                        <dt class="col-sm-4">{{ t('status') }}:</dt>
+                        <dt class="col-sm-4">Статус:</dt>
                         <dd class="col-sm-8">
                             {% if device.is_active %}
-                                <span class="badge bg-success">{{ t('active') }}</span>
+                                <span class="badge bg-success">Активно</span>
                             {% else %}
-                                <span class="badge bg-secondary">{{ t('inactive') }}</span>
+                                <span class="badge bg-secondary">Не активно</span>
                             {% endif %}
                         </dd>
                         
-                        <dt class="col-sm-4">{{ t('storage') }}:</dt>
+                        <dt class="col-sm-4">Хранилище:</dt>
                         <dd class="col-sm-8">
                             {% if stats.storage_available %}
-                                <span class="badge bg-success">{{ t('available') }}</span>
+                                <span class="badge bg-success">Доступно</span>
                             {% else %}
-                                <span class="badge bg-warning">{{ t('unavailable') }}</span>
+                                <span class="badge bg-warning">Недоступно</span>
                             {% endif %}
                         </dd>
                         
                         {% if device.is_system_path and device.storage_path %}
-                        <dt class="col-sm-4">{{ t('path') }}:</dt>
+                        <dt class="col-sm-4">Путь:</dt>
                         <dd class="col-sm-8">
                             <small class="text-break"><code>{{ device.storage_path }}</code></small>
                         </dd>
@@ -78,7 +78,7 @@
                 </div>
                 
                 <div>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ t('storage_parameters') }}</h6>
+                    <h6 class="card-subtitle mb-2 text-muted">Параметры хранилища</h6>
                     <div class="mb-3">
                         <div class="progress" style="height: 25px;">
                             <div class="progress-bar bg-info" role="progressbar" 
@@ -90,19 +90,19 @@
                             </div>
                         </div>
                         <small class="text-muted mt-1 d-block">
-                            {{ t('used') }} {{ "%.2f"|format(stats.used_space_mb) }} {{ t('mb_unit') }} {{ t('of') }} {{ stats.total_size_mb }} {{ t('mb_unit') }}
+                            Использовано {{ "%.2f"|format(stats.used_space_mb) }} МБ из {{ stats.total_size_mb }} МБ
                         </small>
                     </div>
                     
                     <dl class="row">
-                        <dt class="col-sm-6">{{ t('total_files') }}:</dt>
+                        <dt class="col-sm-6">Всего файлов:</dt>
                         <dd class="col-sm-6">{{ stats.file_count }}</dd>
                         
-                        <dt class="col-sm-6">{{ t('total_folders') }}:</dt>
+                        <dt class="col-sm-6">Всего папок:</dt>
                         <dd class="col-sm-6">{{ stats.directory_count }}</dd>
                         
-                        <dt class="col-sm-6">{{ t('free') }}:</dt>
-                        <dd class="col-sm-6">{{ "%.2f"|format(stats.free_space_mb) }} {{ t('mb_unit') }}</dd>
+                        <dt class="col-sm-6">Свободно:</dt>
+                        <dd class="col-sm-6">{{ "%.2f"|format(stats.free_space_mb) }} МБ</dd>
                     </dl>
                 </div>
                 
@@ -111,16 +111,16 @@
                         <input type="number" class="form-control" name="storage_size" 
                                value="{{ stats.total_size_mb }}" min="{{ stats.used_space_mb|int + 1 }}" max="16384"
                                {% if not stats.storage_available %}disabled{% endif %}>
-                        <span class="input-group-text">{{ t('mb_unit') }}</span>
-                        <button type="submit" class="btn btn-primary" {% if not stats.storage_available %}disabled title="{{ t('physical_storage_unavailable') }}"{% endif %}>
-                            {{ t('resize') }}
+                        <span class="input-group-text">МБ</span>
+                        <button type="submit" class="btn btn-primary" {% if not stats.storage_available %}disabled title="Физическое хранилище недоступно"{% endif %}>
+                            Изменить размер
                         </button>
                     </div>
                     <small class="form-text text-muted">
                         {% if stats.storage_available %}
-                            {{ t('specify_new_storage_size') }}
+                            Укажите новый размер хранилища в МБ (от 1 МБ до 16 ГБ)
                         {% else %}
-                            {{ t('resize_unavailable') }}
+                            Изменение размера недоступно, пока хранилище отключено
                         {% endif %}
                     </small>
                 </form>
@@ -131,11 +131,11 @@
     <div class="col-md-8 mb-4">
         <div class="card h-100">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-folder me-2"></i>{{ t('files_and_folders') }}{% if current_path != '/' %}: {{ current_path }}{% endif %}</h5>
+                <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Файлы и папки{% if current_path != '/' %}: {{ current_path }}{% endif %}</h5>
                 <div>
                     {% if current_path == '/' %}
                     <a href="{{ url_for('virtual_devices') }}" class="btn btn-sm btn-light">
-                        <i class="bi bi-arrow-left-circle me-1"></i>{{ t('back_to_devices') }}
+                        <i class="bi bi-arrow-left-circle me-1"></i>К списку устройств
                     </a>
                     {% endif %}
                     
@@ -143,16 +143,16 @@
                     <button class="btn btn-sm btn-light {% if current_path == '/' %}ms-1{% endif %}" 
                             data-bs-toggle="modal" 
                             data-bs-target="#createDirModal"
-                            {% if not stats.storage_available %}disabled title="{{ t('physical_storage_unavailable') }}"{% endif %}>
-                        <i class="bi bi-folder-plus me-1"></i>{{ t('new_folder') }}
+                            {% if not stats.storage_available %}disabled title="Физическое хранилище недоступно"{% endif %}>
+                        <i class="bi bi-folder-plus me-1"></i>Новая папка
                     </button>
                     
                     <!-- Кнопка загрузки файла -->
                     <button class="btn btn-sm btn-light ms-1" 
                             data-bs-toggle="modal" 
                             data-bs-target="#uploadFileModal"
-                            {% if not stats.storage_available %}disabled title="{{ t('physical_storage_unavailable') }}"{% endif %}>
-                        <i class="bi bi-upload me-1"></i>{{ t('upload_file') }}
+                            {% if not stats.storage_available %}disabled title="Физическое хранилище недоступно"{% endif %}>
+                        <i class="bi bi-upload me-1"></i>Загрузить файл
                     </button>
                 </div>
             </div>
@@ -165,7 +165,7 @@
                     <a href="{{ url_for('storage.manage_storage', device_id=device.id, path=parent_path) }}" class="text-decoration-none d-flex align-items-center w-100">
                     {% endif %}
                         <i class="bi bi-arrow-up-circle me-3 fs-5"></i>
-                        <span>{{ t('up') }}</span>
+                        <span>Вверх</span>
                     </a>
                 </div>
                 {% endif %}
@@ -196,7 +196,7 @@
                                     <div>
                                         {{ item.name }}
                                         {% if not stats.storage_available or not item.available %}
-                                            <span class="badge bg-secondary ms-1">{{ t('unavailable_file') }}</span>
+                                            <span class="badge bg-secondary ms-1">Недоступен</span>
                                         {% endif %}
                                     </div>
                                     <small class="text-muted">{{ (item.size / 1024)|round(1) }} КБ</small>
@@ -209,7 +209,7 @@
                                     <i class="bi bi-download"></i>
                                 </a>
                                 {% else %}
-                                <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="{{ t('file_unavailable_download') }}">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Файл недоступен для скачивания">
                                     <i class="bi bi-download"></i>
                                 </button>
                                 {% endif %}
@@ -227,8 +227,8 @@
                 {% else %}
                 <div class="text-center p-5">
                     <i class="bi bi-folder2-open display-4 text-muted"></i>
-                    <p class="mt-3">{{ t('folder_empty') }}</p>
-                    <p class="text-muted">{{ t('upload_files_create_folders') }}</p>
+                    <p class="mt-3">Эта папка пуста.</p>
+                    <p class="text-muted">Загрузите файлы или создайте папки с помощью кнопок выше.</p>
                 </div>
                 {% endif %}
             </div>
@@ -241,28 +241,28 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createDirModalLabel">{{ t('create_new_folder') }}</h5>
+                <h5 class="modal-title" id="createDirModalLabel">Создать новую папку</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('storage.create_storage_directory', device_id=device.id) }}" id="createDirForm" onsubmit="return validateDirName();">
                 <div class="modal-body">
                     <input type="hidden" name="current_path" value="{{ current_path }}">
                     <div class="mb-3">
-                        <label for="directory_name" class="form-label">{{ t('folder_name') }}</label>
+                        <label for="directory_name" class="form-label">Название папки</label>
                         <input type="text" class="form-control" id="directory_name" name="directory_name" required
                                oninput="validateInputRealtime(this)" maxlength="255">
                         <div id="dirNameFeedback" class="form-text text-muted">
-                            {{ t('folder_name_constraints') }}
+                            Укажите имя для новой папки (без символов /, \, :, *, ?, ", <, >, |)
                         </div>
                     </div>
                     <div class="alert alert-danger" id="dirNameError" style="display: none;">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i> 
-                        <span id="dirNameErrorText">{{ t('folder_name_error') }}</span>
+                        <span id="dirNameErrorText">Имя папки содержит недопустимые символы</span>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary" id="createDirBtn">{{ t('create') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary" id="createDirBtn">Создать</button>
                 </div>
             </form>
         </div>
@@ -274,14 +274,14 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="uploadFileModalLabel">{{ t('upload_file') }}</h5>
+                <h5 class="modal-title" id="uploadFileModalLabel">Загрузить файл</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('storage.upload_storage_file', device_id=device.id) }}" enctype="multipart/form-data">
                 <div class="modal-body">
                     <input type="hidden" name="current_path" value="{{ current_path }}">
                     <div class="mb-3">
-                        <label for="file" class="form-label">{{ t('select_files') }}</label>
+                        <label for="file" class="form-label">Выберите файл</label>
                         <input type="file" class="form-control" id="file" name="file" required>
                     </div>
                     
@@ -291,12 +291,12 @@
                     
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle-fill me-2"></i>
-                        <small>{{ t('file_size') }}: {{ (stats.free_space_mb)|int }} {{ t('mb_unit') }}</small>
+                        <small>Максимальный размер файла: {{ (stats.free_space_mb)|int }} МБ</small>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('upload_file') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Загрузить</button>
                 </div>
             </form>
         </div>
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemName = this.getAttribute('data-item-name');
             const itemType = this.getAttribute('data-item-type');
             
-            if (confirm(`{{ t('confirm_delete_item') }} ${itemType === 'directory' ? '{{ t("folder") }}' : '{{ t("file") }}'} "${itemName}"?`)) {
+            if (confirm(`Вы уверены, что хотите удалить ${itemType === 'directory' ? 'папку' : 'файл'} "${itemName}"?`)) {
                 document.getElementById('delete_item_path').value = itemPath;
                 document.getElementById('deleteItemForm').submit();
             }
@@ -380,17 +380,17 @@ function validateInputRealtime(input) {
     // Проверяем разные условия
     if (isEmpty) {
         errorElement.style.display = 'block';
-        errorTextElement.innerText = '{{ t("folder_name_empty") }}';
+        errorTextElement.innerText = 'Имя папки не может быть пустым';
         input.classList.add('is-invalid');
         submitButton.disabled = true;
     } else if (hasInvalidChars) {
         errorElement.style.display = 'block';
-        errorTextElement.innerText = '{{ t("folder_name_invalid_chars") }}';
+        errorTextElement.innerText = 'Имя папки содержит недопустимые символы: \\ / : * ? " < > |';
         input.classList.add('is-invalid');
         submitButton.disabled = true;
     } else if (startsWithDot) {
         errorElement.style.display = 'block';
-        errorTextElement.innerText = '{{ t("folder_name_starts_with_dot") }}';
+        errorTextElement.innerText = 'Имя папки не должно начинаться с точки';
         input.classList.add('is-invalid');
         submitButton.disabled = true;
     } else {

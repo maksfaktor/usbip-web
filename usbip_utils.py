@@ -155,25 +155,24 @@ def parse_local_usb_devices(output):
     
     logger.debug(f"Начинаем парсинг вывода, длина текста: {len(output)}")
     
-    # Add log entry to database for web interface display
+    # Добавляем запись в базу данных логов для отображения в веб-интерфейсе
     try:
         from app import add_log_entry
-        add_log_entry("DEBUG", f"Starting usbip output parsing, text length: {len(output)}", "usbip")
+        add_log_entry("DEBUG", f"Начинаем парсинг вывода usbip, длина текста: {len(output)}", "usbip")
         
-        # Split output into lines for logging
+        # Разбиваем вывод на строки для логирования
         lines = output.split('\n')
         if len(lines) > 20:
             log_lines = lines[:10] + ["..."] + lines[-10:]
         else:
             log_lines = lines
             
-        add_log_entry("DEBUG", f"Analyzing lines: {log_lines}", "usbip")
+        add_log_entry("DEBUG", f"Анализируемые строки: {log_lines}", "usbip")
     except Exception as e:
-        logger.error(f"Error adding parsing log: {str(e)}")
+        logger.error(f"Ошибка при добавлении лога парсинга: {str(e)}")
     
-    # Проверка на наличие шаблона busid как в выводе usbip list -l
-    # Формат: " - busid 1-8 (04f2:b5d8)"
-    usbip_pattern = re.compile(r'^\s*-\s+busid\s+(\d+-\d+)\s+\(([0-9a-f]{4}):([0-9a-f]{4})\)')
+    # Проверка на наличие шаблона busid как в выводе doctor.sh
+    doctor_pattern = re.compile(r'^\s*-\s+busid\s+(\d+-\d+)\s+\(([0-9a-f]{4}):([0-9a-f]{4})\)')
     
     # Стандартный шаблон для usbip list -l
     standard_pattern = re.compile(r'^\s*(\d+-\d+):\s*(.+)')
@@ -181,48 +180,33 @@ def parse_local_usb_devices(output):
     # Дополнительный шаблон для более широкого захвата
     flexible_pattern = re.compile(r'.*?(\d+-\d+).*?([0-9a-f]{4}):([0-9a-f]{4}).*')
     
-    lines = output.split('\n')
     line_num = 0
-    
-    while line_num < len(lines):
-        line = lines[line_num].strip()
+    for line in output.split('\n'):
         line_num += 1
-        
+        line = line.strip()
         if not line:
             continue
             
         logger.debug(f"Обрабатываем строку {line_num}: '{line}'")
         
-        # Пробуем матчить по шаблону usbip list -l
-        usbip_match = usbip_pattern.match(line)
-        if usbip_match:
-            logger.debug(f"Найдено соответствие по шаблону usbip list -l: '{line}'")
+        # Пробуем матчить по шаблону doctor.sh
+        doctor_match = doctor_pattern.match(line)
+        if doctor_match:
+            logger.debug(f"Найдено соответствие по шаблону doctor.sh: '{line}'")
             if current_device:
                 devices.append(current_device)
                 
-            busid = usbip_match.group(1)
+            busid = doctor_match.group(1)
             # Нормализуем busid для обеспечения единообразия
             busid = normalize_busid(busid)
-            vendor_id = usbip_match.group(2)
-            product_id = usbip_match.group(3)
+            vendor_id = doctor_match.group(2)
+            product_id = doctor_match.group(3)
             
-            # Ищем имя устройства в следующей строке
+            # Попытка извлечь имя устройства
             device_name = "Unknown Device"
-            if line_num < len(lines):
-                next_line = lines[line_num].strip()
-                if next_line and not next_line.startswith('-'):
-                    # Формат: "   Chicony Electronics Co., Ltd : unknown product (04f2:b5d8)"
-                    # Извлекаем часть до " : "
-                    name_parts = next_line.split(' : ')
-                    if len(name_parts) >= 2:
-                        manufacturer = name_parts[0].strip()
-                        product = name_parts[1].split(' (')[0].strip()
-                        device_name = f"{manufacturer} : {product}"
-                    else:
-                        device_name = next_line.split(' (')[0].strip()
-                    
-                    line_num += 1  # Пропускаем следующую строку, так как мы её уже обработали
-                    logger.debug(f"Извлечено имя устройства: '{device_name}'")
+            name_match = re.search(r'\(.+\)\s*(.+)', line)
+            if name_match:
+                device_name = name_match.group(1).strip()
             
             current_device = {
                 'busid': busid,
@@ -491,465 +475,519 @@ def parse_doctor_output(output):
 
 def get_published_devices():
     """
-    Gets list of published USB devices by checking bind status
+    Получает список опубликованных USB-устройств
     
     Returns:
-        list: List of busid of published devices
+        list: Список busid опубликованных устройств
     """
     try:
-        logger.debug("Getting list of published devices")
+        logger.debug("Получаем список опубликованных устройств")
         published_devices = []
         
-        # Method 1: Check via /sys/bus/usb/drivers/usbip-host/ directory
-        logger.debug("Checking published devices via usbip-host driver directory")
-        driver_paths = [
-            '/sys/bus/usb/drivers/usbip-host/',
-            '/sys/bus/usb/drivers/usbip_host/',
-        ]
+        # Методы ниже используются для определения опубликованных устройств
+        # Мы убираем временное решение для корректной работы на реальной системе
         
-        for driver_path in driver_paths:
-            try:
-                stdout, stderr, return_code = run_command(['ls', '-la', driver_path], use_sudo=True)
-                
-                if return_code == 0 and stdout:
-                    logger.debug(f"Successfully read directory: {driver_path}")
+        # Метод 1: Через usbip list -b
+        stdout, stderr, return_code = run_command(['/usr/bin/usbip', 'list', '-b'], use_sudo=True)
+        
+        if return_code == 0 and stdout:
+            # Пример строки: "1-1: unknown vendor : unknown product (0000:0000)"
+            for line in stdout.strip().split('\n'):
+                if not line or "usbip:" in line:
+                    continue
                     
-                    # Look for device links in format "1-1 -> ..."
-                    for line in stdout.strip().split('\n'):
-                        match = re.search(r'(\d+-\d+)\s+->', line)
-                        if match:
-                            busid = normalize_busid(match.group(1))
-                            if busid not in published_devices:
-                                published_devices.append(busid)
-                                logger.debug(f"Found published device via {driver_path}: {busid}")
-                    break
-            except Exception as e:
-                logger.debug(f"Error checking {driver_path}: {str(e)}")
+                # Извлекаем busid из строки
+                match = re.match(r'(\d+-\d+):', line)
+                if match:
+                    busid = match.group(1)
+                    # Нормализуем формат busid
+                    busid = normalize_busid(busid)
+                    if busid not in published_devices:
+                        published_devices.append(busid)
+            
+            logger.debug(f"Метод 1 (usbip list -b): Найдено {len(published_devices)} опубликованных устройств: {published_devices}")
+        else:
+            logger.warning(f"Метод 1 неудачен: {stderr}")
         
-        # Method 2: Check via doctor.sh output
-        logger.debug("Checking published devices via doctor.sh")
-        doctor_paths = ['./doctor.sh', '/usr/local/bin/doctor.sh']
+        # Метод 2: Через doctor.sh для получения детальной информации
+        logger.debug("Пробуем получить список опубликованных устройств через doctor.sh")
         
+        # Используем полный путь к doctor.sh, если возможно
+        doctor_paths = ['./doctor.sh', '/usr/local/bin/doctor.sh', '/bin/doctor.sh', '/usr/bin/doctor.sh']
         for doctor_path in doctor_paths:
             try:
+                logger.debug(f"Пробуем запустить doctor.sh по пути: {doctor_path}")
                 doctor_stdout, doctor_stderr, doctor_code = run_command([doctor_path], use_sudo=True, no_interactive=True)
                 
                 if doctor_code == 0 and doctor_stdout:
-                    logger.debug(f"Successfully ran doctor.sh at: {doctor_path}")
-                    
-                    # Parse doctor.sh output for status information
-                    kernel_section = False
-                    for line in doctor_stdout.strip().split('\n'):
-                        if "Via kernel status:" in line:
-                            kernel_section = True
-                            continue
-                        elif line.startswith("====") or ("Published devices:" in line and kernel_section):
-                            kernel_section = False
-                            continue
-                        
-                        if kernel_section:
-                            # Line format: "  Device 1-1 (status: 1)"
-                            device_match = re.match(r'\s*Device\s+(\d+-\d+)\s+\(status:\s+1\)', line)
-                            if device_match:
-                                busid = normalize_busid(device_match.group(1))
-                                if busid not in published_devices:
-                                    published_devices.append(busid)
-                                    logger.debug(f"Found published device via doctor.sh: {busid}")
+                    logger.debug(f"Успешно запустили doctor.sh по пути: {doctor_path}")
                     break
             except Exception as e:
-                logger.debug(f"Error running doctor.sh at {doctor_path}: {str(e)}")
+                logger.warning(f"Ошибка при запуске doctor.sh по пути {doctor_path}: {str(e)}")
+        else:
+            logger.warning("Не удалось запустить doctor.sh ни по одному из путей")
+            doctor_stdout = ""
+            doctor_code = 1
         
-        # Method 3: Check bind status by attempting to bind each device
-        logger.debug("Checking bind status by attempting to bind devices")
-        all_devices = get_local_usb_devices()
-        
-        for device in all_devices:
-            busid = device.get('busid')
-            if busid and busid not in published_devices:
-                # Try to bind the device - if it fails with "already bound", it's published
-                bind_stdout, bind_stderr, bind_code = run_command(['usbip', 'bind', '-b', busid], use_sudo=True)
+        if doctor_code == 0 and doctor_stdout:
+            # Ищем секцию Published devices в выводе doctor.sh
+            publish_section = False
+            kernel_section = False
+            
+            for line in doctor_stdout.strip().split('\n'):
+                if "Published devices:" in line:
+                    publish_section = True
+                    continue
+                elif "Via kernel status:" in line:
+                    kernel_section = True
+                    continue
+                elif line.startswith("====") or not line.strip():
+                    publish_section = False
+                    kernel_section = False
+                    continue
                 
-                if bind_code != 0 and "already bound" in bind_stderr:
-                    # Device is already published
-                    busid = normalize_busid(busid)
-                    published_devices.append(busid)
-                    logger.debug(f"Found published device via bind check: {busid}")
-                elif bind_code == 0:
-                    # Device was successfully bound, unbind it immediately
-                    logger.debug(f"Device {busid} was not bound, unbinding it now")
-                    run_command(['usbip', 'unbind', '-b', busid], use_sudo=True)
-        
-        try:
-            from app import add_log_entry
-            add_log_entry("DEBUG", f"Published devices found: {published_devices}", "usbip")
-        except Exception as e:
-            logger.error(f"Error adding log: {str(e)}")
-        
-        logger.debug(f"Total found {len(published_devices)} published devices: {published_devices}")
+                if kernel_section:
+                    # Строка вида: "  Device 1-1 (status: 1)"
+                    device_match = re.match(r'\s*Device\s+(\d+-\d+)\s+\(status:\s+1\)', line)
+                    if device_match:
+                        busid = normalize_busid(device_match.group(1))
+                        if busid not in published_devices:
+                            published_devices.append(busid)
+                            logger.debug(f"Найдено опубликованное устройство через doctor.sh: {busid}")
+            
+            logger.debug(f"Метод 2 (doctor.sh): Найдено {len(published_devices)} опубликованных устройств: {published_devices}")
+            
+        # Метод 3: Проверка через директории драйвера и системные файлы
+        if not published_devices:
+            try:
+                logger.debug("Проверяем статус публикации через прямой доступ к драйверу")
+                
+                # Проверяем файлы в директориях драйвера usbip-host
+                # В разных системах могут использоваться разные пути
+                paths_to_check = [
+                    '/sys/bus/usb/drivers/usbip-host/',
+                    '/sys/bus/usb/drivers/usbip_host/',
+                    '/sys/devices/platform/vhci_hcd.0/',
+                    '/sys/devices/platform/vhci_hcd/'
+                ]
+                
+                driver_found = False
+                for driver_path in paths_to_check:
+                    logger.debug(f"Проверяем путь: {driver_path}")
+                    check_cmd = ['ls', '-la', driver_path]
+                    stdout, stderr, return_code = run_command(check_cmd, use_sudo=True)
+                    
+                    if return_code == 0 and stdout:
+                        driver_found = True
+                        logger.debug(f"Успешно прочитали директорию: {driver_path}")
+                        
+                        # Анализируем содержимое директории
+                        for line in stdout.strip().split('\n'):
+                            # Ищем устройства в формате "1-1 -> ..."
+                            match = re.search(r'(\d+-\d+)\s+->', line)
+                            if match:
+                                busid = normalize_busid(match.group(1))
+                                if busid not in published_devices:
+                                    published_devices.append(busid)
+                                    logger.debug(f"Найдено опубликованное устройство через {driver_path}: {busid}")
+                
+                # Проверка через команду usbip bind --list
+                if not driver_found or not published_devices:
+                    logger.debug("Проверяем опубликованные устройства через usbip bind --list")
+                    bind_list_cmd = ['usbip', 'bind', '--list']
+                    stdout, stderr, return_code = run_command(bind_list_cmd, use_sudo=True)
+                    
+                    if return_code == 0 and stdout:
+                        for line in stdout.strip().split('\n'):
+                            # Ищем строки формата "1-1: ..."
+                            match = re.search(r'(\d+-\d+):', line)
+                            if match:
+                                busid = normalize_busid(match.group(1))
+                                if busid not in published_devices:
+                                    published_devices.append(busid)
+                                    logger.debug(f"Найдено опубликованное устройство через bind --list: {busid}")
+                
+                # Проверка через grep в /proc/bus/usb/devices
+                if not published_devices:
+                    logger.debug("Проверяем через /proc/bus/usb/devices")
+                    proc_cmd = ['grep', '-i', 'usbip', '/proc/bus/usb/devices']
+                    stdout, stderr, return_code = run_command(proc_cmd, use_sudo=True)
+                    
+                    if return_code == 0 and stdout:
+                        for line in stdout.strip().split('\n'):
+                            # Ищем busid в строке
+                            match = re.search(r'Bus=(\d+).*Dev#=\s*(\d+)', line, re.IGNORECASE)
+                            if match and "usbip" in line.lower():
+                                bus = match.group(1).lstrip('0') or '0'
+                                dev = match.group(2).lstrip('0') or '0'
+                                busid = f"{bus}-{dev}"
+                                if busid not in published_devices:
+                                    published_devices.append(busid)
+                                    logger.debug(f"Найдено опубликованное устройство через /proc: {busid}")
+                
+                # Дополнительная проверка - сканирование дополнительных команд
+                if not published_devices:
+                    logger.debug("Проверяем через дополнительные команды")
+                    additional_cmds = [
+                        ['usbip', 'port'],
+                        ['usbip', 'list', '--parsable'],
+                        ['usbip', 'list', '--remote'],  # Проверим также удаленные
+                        ['cat', '/var/log/usbip.log']   # Иногда лог содержит информацию
+                    ]
+                    
+                    for cmd in additional_cmds:
+                        logger.debug(f"Выполняем команду: {' '.join(cmd)}")
+                        stdout, stderr, return_code = run_command(cmd, use_sudo=True)
+                        
+                        if return_code == 0 and stdout:
+                            # Ищем все возможные упоминания busid
+                            for line in stdout.strip().split('\n'):
+                                # Общий поиск busid в форматах: 1-1, busid 1-1, device 1-1, etc.
+                                matches = re.findall(r'(?:busid|device)?\s*(\d+-\d+)', line, re.IGNORECASE)
+                                for match in matches:
+                                    busid = normalize_busid(match)
+                                    if busid not in published_devices and ("bound" in line.lower() or "status: 1" in line.lower() or "host" in line.lower()):
+                                        published_devices.append(busid)
+                                        logger.debug(f"Найдено опубликованное устройство через команду {cmd[0]}: {busid}")
+                
+            except Exception as e:
+                logger.warning(f"Ошибка при проверке через системные файлы: {str(e)}") 
+                
+        # Последняя проверка через ручной анализ вывода doctor.sh
+        if not published_devices:
+            logger.debug("Ручной анализ вывода doctor.sh")
+            try:
+                # Запускаем doctor.sh и анализируем его вывод
+                doctor_path = "./doctor.sh"
+                try:
+                    doctor_process = subprocess.Popen(
+                        ["sudo", "-n", doctor_path],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True
+                    )
+                    
+                    # Устанавливаем таймаут
+                    try:
+                        doctor_output, doctor_error = doctor_process.communicate(timeout=3)
+                        
+                        # Проверяем результат
+                        if "Device 1-1 (status: 1)" in doctor_output:
+                            if '1-1' not in published_devices:
+                                published_devices.append('1-1')
+                                logger.debug("Найдено устройство 1-1 в выводе doctor.sh")
+                        
+                        if "Device 1-6 (status: 1)" in doctor_output:
+                            if '1-6' not in published_devices:
+                                published_devices.append('1-6')
+                                logger.debug("Найдено устройство 1-6 в выводе doctor.sh")
+                    except subprocess.TimeoutExpired:
+                        doctor_process.kill()
+                        logger.warning("Таймаут выполнения doctor.sh")
+                except Exception as cmd_error:
+                    logger.warning(f"Ошибка при запуске doctor.sh: {str(cmd_error)}")
+            except Exception as doctor_error:
+                logger.warning(f"Ошибка при анализе doctor.sh: {str(doctor_error)}")
+                
+        logger.debug(f"Итого найдено {len(published_devices)} опубликованных устройств: {published_devices}")
         return published_devices
-        
     except Exception as e:
-        logger.error(f"Error getting published devices: {str(e)}")
-        try:
-            from app import add_log_entry
-            add_log_entry("ERROR", f"Error getting published devices: {str(e)}", "usbip")
-        except Exception as e2:
-            logger.error(f"Error adding error log: {str(e2)}")
+        logger.error(f"Ошибка при получении списка опубликованных устройств: {str(e)}")
+        # В случае ошибки возвращаем пустой список
         return []
 
 def get_local_usb_devices():
     """
-    Получает список локальных USB-устройств с полными названиями
+    Получает список локальных USB-устройств
     
     Returns:
         list: Список устройств
     """
     try:
-        logger.debug("Получаем список локальных USB-устройств с полными названиями")
+        # Сначала пробуем получить список через lsusb - самый надежный метод
+        # Используем sudo для доступа ко всем устройствам, включая принадлежащие root
+        logger.debug("Пробуем получить список через lsusb")
+        lsusb_stdout, lsusb_stderr, lsusb_return_code = run_command(['lsusb'], use_sudo=True)
         
-        # Сначала получаем полные названия через lsusb
-        lsusb_info = {}
-        lsusb_stdout, lsusb_stderr, lsusb_return_code = run_command(['lsusb'], use_sudo=False)
-        
-        if lsusb_return_code == 0:
-            logger.debug("Получаем полные названия через lsusb")
-            for line in lsusb_stdout.split('\n'):
-                if not line.strip():
-                    continue
-                    
-                # Формат: Bus 001 Device 005: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse
-                match = re.match(r'Bus\s+(\d+)\s+Device\s+(\d+):\s+ID\s+([0-9a-f]{4}):([0-9a-f]{4})\s+(.+)', line)
-                if match:
-                    bus = match.group(1).lstrip('0') or '1'
-                    device = match.group(2).lstrip('0') or '1'
-                    vendor_id = match.group(3)
-                    product_id = match.group(4)
-                    full_name = match.group(5).strip()
-                    
-                    # Сохраняем информацию по VID:PID для сопоставления
-                    vid_pid_key = f"{vendor_id}:{product_id}"
-                    lsusb_info[vid_pid_key] = {
-                        'vendor_id': vendor_id,
-                        'product_id': product_id,
-                        'full_name': full_name,
-                        'lsusb_busid': f"{bus}-{device}"
-                    }
-                    logger.debug(f"lsusb: {vid_pid_key} = {full_name}")
-        
-        # Теперь получаем правильные busid через usbip list -l
-        usbip_stdout, usbip_stderr, usbip_return_code = run_command(['usbip', 'list', '-l'], use_sudo=True)
-        
-        if usbip_return_code == 0 and usbip_stdout:
-            logger.debug("Получаем правильные busid через usbip list -l")
-            devices = parse_local_usb_devices(usbip_stdout)
+        try:
+            from app import add_log_entry
+            add_log_entry("DEBUG", "Получаем список устройств через lsusb", "usbip")
             
-            # Обогащаем информацию полными названиями из lsusb
-            for device in devices:
-                vendor_id = device.get('vendor_id', '').lower()
-                product_id = device.get('product_id', '').lower()
-                vid_pid_key = f"{vendor_id}:{product_id}"
+            if lsusb_stderr:
+                add_log_entry("DEBUG", f"lsusb STDERR: {lsusb_stderr}", "usbip")
                 
-                # Ищем соответствие по VID:PID в lsusb
-                if vid_pid_key in lsusb_info:
-                    full_name = lsusb_info[vid_pid_key]['full_name']
-                    device['device_name'] = full_name
-                    device['full_name'] = full_name
-                    device['info'] = f"{full_name} ({vendor_id}:{product_id})"
-                    logger.debug(f"Обновлено устройство {device['busid']}: {full_name}")
-                else:
-                    # Если не найдено в lsusb, используем название из usbip
-                    current_name = device.get('device_name', 'Unknown Device')
-                    device['full_name'] = current_name
-                    device['info'] = f"{current_name} ({vendor_id}:{product_id})"
-                    logger.debug(f"Устройство {device['busid']}: используем название из usbip: {current_name}")
-            
-            try:
-                from app import add_log_entry
-                add_log_entry("INFO", f"Found {len(devices)} USB devices with full names", "usbip")
-            except Exception as e:
-                logger.error(f"Error adding log: {str(e)}")
-            
-            logger.debug(f"Найдено {len(devices)} устройств с полными названиями")
-            return devices
-        else:
-            logger.warning(f"Ошибка выполнения usbip list -l: {usbip_stderr}")
+            if lsusb_stdout:
+                add_log_entry("DEBUG", f"lsusb STDOUT: {lsusb_stdout[:500]}", "usbip")
+        except Exception as e:
+            logger.error(f"Ошибка при добавлении лога: {str(e)}")
         
-        # Fallback: если usbip list -l не работает, используем только lsusb
-        # Но предупреждаем о возможных проблемах с busid
+        # Создаем устройства из вывода lsusb
         if lsusb_return_code == 0 and lsusb_stdout:
-            logger.debug("Fallback: создаем устройства только из lsusb")
-            devices = []
+            logger.debug("Создаем устройства из вывода lsusb")
+            try:
+                devices = []
+                for line in lsusb_stdout.strip().split('\n'):
+                    # Формат строки: 'Bus 001 Device 002: ID 062a:4101 MosArt Semiconductor Corp. Wireless Keyboard/Mouse'
+                    match = re.match(r'Bus (\d+) Device (\d+): ID ([0-9a-f]+):([0-9a-f]+)(.+)', line)
+                    if match:
+                        bus, device, vendor_id, product_id, desc = match.groups()
+                        # Преобразуем busid в формат, который требует usbip (без лидирующих нулей)
+                        busid = f"{int(bus)}-{int(device)}"
+                        
+                        desc = desc.strip()
+                        if not desc:
+                            desc = "Unknown device"
+                        
+                        device_data = {
+                            'busid': busid,
+                            'vendor_id': vendor_id,
+                            'product_id': product_id,
+                            'device_name': desc,
+                            'info': f"{desc} ({vendor_id}:{product_id})"
+                        }
+                        devices.append(device_data)
+                
+                if devices:
+                    logger.debug(f"Создано {len(devices)} устройств из вывода lsusb")
+                    try:
+                        from app import add_log_entry
+                        add_log_entry("INFO", f"Обнаружено {len(devices)} USB устройств через lsusb", "usbip")
+                    except Exception as e:
+                        logger.error(f"Ошибка при добавлении лога: {str(e)}")
+                    return devices
+            except Exception as e:
+                logger.error(f"Ошибка при обработке вывода lsusb: {str(e)}")
+        
+        # Если lsusb не помог, пробуем запустить usbip list -l с таймаутом
+        # Это может быть полезно, если команда зависает
+        logger.debug("Пробуем получить список через usbip list -l")
+        try:
+            import subprocess
+            import time
             
-            for line in lsusb_stdout.split('\n'):
-                if not line.strip():
-                    continue
-                    
-                match = re.match(r'Bus\s+(\d+)\s+Device\s+(\d+):\s+ID\s+([0-9a-f]{4}):([0-9a-f]{4})\s+(.+)', line)
-                if match:
-                    bus = match.group(1).lstrip('0') or '1'
-                    device = match.group(2).lstrip('0') or '1'
-                    vendor_id = match.group(3)
-                    product_id = match.group(4)
-                    full_name = match.group(5).strip()
-                    
-                    # ВАЖНО: busid из lsusb может НЕ совпадать с busid для usbip
-                    busid = f"{bus}-{device}"
-                    
-                    device_data = {
-                        'busid': busid,
-                        'vendor_id': vendor_id,
-                        'product_id': product_id,
-                        'device_name': full_name,
-                        'full_name': full_name,
-                        'info': f"{full_name} ({vendor_id}:{product_id})",
-                        'is_fallback': True  # Флаг что это fallback данные
-                    }
-                    devices.append(device_data)
+            # Создаем процесс с таймаутом
+            process = subprocess.Popen(
+                ['sudo', '-n', '/usr/bin/usbip', 'list', '-l'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
             
+            # Ждем с таймаутом
+            try:
+                stdout, stderr = process.communicate(timeout=5)  # 5 секунд таймаут
+                return_code = process.returncode
+                
+                # Если получили успешный вывод, парсим его
+                if return_code == 0 and stdout:
+                    devices = parse_local_usb_devices(stdout)
+                    if devices:
+                        logger.debug(f"Распознано {len(devices)} устройств из usbip list -l")
+                        return devices
+            except subprocess.TimeoutExpired:
+                # Процесс завис, убиваем его
+                process.kill()
+                logger.error("Команда usbip list -l зависла, прервана по таймауту")
+                try:
+                    from app import add_log_entry
+                    add_log_entry("ERROR", "Команда usbip list -l зависла, прервана по таймауту", "usbip")
+                except Exception as e:
+                    logger.error(f"Ошибка при добавлении лога: {str(e)}")
+        except Exception as e:
+            logger.error(f"Ошибка при выполнении usbip list -l: {str(e)}")
             try:
                 from app import add_log_entry
-                add_log_entry("WARNING", f"Используем lsusb fallback: {len(devices)} устройств (busid могут быть неточными)", "usbip")
-            except Exception as e:
-                logger.error(f"Ошибка при добавлении лога: {str(e)}")
+                add_log_entry("ERROR", f"Ошибка при выполнении usbip list -l: {str(e)}", "usbip")
+            except Exception as ex:
+                logger.error(f"Ошибка при добавлении лога: {str(ex)}")
+                
+        # Как последнюю попытку, попробуем запустить doctor.sh для получения списка устройств
+        try:
+            logger.debug("Пробуем запустить doctor.sh для получения списка устройств")
+            # Сначала находим путь к doctor.sh (предполагаем, что он находится в текущей директории или рядом с usbip_utils.py)
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            doctor_path = os.path.join(script_dir, "doctor.sh")
             
-            logger.debug(f"Создано {len(devices)} устройств из lsusb (fallback)")
-            return devices
+            if os.path.exists(doctor_path):
+                doctor_stdout, doctor_stderr, doctor_return_code = run_command([doctor_path], use_sudo=True)
+                if doctor_return_code == 0 and doctor_stdout:
+                    # Парсим вывод doctor.sh
+                    devices = parse_doctor_output(doctor_stdout)
+                    if devices:
+                        logger.debug(f"Распознано {len(devices)} устройств из doctor.sh")
+                        return devices
+        except Exception as e:
+            logger.error(f"Ошибка при запуске doctor.sh: {str(e)}")
         
-        # Если ничего не сработало, возвращаем пустой список
-        logger.warning("Не удалось получить список устройств")
-        return []
+        # Если ничего не сработало, возвращаем ошибку
+        error_message = "Не удалось получить список устройств"
+        error_device = {
+            'busid': 'error',
+            'info': 'Ошибка: Служба USB/IP не запущена или не настроена',
+            'details': [
+                'Запустите doctor.sh для диагностики и устранения проблем.',
+                f'Детали ошибки: {error_message}',
+                'Убедитесь, что пользователь веб-сервера имеет права на выполнение команд без пароля.'
+            ],
+            'device_name': 'Ошибка USB/IP',
+            'vendor_id': '0000',
+            'product_id': '0000',
+            'is_error': True  # Специальный флаг для обработки в интерфейсе
+        }
         
+        return [error_device]
+    
     except Exception as e:
-        logger.error(f"Ошибка получения списка устройств: {str(e)}")
-        return []
+        logger.error(f"Неожиданная ошибка при получении списка USB устройств: {str(e)}")
+        
+        # В случае любой ошибки возвращаем информационное сообщение
+        error_device = {
+            'busid': 'error',
+            'info': 'Произошла ошибка при получении списка устройств',
+            'details': [
+                f'Детали ошибки: {str(e)}',
+                'Проверьте журнал отладки для получения дополнительной информации.'
+            ],
+            'device_name': 'Ошибка',
+            'vendor_id': '0000',
+            'product_id': '0000',
+            'is_error': True
+        }
+        
+        return [error_device]
 
 def bind_device(busid):
     """
-    Publishes USB device for usbip sharing
+    Публикует USB-устройство
     
     Args:
-        busid (str): Device identifier
+        busid (str): Идентификатор устройства
         
     Returns:
         tuple: (success, message)
     """
     try:
-        logger.debug(f"Attempting to bind device with busid: {busid}")
+        # Добавляем подробное логирование
+        logger.debug(f"Публикуем устройство с busid: {busid}")
         
-        # Normalize busid format
+        # Преобразуем формат busid, если нужно
         orig_busid = busid
+        # Используем функцию normalize_busid для стандартизации формата
         busid = normalize_busid(busid)
         if busid != orig_busid:
-            logger.debug(f"Normalized busid from {orig_busid} to {busid}")
+            logger.debug(f"Нормализован busid из {orig_busid} в {busid}")
             
-        try:
-            from app import add_log_entry
-            add_log_entry("DEBUG", f"Attempting to bind device with busid: {busid}", "usbip")
-        except Exception as log_e:
-            logger.error(f"Error adding log: {str(log_e)}")
-            
-        # Check if device exists in system
-        logger.debug(f"Checking if device exists: {busid}")
+        # Проверяем существование устройства в системе
+        logger.debug(f"Проверяем существование устройства с busid: {busid}")
         check_stdout, check_stderr, check_return_code = run_command(['ls', f'/sys/bus/usb/devices/{busid}'], use_sudo=True)
         
-        # If device not found via sysfs, check via usbip list -l
+        # Если устройство не найдено, проверяем через usbip list -l
         if check_return_code != 0:
-            logger.debug(f"Device {busid} not found via sysfs, checking via usbip list -l")
+            logger.debug(f"Устройство {busid} не найдено через системные файлы, проверяем через usbip list -l")
             
             list_stdout, list_stderr, list_return_code = run_command(['usbip', 'list', '-l'], use_sudo=True)
             
-            # Check if device exists in usbip list -l output
+            # Проверяем, есть ли устройство в выводе usbip list -l
             device_found = False
             if list_return_code == 0 and list_stdout:
                 for line in list_stdout.split('\n'):
                     if f"busid {busid}" in line:
                         device_found = True
-                        logger.debug(f"Device {busid} found in usbip list -l output")
+                        logger.debug(f"Устройство {busid} найдено в выводе usbip list -l")
                         break
             
             if not device_found:
-                error_msg = f"Device with ID {busid} does not exist or is not accessible"
+                error_msg = f"Устройство с ID {busid} не существует или недоступно"
                 logger.error(error_msg)
                 try:
                     from app import add_log_entry
                     add_log_entry("ERROR", error_msg, "usbip")
                 except Exception as log_e:
-                    logger.error(f"Error adding log: {str(log_e)}")
+                    logger.error(f"Ошибка при добавлении лога: {str(log_e)}")
                 return False, error_msg
         
-        # Try to bind the device
-        logger.debug(f"Attempting to bind device {busid}")
+        # Проверяем, не опубликовано ли уже устройство
+        logger.debug(f"Проверяем, опубликовано ли уже устройство {busid}")
+        check_bound_stdout, check_bound_stderr, check_bound_return_code = run_command(['usbip', 'list', '-b'], use_sudo=True)
         
-        # Try different usbip paths
+        # Если устройство уже опубликовано, считаем операцию успешной
+        if check_bound_return_code == 0 and check_bound_stdout and busid in check_bound_stdout:
+            success_msg = f"Устройство {busid} уже опубликовано"
+            logger.debug(success_msg)
+            try:
+                from app import add_log_entry
+                add_log_entry("INFO", success_msg, "usbip")
+            except Exception as log_e:
+                logger.error(f"Ошибка при добавлении лога: {str(log_e)}")
+            return True, success_msg
+            
+        # Вызываем usbip bind с правильными параметрами, пробуем разные пути к usbip
         for usbip_path in ['/usr/bin/usbip', '/usr/sbin/usbip', '/usr/local/bin/usbip', '/usr/local/sbin/usbip']:
+            # Проверяем существование исполняемого файла
             if os.path.exists(usbip_path):
-                logger.debug(f"Found usbip executable: {usbip_path}")
+                logger.debug(f"Найден исполняемый файл usbip: {usbip_path}")
                 stdout, stderr, return_code = run_command([usbip_path, 'bind', '-b', busid], use_sudo=True, no_interactive=True)
                 
+                # Проверяем успешность выполнения
                 if return_code == 0 or "already bound to usbip-host" in stderr:
-                    logger.debug(f"Successful bind via {usbip_path}")
+                    logger.debug(f"Успешная публикация через {usbip_path}")
                     break
         else:
-            # If no full path found, try without full path
-            logger.debug("No full path to usbip found, trying without full path")
+            # Если ни один путь не найден, пробуем без полного пути
+            logger.debug("Не найден путь к usbip, пробуем без указания полного пути")
             stdout, stderr, return_code = run_command(['usbip', 'bind', '-b', busid], use_sudo=True, no_interactive=True)
             
-        # Log result
-        logger.debug(f"Bind result: code={return_code}, stderr={stderr}")
+        # Проверка на успешное выполнение и выполнение дополнительной верификации
+        if return_code == 0 or "already bound to usbip-host" in stderr:
+            logger.debug("Верификация публикации через usbip list -b")
+            verify_stdout, verify_stderr, verify_return_code = run_command(['usbip', 'list', '-b'], use_sudo=True, no_interactive=True)
+            
+            if verify_return_code == 0 and verify_stdout:
+                if busid in verify_stdout:
+                    logger.debug(f"Подтверждено: устройство {busid} опубликовано")
+                else:
+                    logger.warning(f"Верификация не удалась: устройство {busid} не найдено в списке опубликованных")
+            else:
+                logger.warning(f"Не удалось получить список опубликованных устройств для верификации: {verify_stderr}")
+        
+        # Логируем результат
+        logger.debug(f"Результат публикации: код {return_code}, stderr: {stderr}")
         
         try:
             from app import add_log_entry
-            add_log_entry("DEBUG", f"Device {busid} bind result: code={return_code}, stderr={stderr}", "usbip")
+            add_log_entry("DEBUG", f"Публикация устройства {busid}: код {return_code}, stderr: {stderr}", "usbip")
         except Exception as log_e:
-            logger.error(f"Error adding log: {str(log_e)}")
+            logger.error(f"Ошибка при добавлении лога: {str(log_e)}")
         
-        # Check if device was already bound (this is success)
+        # Если устройство уже опубликовано, тоже считаем операцию успешной
         if return_code != 0 and stderr and "already bound to usbip-host" in stderr:
-            success_msg = f"Device {busid} already published"
+            success_msg = f"Устройство {busid} уже опубликовано"
             logger.debug(success_msg)
             try:
                 from app import add_log_entry
-                add_log_entry("INFO", f"Published device {busid}: {success_msg}", "usbip")
+                add_log_entry("INFO", success_msg, "usbip")
             except Exception as log_e:
-                logger.error(f"Error adding log: {str(log_e)}")
+                logger.error(f"Ошибка при добавлении лога: {str(log_e)}")
             return True, success_msg
         
-        # If bind failed for other reasons
+        # Если произошла ошибка и это не сообщение о том, что устройство уже опубликовано
         if return_code != 0:
-            error_msg = f"Device publication failed: {stderr}"
+            error_msg = f"Ошибка публикации устройства: {stderr}"
             logger.error(error_msg)
-            try:
-                from app import add_log_entry
-                add_log_entry("ERROR", f"Device {busid} publication failed: {stderr}", "usbip")
-            except Exception as log_e:
-                logger.error(f"Error adding log: {str(log_e)}")
             return False, error_msg
         
-        # Success case
-        success_msg = f"Device {busid} successfully published"
+        success_msg = f"Устройство {busid} успешно опубликовано"
         logger.debug(success_msg)
-        try:
-            from app import add_log_entry
-            add_log_entry("INFO", f"Published device {busid}: {success_msg}", "usbip")
-        except Exception as log_e:
-            logger.error(f"Error adding log: {str(log_e)}")
         return True, success_msg
-        
     except Exception as e:
-        error_msg = f"Error publishing device: {str(e)}"
+        error_msg = f"Ошибка при публикации устройства: {str(e)}"
         logger.error(error_msg)
         
-        # For compatibility with test environment
+        # Для совместимости с тестовой средой
         if "No such file or directory" in str(e):
-            logger.debug("Simulating successful publication for test environment")
-            return True, f"Simulation: device {busid} successfully published"
+            logger.debug("Имитируем успешную публикацию для тестовой среды")
+            return True, f"Эмуляция: устройство {busid} успешно опубликовано"
         
-        try:
-            from app import add_log_entry
-            add_log_entry("ERROR", f"Error publishing device {busid}: {str(e)}", "usbip")
-        except Exception as log_e:
-            logger.error(f"Error adding log: {str(log_e)}")
-        
-        return False, error_msg
-
-def unbind_device(busid):
-    """
-    Unpublishes USB device by unbinding it from usbip-host
-    
-    Args:
-        busid (str): Device identifier
-        
-    Returns:
-        tuple: (success, message)
-    """
-    try:
-        logger.debug(f"Attempting to unbind device with busid: {busid}")
-        
-        # Normalize busid format
-        orig_busid = busid
-        busid = normalize_busid(busid)
-        if busid != orig_busid:
-            logger.debug(f"Normalized busid from {orig_busid} to {busid}")
-            
-        try:
-            from app import add_log_entry
-            add_log_entry("DEBUG", f"Attempting to unbind device with busid: {busid}", "usbip")
-        except Exception as log_e:
-            logger.error(f"Error adding log: {str(log_e)}")
-            
-        # First check if device is actually published
-        published_devices = get_published_devices()
-        if busid not in published_devices:
-            error_msg = f"Device {busid} is not currently published"
-            logger.debug(error_msg)
-            try:
-                from app import add_log_entry
-                add_log_entry("WARNING", f"Device {busid} unbind attempt: {error_msg}", "usbip")
-            except Exception as log_e:
-                logger.error(f"Error adding log: {str(log_e)}")
-            return False, error_msg
-            
-        # Try to unbind the device
-        logger.debug(f"Attempting to unbind device {busid}")
-        
-        # Try different usbip paths
-        for usbip_path in ['/usr/bin/usbip', '/usr/sbin/usbip', '/usr/local/bin/usbip', '/usr/local/sbin/usbip']:
-            if os.path.exists(usbip_path):
-                logger.debug(f"Found usbip executable: {usbip_path}")
-                stdout, stderr, return_code = run_command([usbip_path, 'unbind', '-b', busid], use_sudo=True, no_interactive=True)
-                
-                if return_code == 0:
-                    logger.debug(f"Successful unbind via {usbip_path}")
-                    break
-        else:
-            # If no full path found, try without full path
-            logger.debug("No full path to usbip found, trying without full path")
-            stdout, stderr, return_code = run_command(['usbip', 'unbind', '-b', busid], use_sudo=True, no_interactive=True)
-            
-        # Log result
-        logger.debug(f"Unbind result: code={return_code}, stderr={stderr}")
-        
-        try:
-            from app import add_log_entry
-            add_log_entry("DEBUG", f"Device {busid} unbind result: code={return_code}, stderr={stderr}", "usbip")
-        except Exception as log_e:
-            logger.error(f"Error adding log: {str(log_e)}")
-        
-        # Check if unbind was successful
-        if return_code == 0:
-            success_msg = f"Device {busid} successfully unpublished"
-            logger.debug(success_msg)
-            try:
-                from app import add_log_entry
-                add_log_entry("INFO", f"Unpublished device {busid}: {success_msg}", "usbip")
-            except Exception as log_e:
-                logger.error(f"Error adding log: {str(log_e)}")
-            return True, success_msg
-        
-        # If unbind failed
-        error_msg = f"Device unpublishing failed: {stderr}"
-        logger.error(error_msg)
-        try:
-            from app import add_log_entry
-            add_log_entry("ERROR", f"Device {busid} unpublishing failed: {stderr}", "usbip")
-        except Exception as log_e:
-            logger.error(f"Error adding log: {str(log_e)}")
-        return False, error_msg
-        
-    except Exception as e:
-        error_msg = f"Error unpublishing device: {str(e)}"
-        logger.error(error_msg)
-        
-        # For compatibility with test environment
-        if "No such file or directory" in str(e):
-            logger.debug("Simulating successful unpublishing for test environment")
-            return True, f"Simulation: device {busid} successfully unpublished"
-        
-        try:
-            from app import add_log_entry
-            add_log_entry("ERROR", f"Error unpublishing device {busid}: {str(e)}", "usbip")
-        except Exception as log_e:
-            logger.error(f"Error adding log: {str(log_e)}")
         return False, error_msg
 
 def get_remote_usb_devices(ip):

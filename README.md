@@ -1,106 +1,27 @@
-# 🍊 Orange USB/IP Web Interface
+# Orange USBIP
+
+A comprehensive web-based solution for managing USB/IP on Linux, allowing you to share, connect, and emulate USB devices over the network.
 
 <div align="center">
 
-**Modern web-based management interface for USB/IP devices**
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform](https://img.shields.io/badge/platform-Linux-blue.svg)](https://www.linux.org/)
-[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/flask-2.0+-green.svg)](https://flask.palletsprojects.com/)
+**🏆 Completely cross-platform USB device management over network**  
+**💻 Works on all Linux: ARM, x86, x86_64, ARM64 📱**
 
 </div>
 
----
+## 📌 Quick One-line Installation
 
-## 📋 Project Overview
-
-A comprehensive USB/IP device management web interface designed for robust device configuration, monitoring, and advanced system diagnostics across Linux architectures. Built with Flask and modern web technologies, it provides an intuitive interface for sharing USB devices across your network infrastructure.
-
-## ✨ Key Features
-
-- **🔌 USB Device Management**
-  - Publish local USB devices to network via USB/IP protocol
-  - Attach remote USB devices
-  - Real-time monitoring for local and remote USB devices
-  - One-click bind/unbind operations
-  - Intelligent error detection and recovery mechanisms
-
-- **🖥️ Modern Web Interface**
-  - Responsive Bootstrap 5 design
-  - Dark theme optimized for Orange Pi
-  - Real-time updates without page refresh
-  - Mobile-friendly responsive layout
-  - Beautiful, functional, production-ready design
-
-- **🔐 Security**
-  - User authentication system (Flask-Login)
-  - Session management
-  - Password hashing (Werkzeug)
-  - HTTPS support via reverse proxy (ProxyFix)
-  - Permission isolation through systemd
-
-- **🛠️ Advanced Tools**
-  - Built-in diagnostic system (`doctor.sh`)
-  - Web-based terminal with command execution
-  - Virtual USB device support
-  - Virtual device file management
-  - Comprehensive logging system
-
-- **📊 Monitoring & Diagnostics**
-  - Device connection history
-  - System health checks
-  - Error tracking and reporting
-  - Cross-platform device compatibility
-  - Detailed diagnostic tools
-
-## 🏗️ Architecture
-
-### Core Components
-
-- **Flask Application** (`app.py`)  
-  Main web interface with authentication, routing, and business logic
-
-- **Database Models** (`models.py`)  
-  SQLAlchemy models for users, devices, logs, and terminal commands
-
-- **USB/IP Utilities** (`usbip_utils.py`)  
-  Core device management functions - publishing, attaching, monitoring
-
-- **Virtual Storage** (`virtual_storage_utils.py`)  
-  Virtual USB device file management
-
-### Technology Stack
-
-- **Backend**: Flask, Flask-Login, Flask-SQLAlchemy, Werkzeug
-- **Frontend**: Bootstrap 5, JavaScript (vanilla JS, no frameworks)
-- **Database**: PostgreSQL / SQLite (supports both)
-- **Icons**: Font Awesome, Feather Icons, custom SVG icons
-- **USB/IP**: Linux kernel USB/IP drivers (usbip-host, vhci-hcd)
-- **Server**: Gunicorn WSGI server
-
-### Database Structure
-
-- **User**: System users (id, username, email, password_hash)
-- **Device**: USB devices (busid, vendor, product, status)
-- **DeviceLog**: Device operation logs (device_id, action, timestamp)
-- **TerminalCommand**: Web terminal commands (name, command, description)
-
-## 🚀 Quick Start
-
-### 📌 Quick One-line Installation
-
-**For x86, x86_64, ARM64 (Raspberry Pi 64-bit):**
-```bash
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)"
-```
-
-**For ARMv7 (Orange Pi, Raspberry Pi 32-bit):**
+### ARMv7 (Orange Pi, Raspberry Pi 32-bit):
 ```bash
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh)"
 ```
 
-**Installation Options:**
+### x86, x86_64, ARM64 (Raspberry Pi 64-bit):
+```bash
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)"
+```
+
+### Installation Options:
 ```bash
 # Show help and all options
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)" -- --help
@@ -112,264 +33,374 @@ sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-we
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian_old.sh)"
 ```
 
-### Alternative: Manual Installation
-
-**Debian/Ubuntu (x86_64 and ARM64):**
+### One-line Uninstallation:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh -o install_debian.sh
-chmod +x install_debian.sh
-sudo ./install_debian.sh
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/uninstall.sh)"
 ```
 
-**ARM platforms (Orange Pi, Raspberry Pi 32-bit):**
+### Interactive Service and Application Removal:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh -o install_arm.sh
-chmod +x install_arm.sh
-sudo ./install_arm.sh
+curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh -o check_and_remove.sh && chmod +x check_and_remove.sh && sudo ./check_and_remove.sh
 ```
 
-**Installation script features:**
-- Automatic system requirement validation
-- Dependency management
-- Intelligent cleanup of previous installations
-- Professional-grade service configuration with security hardening
-- Robust error handling with timeout protection
-- Visual progress tracking
-- Complete help system (`--help` option)
+This script provides:
+- Interactive detection and removal of orange-usbip and usbipd services
+- Application directory cleanup with size reporting
+- Running process termination with user confirmation
+- Comprehensive system status verification
 
-## 🎯 Usage
+## 🔧 Troubleshooting Scripts
 
-### Access the Web Interface
-
-After installation, open your browser and navigate to:
-```
-http://your-server-ip:5000
+### Fix Python Dependencies:
+```bash
+curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/fix_dependencies.sh -o fix_dependencies.sh && chmod +x fix_dependencies.sh && ./fix_dependencies.sh
 ```
 
-Default credentials:
-- **Username**: admin
-- **Password**: admin123
+### Fix SQLAlchemy Version Conflicts:
+```bash
+curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/fix_sqlalchemy_conflict.sh -o fix_sqlalchemy_conflict.sh && chmod +x fix_sqlalchemy_conflict.sh && ./fix_sqlalchemy_conflict.sh
+```
 
-> ⚠️ **Security Notice**: Change the default password immediately after first login!
+### Debug Service Issues:
+```bash
+curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/debug_service.sh -o debug_service.sh && chmod +x debug_service.sh && ./debug_service.sh
+```
 
-### Publishing a USB Device
+## What is Orange USBIP?
 
-1. Navigate to **Local USB Devices**
-2. Locate your device in the list
-3. Click the green **"Publish Device"** button
-4. Device is now available on the network
+Orange USBIP is a Flask-based web interface for USB/IP technology that allows you to use USB devices over a network. The project is designed for easy management of USB devices on all Linux platforms, including ARM (Raspberry Pi, Orange Pi), x86, x86_64, and ARM64.
 
-### Unbinding a Device
+## Key Features
 
-1. Find the published device (marked with green "Published" status)
-2. Click the yellow **"Cancel"** button
-3. Device will be unbound from USB/IP
+✅ **Physical USB Device Management:**
+- Share local USB devices for remote access
+- Connect to remote devices over the network
+- Configure aliases for easy device identification
 
-### Attaching a Remote Device
+✅ **Virtual USB Device Emulation:**
+- Create virtual HID devices (keyboards, mice)
+- Emulate USB storage devices with managed storage
+- Configure virtual COM ports
 
-1. Go to **Remote USB Devices**
-2. Enter the remote server IP address
-3. Click **"Show Devices"**
-4. Select device and click **"Attach Device"**
+✅ **Additional Features:**
+- Multilingual interface (English and Russian)
+- Secure access with authentication
+- Detailed action logging
+- Automatic network interface detection
 
-## 🔧 Diagnostics & Troubleshooting
+## Technologies
 
-### Run the Diagnostic Script
+- Python 3
+- Flask
+- SQLAlchemy
+- SQLite
+- USB/IP (Linux)
+- Bootstrap 5
+- Multilingual interface (English and Russian)
 
-To check system status:
+## Requirements
+
+- Linux with USB/IP utility installed
+- Python 3.7+
+
+### Installing USB/IP on Linux
+
+On most Linux distributions, you can install the USB/IP utility as follows:
+
+#### Ubuntu/Debian:
+```
+sudo apt update
+sudo apt install linux-tools-generic
+```
+
+### Database Information
+
+The application uses SQLite by default, which requires no additional configuration. The database will be automatically created when the application is first launched.
+
+## Installation
+
+### One-line Installation
+
+Simply copy and paste **one** of the following commands into your terminal:
+
+#### For ARMv7 (Orange Pi, Raspberry Pi 32-bit, etc.):
 
 ```bash
-sudo ./doctor.sh
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh)"
 ```
 
-**The script checks:**
-- USB/IP kernel modules status (usbip-host, vhci-hcd)
-- Service status (usbipd, orange-usbip)
-- Connected USB devices
-- Published devices
-- System and service logs
-- Network configuration
+#### For x86, x86_64, and ARM64 (including Raspberry Pi 64-bit):
 
-## 🗑️ Uninstallation
+```bash
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh)"
+```
 
-### Quick One-line Uninstallation
+### Uninstallation
+
+If you need to uninstall Orange USBIP Web Interface, you have several options:
+
+#### Option 1: Direct download and uninstall (one-line command)
 
 ```bash
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/uninstall.sh)"
 ```
 
-### Interactive Removal (with confirmation prompts)
-
-**One-line command:**
-```bash
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh)"
-```
-
-**Or download and run:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/maksfaktor/usbip-web/main/check_and_remove.sh -o check_and_remove.sh
-chmod +x check_and_remove.sh
-sudo ./check_and_remove.sh
-```
-
-**Interactive removal features:**
-- Detects and removes orange-usbip and usbipd services
-- Checks application directories with size reporting
-- Terminates running processes with user confirmation
-- Detailed status reporting
-- Final system verification
-
-## 📁 File Structure
-
-```
-orange-usbip/
-├── app.py                      # Main Flask application
-├── main.py                     # Entry point (imports app)
-├── models.py                   # Database models (SQLAlchemy)
-├── usbip_utils.py             # USB/IP management utilities
-├── virtual_storage_utils.py   # Virtual device management
-├── translations.py            # Translation system (i18n)
-├── storage_routes.py          # Virtual device routes
-├── templates/                 # Jinja2 HTML templates
-│   ├── base.html             # Base template with navigation
-│   ├── login.html            # Login page
-│   ├── index.html            # Main page (Dashboard)
-│   ├── local_devices.html    # Local USB devices
-│   ├── remote_devices.html   # Remote USB devices
-│   ├── terminal.html         # Web terminal
-│   └── ...                   # Other pages
-├── static/                    # Static files
-│   ├── orange-icon.svg       # Application icon (orange fruit)
-│   └── ...                   # CSS, JS, images
-├── virtual_storage/          # Virtual device file storage
-├── scripts/                  # Installation and utility scripts
-│   ├── install_debian.sh    # Debian/Ubuntu installation
-│   ├── install_arm.sh       # ARM platform installation
-│   ├── uninstall.sh        # Complete removal
-│   ├── doctor.sh           # System diagnostics
-│   └── check_and_remove.sh # Interactive removal
-├── requirements-deploy.txt   # Python dependencies
-├── pyproject.toml           # Project configuration
-└── usbip_web.db            # SQLite database (when using SQLite)
-```
-
-## 💻 Development
-
-### Install Development Dependencies
+#### Option 2: Using uninstall.sh script
 
 ```bash
-pip install -r requirements-deploy.txt
+sudo ./uninstall.sh
 ```
 
-### Required Python Packages
-
-- `flask` - Web framework
-- `flask-login` - Authentication management
-- `flask-sqlalchemy` - ORM for database
-- `flask-wtf` - Forms and CSRF protection
-- `werkzeug` - Utilities (password hashing)
-- `gunicorn` - WSGI server for production
-- `sqlalchemy` - SQL toolkit
-- `requests` - HTTP library
-- `trafilatura` - Text parsing and processing
-- `email-validator` - Email validation
-- `netifaces` - Network interface operations
-
-### Run in Development Mode
+#### Option 3: Using installation scripts with --uninstall parameter
 
 ```bash
-export DATABASE_URL="sqlite:///usbip_web.db"
-export SESSION_SECRET="your-secret-key-here"
-python main.py
+# For ARM systems
+sudo ./install_arm.sh --uninstall
+
+# For Debian/Ubuntu systems
+sudo ./install_debian.sh --uninstall
 ```
 
-Or with PostgreSQL:
+The uninstall process will:
+- Create a backup of your settings and database in `/var/backups/orangeusb/`
+- Stop and remove the systemd service
+- Remove application files and configuration
+- Clean up the sudoers configuration
+
+### Standard Installation
+
+If you prefer to check the script before running it, you can use the standard approach:
+
+1. Download the installation script
+2. Make it executable
+3. Run it as superuser
+
+#### For ARM devices (Orange Pi, Raspberry Pi 32-bit):
+
 ```bash
-export DATABASE_URL="postgresql://user:password@localhost/usbip_web"
-export SESSION_SECRET="your-secret-key-here"
-python main.py
+wget https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_arm.sh
+chmod +x install_arm.sh
+sudo ./install_arm.sh
 ```
 
-### Run in Production Mode
+#### For x86, x86_64, and ARM64 systems:
 
 ```bash
-gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
+wget https://raw.githubusercontent.com/maksfaktor/usbip-web/main/install_debian.sh
+chmod +x install_debian.sh
+sudo ./install_debian.sh
 ```
 
-## 🔒 Security
+### What do the installation scripts do?
 
-- **Authentication**: Flask-Login for session management
-- **Passwords**: Hashed using Werkzeug (default method)
-- **HTTPS**: Support via ProxyFix for reverse proxy
-- **Isolation**: Systemd service with limited permissions
-- **CSRF Protection**: Flask-WTF for form protection
-- **Session Secret**: Configurable secret key via environment variables
+The scripts automatically perform all necessary steps:
+1. ✅ Check and install all system dependencies
+2. ✅ Configure kernel modules for USB/IP
+3. ✅ Create and start systemd services
+4. ✅ Set up access permissions
+5. ✅ Create a working directory and Python virtual environment
+6. ✅ Check if a system reboot is needed
+7. ✅ Display the IP address for accessing the web interface
 
-> ⚠️ **Important**: Never store secret keys in code! Use environment variables.
+After successful installation, the script will display the address for accessing the web interface and the default credentials (`admin`/`admin`). The application will run as a system service that starts automatically when the system boots.
 
-## 🔧 System Requirements
+## Usage
 
-- **OS**: Linux with USB/IP kernel modules
-- **Python**: 3.8 or higher
-- **Database**: PostgreSQL or SQLite
-- **Memory**: 512MB RAM minimum
-- **Storage**: 100MB free space
-- **Network**: Open port 5000 (or configurable)
+After launching the application, open your browser and go to http://localhost:5000/
 
-## 🐛 Known Issues and Solutions
+By default, a user with the login `admin` and password `admin` is created.
+**Important**: After the first login, be sure to change the administrator password!
 
-**Issue**: Device not showing in list  
-**Solution**: Run `sudo ./doctor.sh` for diagnostics. May need to reload USB/IP modules.
+## Cross-platform Compatibility
 
-**Issue**: Device won't publish  
-**Solution**: Ensure device is not used by other programs. Close all programs using the device.
+The application is designed to work on various processor architectures:
+- ARM (Orange Pi, Raspberry Pi, etc.)
+- x86
+- x86-64
 
-**Issue**: Error "already bound to usbip-host"  
-**Solution**: Device is already published. Use "Cancel" button to unbind before republishing.
+### Setup on Orange Pi, Raspberry Pi, and other ARM devices
 
-**Issue**: Service doesn't start after installation  
-**Solution**: Check logs: `sudo journalctl -u orange-usbip -n 50`
+For installation on ARM devices, it is recommended to use the special automatic script `install_arm.sh`, as described in the "Installation" section. The script handles all platform-specific features, including:
 
-## 🤝 Contributing
+1. Compilation and installation of USB/IP from source (standard packages may not work on some ARM platforms)
+2. Configuration and loading of compatible kernel modules
+3. Creating necessary system services
+4. Optimization for devices with limited resources
 
-Contributions are welcome! Please follow these guidelines:
+After installation, the web interface will be available on port 5000, and logs can be viewed using `sudo journalctl -u orange-usbip`.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## Security
 
-**Development guidelines:**
-- Follow PEP 8 for Python code
-- Add comments for complex logic
-- Update documentation when changing functionality
-- Test before submitting Pull Request
+All USB/IP commands are executed with root privileges via sudo.
+It is recommended to configure sudoers to run specific usbip commands without a password.
 
-## 📝 License
+### Configuring Sudo for USB/IP
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+To avoid constantly entering a password when running USB/IP commands, configure the sudoers file:
 
-## 🙏 Acknowledgments
+```
+# Open the sudoers file for editing
+sudo visudo -f /etc/sudoers.d/usbip
 
-- Built for Orange Pi and other ARM platforms
-- Inspired by the Linux USB/IP project
-- Thanks to the community for contributions and feedback
-- Special thanks to contributors and testers
+# Add the following lines, replacing YOUR_USERNAME with your username
+YOUR_USERNAME ALL=(ALL) NOPASSWD: /usr/sbin/usbip
+YOUR_USERNAME ALL=(ALL) NOPASSWD: /usr/lib/linux-tools/*/usbip
 
-## 📞 Support
+# Save the file and exit (in vi: press ESC, then :wq and Enter)
+```
 
-- **GitHub Repository**: https://github.com/maksfaktor/usbip-web
-- **Report Issues**: https://github.com/maksfaktor/usbip-web/issues
-- **Documentation**: In development
-- **Wiki**: https://github.com/maksfaktor/usbip-web/wiki
+After this, you will be able to run usbip commands with sudo without being prompted for a password.
 
----
+## Testing in a Local Network
 
-<div align="center">
+You can set up a test environment with multiple computers, where each can act as both a USB/IP server (providing USB devices) and a client (connecting to remote USB devices).
 
-**Made with ❤️ for Orange Pi and Linux community**
+### Setting up a Test Environment with Two Computers
 
-[⬆ Back to Top](#-orange-usbip-web-interface)
+This guide will help you set up two computers in a local network to test USB/IP functionality.
 
-</div>
+#### Prerequisites
+
+- Two computers with Linux support
+- Local network with connectivity between computers
+- USB devices for testing
+
+#### Step 1: Network Configuration
+
+1. Set static IP addresses on both computers:
+
+   **Computer A:**
+   ```
+   sudo ip addr add 192.168.1.10/24 dev eth0
+   ```
+
+   **Computer B:**
+   ```
+   sudo ip addr add 192.168.1.11/24 dev eth0
+   ```
+
+   Replace `eth0` with your network interface name.
+
+2. Make sure the computers can see each other:
+
+   ```
+   ping 192.168.1.10  # from Computer B
+   ping 192.168.1.11  # from Computer A
+   ```
+
+3. Configure the firewall to allow connections on port 3240:
+
+   ```
+   sudo ufw allow 3240/tcp  # for Ubuntu/Debian with ufw
+   # or
+   sudo firewall-cmd --permanent --add-port=3240/tcp  # for Fedora/RHEL
+   sudo firewall-cmd --reload
+   ```
+
+#### Step 2: Installation on Both Computers
+
+Follow the instructions from the "Installation" section for each computer:
+
+1. Install USB/IP
+2. Install dependencies
+3. Clone and configure the application
+
+#### Step 3: Starting the USB/IP Daemon
+
+On both computers, start the USB/IP daemon:
+
+```
+sudo systemctl start usbipd
+sudo systemctl enable usbipd
+```
+
+#### Step 4: Running the Application
+
+On both computers, start the application:
+
+```
+source venv/bin/activate
+gunicorn --bind 0.0.0.0:5000 main:app
+```
+
+#### Step 5: Testing Functionality
+
+1. **Testing Device Publication:**
+   - On Computer A, open the web interface at http://192.168.1.10:5000/
+   - Log in
+   - Find your USB devices on the main page
+   - Click the "Publish" button for one of the devices
+
+2. **Testing Connection to Remote Devices:**
+   - On Computer B, open the web interface at http://192.168.1.11:5000/
+   - Log in
+   - Go to the "Remote Devices" page
+   - Enter Computer A's IP address (192.168.1.10) and click "Search for Devices"
+   - You should see the published devices from Computer A
+   - Click "Connect" for one of the devices
+   - Return to the main page where the connected remote device should now be displayed
+
+3. **Testing in the Opposite Direction:**
+   - Repeat steps 1-2, but publish devices from Computer B and connect to them from Computer A
+
+### Troubleshooting
+
+### Diagnostic Tool
+
+Orange USBIP comes with a built-in diagnostic tool that helps identify and resolve common issues.
+Run the diagnostic tool with the following command:
+
+```bash
+sudo ./doctor.sh
+```
+
+The diagnostic tool will check:
+- Operating system compatibility
+- Required commands availability
+- Service status (usbipd and orange-usbip)
+- Kernel modules
+- Open ports (3240 for usbipd and 5000 for web interface)
+- Firewall configuration
+- Published USB devices
+- Network interfaces
+- Connectivity with remote servers
+
+### Common Issues
+
+1. **Devices don't appear on the remote devices page:**
+   - Make sure port 3240 is open in the firewall
+   - Check if the usbipd daemon is running on the server computer
+   - Ensure the device is properly published
+
+2. **Error when connecting to a device:**
+   - Check logs on both computers (`journalctl -u usbipd`)
+   - Make sure the device is supported by USB/IP (not all devices work)
+   - Verify necessary access permissions
+
+3. **Device appears but doesn't work after connection:**
+   - Some devices require additional drivers or configuration
+   - USB devices requiring high data transfer rates may work unstably over the network
+   - Try disconnecting and reconnecting the device
+
+## License
+
+MIT
+
+## Project Structure
+
+### Main Working Files:
+✓ app.py - Main application file with routes and logic
+✓ models.py - SQLite data models
+✓ storage_routes.py - Routes for storage management
+✓ translations.py - Multilingual system
+✓ usbip_utils.py - Utilities for working with USB/IP
+✓ virtual_storage_utils.py - Functions for virtual storage
+✓ main.py - Application launcher
+
+### Static Files:
+All files in the static/css, static/js, and static/img directories are used in templates via url_for.
+
+### Directories to Ignore in Git:
+✓ __pycache__ - Python module cache
+✓ .cache - UV cache
+✓ attached_assets - Replit support files
