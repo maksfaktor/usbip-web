@@ -69,55 +69,55 @@
         <div class="card bg-info bg-opacity-10 border-info">
             <div class="card-header bg-info text-white">
                 <h5 class="mb-0">
-                    <i class="bi bi-lightbulb"></i> Как использовать FIDO2 виртуальное устройство
+                    <i class="bi bi-lightbulb"></i> How to Use FIDO2 Virtual Device
                 </h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <h6 class="text-info"><i class="bi bi-1-circle"></i> Первый запуск</h6>
+                        <h6 class="text-info"><i class="bi bi-1-circle"></i> First Start</h6>
                         <ol class="small">
-                            <li>Нажмите кнопку <span class="badge bg-success">Start Device</span> для запуска виртуального устройства</li>
-                            <li>Дождитесь появления зеленого индикатора статуса</li>
-                            <li>Устройство готово к использованию!</li>
+                            <li>Click the <span class="badge bg-success">Start Device</span> button to launch the virtual device</li>
+                            <li>Wait for the green status indicator to appear</li>
+                            <li>Device is ready to use!</li>
                         </ol>
 
-                        <h6 class="text-info mt-3"><i class="bi bi-2-circle"></i> Регистрация на сайте</h6>
+                        <h6 class="text-info mt-3"><i class="bi bi-2-circle"></i> Website Registration</h6>
                         <ol class="small">
-                            <li>Откройте любой сайт с поддержкой WebAuthn/FIDO2</li>
-                            <li>Выберите вход через security key</li>
-                            <li>Credential автоматически сохранится в vault</li>
-                            <li>Вы увидите его в таблице "Registered Credentials"</li>
+                            <li>Open any website with WebAuthn/FIDO2 support</li>
+                            <li>Select login via security key option</li>
+                            <li>Credential will be automatically saved to vault</li>
+                            <li>You'll see it in the "Registered Credentials" table</li>
                         </ol>
 
-                        <h6 class="text-info mt-3"><i class="bi bi-3-circle"></i> Тестирование</h6>
-                        <p class="small">Используйте тестовые сайты из блока "Quick Actions":</p>
+                        <h6 class="text-info mt-3"><i class="bi bi-3-circle"></i> Testing</h6>
+                        <p class="small">Use test sites from the "Quick Actions" section:</p>
                         <ul class="small">
-                            <li><strong>Yubico Demo</strong> - официальная демонстрация от создателей YubiKey</li>
-                            <li><strong>WebAuthn.io</strong> - интерактивный тестовый стенд</li>
+                            <li><strong>Yubico Demo</strong> - official demo from YubiKey creators</li>
+                            <li><strong>WebAuthn.io</strong> - interactive testing platform</li>
                         </ul>
                     </div>
                     
                     <div class="col-md-6">
-                        <h6 class="text-warning"><i class="bi bi-exclamation-triangle"></i> Важные замечания</h6>
+                        <h6 class="text-warning"><i class="bi bi-exclamation-triangle"></i> Important Notes</h6>
                         <ul class="small">
-                            <li><strong>Vault файл:</strong> Все credentials хранятся в <code>/home/runner/fido_data/vault.json</code></li>
-                            <li><strong>Безопасность:</strong> Регулярно делайте backup vault файла</li>
-                            <li><strong>Остановка:</strong> При остановке устройства аутентификация станет невозможна</li>
-                            <li><strong>Удаление credentials:</strong> Будьте осторожны - восстановить удаленные credentials невозможно</li>
+                            <li><strong>Vault file:</strong> All credentials stored in <code>/home/runner/fido_data/vault.json</code></li>
+                            <li><strong>Security:</strong> Create regular backups of the vault file</li>
+                            <li><strong>Stopping device:</strong> Authentication becomes impossible when device is stopped</li>
+                            <li><strong>Deleting credentials:</strong> Be careful - deleted credentials cannot be recovered</li>
                         </ul>
 
-                        <h6 class="text-success mt-3"><i class="bi bi-info-circle"></i> Полезные команды</h6>
+                        <h6 class="text-success mt-3"><i class="bi bi-info-circle"></i> Useful Commands</h6>
                         <div class="small">
-                            <p class="mb-1"><strong>Создать backup:</strong> Нажмите "Backup Vault" в Quick Actions</p>
-                            <p class="mb-1"><strong>Проверить статус:</strong> Кнопка "Check Status" обновит информацию</p>
-                            <p class="mb-1"><strong>Auto-refresh:</strong> Статус автоматически обновляется каждые 30 секунд</p>
+                            <p class="mb-1"><strong>Create backup:</strong> Click "Backup Vault" in Quick Actions</p>
+                            <p class="mb-1"><strong>Check status:</strong> "Check Status" button refreshes information</p>
+                            <p class="mb-1"><strong>Auto-refresh:</strong> Status automatically updates every 30 seconds</p>
                         </div>
 
                         <div class="alert alert-warning alert-sm mt-3 mb-0">
                             <small>
                                 <i class="bi bi-shield-check"></i> 
-                                <strong>Протоколы:</strong> Устройство поддерживает FIDO2, U2F и WebAuthn
+                                <strong>Protocols:</strong> Device supports FIDO2, U2F and WebAuthn
                             </small>
                         </div>
                     </div>
@@ -127,7 +127,7 @@
                 
                 <div class="text-center">
                     <a href="{{ url_for('fido.help_page') }}" class="btn btn-outline-info btn-sm" target="_blank">
-                        <i class="bi bi-book"></i> Открыть подробную инструкцию
+                        <i class="bi bi-book"></i> Open Detailed Guide
                     </a>
                 </div>
             </div>

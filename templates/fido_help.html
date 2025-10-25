@@ -62,33 +62,33 @@
                     <i class="bi bi-shield-lock text-primary"></i>
                     FIDO2 Virtual Security Key
                 </h1>
-                <p class="lead text-muted">Полное руководство по использованию виртуального FIDO2 устройства</p>
+                <p class="lead text-muted">Complete guide for using the virtual FIDO2 device</p>
                 <a href="{{ url_for('fido.device_page') }}" class="btn btn-primary">
-                    <i class="bi bi-arrow-left"></i> Вернуться к устройству
+                    <i class="bi bi-arrow-left"></i> Back to Device
                 </a>
             </div>
 
             <!-- Table of Contents -->
             <div class="card mb-4 bg-dark">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-list"></i> Содержание</h5>
+                    <h5 class="mb-0"><i class="bi bi-list"></i> Table of Contents</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <ul class="list-unstyled">
-                                <li><a href="#what-is-fido2">1. Что такое FIDO2?</a></li>
-                                <li><a href="#first-start">2. Первый запуск</a></li>
-                                <li><a href="#registration">3. Регистрация на сайте</a></li>
-                                <li><a href="#authentication">4. Аутентификация</a></li>
+                                <li><a href="#what-is-fido2">1. What is FIDO2?</a></li>
+                                <li><a href="#first-start">2. First Start</a></li>
+                                <li><a href="#registration">3. Website Registration</a></li>
+                                <li><a href="#authentication">4. Authentication</a></li>
                             </ul>
                         </div>
                         <div class="col-md-6">
                             <ul class="list-unstyled">
-                                <li><a href="#credentials">5. Управление credentials</a></li>
-                                <li><a href="#backup">6. Backup и восстановление</a></li>
-                                <li><a href="#troubleshooting">7. Решение проблем</a></li>
-                                <li><a href="#faq">8. Часто задаваемые вопросы</a></li>
+                                <li><a href="#credentials">5. Credentials Management</a></li>
+                                <li><a href="#backup">6. Backup & Restore</a></li>
+                                <li><a href="#troubleshooting">7. Troubleshooting</a></li>
+                                <li><a href="#faq">8. FAQ</a></li>
                             </ul>
                         </div>
                     </div>
@@ -100,47 +100,47 @@
                 <div class="card bg-dark">
                     <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                         <h3 class="text-white mb-0">
-                            <i class="bi bi-info-circle"></i> Что такое FIDO2?
+                            <i class="bi bi-info-circle"></i> What is FIDO2?
                         </h3>
                     </div>
                     <div class="card-body">
-                        <p class="lead">FIDO2 (Fast IDentity Online) - это современный стандарт аутентификации без пароля, разработанный FIDO Alliance.</p>
+                        <p class="lead">FIDO2 (Fast IDentity Online) is a modern passwordless authentication standard developed by the FIDO Alliance.</p>
                         
-                        <h5 class="mt-4">Ключевые преимущества:</h5>
+                        <h5 class="mt-4">Key Benefits:</h5>
                         <div class="row mt-3">
                             <div class="col-md-4">
                                 <div class="text-center p-3">
                                     <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
-                                    <h6 class="mt-2">Безопасность</h6>
-                                    <p class="small text-muted">Защита от фишинга и атак "человек посередине"</p>
+                                    <h6 class="mt-2">Security</h6>
+                                    <p class="small text-muted">Protection from phishing and man-in-the-middle attacks</p>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="text-center p-3">
                                     <i class="bi bi-lightning text-warning" style="font-size: 3rem;"></i>
-                                    <h6 class="mt-2">Удобство</h6>
-                                    <p class="small text-muted">Вход без ввода пароля одним нажатием</p>
+                                    <h6 class="mt-2">Convenience</h6>
+                                    <p class="small text-muted">Login without password with one click</p>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="text-center p-3">
                                     <i class="bi bi-globe text-primary" style="font-size: 3rem;"></i>
-                                    <h6 class="mt-2">Универсальность</h6>
-                                    <p class="small text-muted">Работает на тысячах сайтов по всему миру</p>
+                                    <h6 class="mt-2">Universal</h6>
+                                    <p class="small text-muted">Works on thousands of websites worldwide</p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="tip-box mt-4">
-                            <h6><i class="bi bi-lightbulb text-info"></i> Что делает виртуальное устройство?</h6>
-                            <p class="mb-0">Эмулирует физический USB security key (например, YubiKey) на программном уровне. Все credentials хранятся в зашифрованном файле vault.json на вашем сервере.</p>
+                            <h6><i class="bi bi-lightbulb text-info"></i> What does the virtual device do?</h6>
+                            <p class="mb-0">Emulates a physical USB security key (like YubiKey) at the software level. All credentials are stored in an encrypted vault.json file on your server.</p>
                         </div>
 
-                        <h5 class="mt-4">Поддерживаемые протоколы:</h5>
+                        <h5 class="mt-4">Supported Protocols:</h5>
                         <ul>
-                            <li><strong>FIDO2 (WebAuthn)</strong> - новейший стандарт, используется на большинстве современных сайтов</li>
-                            <li><strong>U2F</strong> - предыдущее поколение, совместимость с устаревшими системами</li>
-                            <li><strong>CTAP2</strong> - протокол связи между браузером и устройством</li>
+                            <li><strong>FIDO2 (WebAuthn)</strong> - latest standard, used on most modern websites</li>
+                            <li><strong>U2F</strong> - previous generation, compatibility with legacy systems</li>
+                            <li><strong>CTAP2</strong> - communication protocol between browser and device</li>
                         </ul>
                     </div>
                 </div>
@@ -151,25 +151,25 @@
                 <div class="card bg-dark">
                     <div class="card-header bg-success">
                         <h3 class="text-white mb-0">
-                            <i class="bi bi-play-circle"></i> Первый запуск
+                            <i class="bi bi-play-circle"></i> First Start
                         </h3>
                     </div>
                     <div class="card-body">
                         <div class="d-flex align-items-start mb-4">
                             <div class="step-number">1</div>
                             <div>
-                                <h5>Откройте страницу FIDO2 Device</h5>
-                                <p>Перейдите в раздел <strong>FIDO2 Device</strong> в меню навигации</p>
+                                <h5>Open FIDO2 Device Page</h5>
+                                <p>Navigate to the <strong>FIDO2 Device</strong> section in the navigation menu</p>
                             </div>
                         </div>
 
                         <div class="d-flex align-items-start mb-4">
                             <div class="step-number">2</div>
                             <div>
-                                <h5>Нажмите кнопку Start Device</h5>
-                                <p>В блоке "Device Control" нажмите зеленую кнопку <span class="badge bg-success">Start Device</span></p>
+                                <h5>Click Start Device Button</h5>
+                                <p>In the "Device Control" section, click the green <span class="badge bg-success">Start Device</span> button</p>
                                 <div class="command-box">
-                                    <code>При старте устройство выполняет команду:<br>
+                                    <code>On start, the device executes:<br>
                                     /home/runner/fido_data/virtual-fido start --vault /home/runner/fido_data/vault.json --passphrase "passphrase"</code>
                                 </div>
                             </div>
@@ -178,20 +178,20 @@
                         <div class="d-flex align-items-start mb-4">
                             <div class="step-number">3</div>
                             <div>
-                                <h5>Дождитесь запуска</h5>
-                                <p>Индикатор статуса станет зеленым, появится PID процесса. Устройство готово к работе!</p>
+                                <h5>Wait for Startup</h5>
+                                <p>The status indicator will turn green and show the process PID. Device is ready to use!</p>
                                 <div class="tip-box">
-                                    <p class="mb-0"><i class="bi bi-info-circle"></i> <strong>Автоматическое обновление:</strong> Статус устройства обновляется каждые 30 секунд автоматически</p>
+                                    <p class="mb-0"><i class="bi bi-info-circle"></i> <strong>Auto-update:</strong> Device status automatically refreshes every 30 seconds</p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="warning-box">
-                            <h6><i class="bi bi-exclamation-triangle"></i> Важно!</h6>
+                            <h6><i class="bi bi-exclamation-triangle"></i> Important!</h6>
                             <ul class="mb-0">
-                                <li>Устройство должно быть запущено для регистрации и аутентификации</li>
-                                <li>При остановке сервера устройство автоматически остановится</li>
-                                <li>Vault файл создается автоматически при первой регистрации</li>
+                                <li>Device must be running for registration and authentication</li>
+                                <li>When server stops, device will automatically stop</li>
+                                <li>Vault file is created automatically on first registration</li>
                             </ul>
                         </div>
                     </div>
@@ -203,23 +203,23 @@
                 <div class="card bg-dark">
                     <div class="card-header bg-info">
                         <h3 class="text-white mb-0">
-                            <i class="bi bi-person-plus"></i> Регистрация на сайте
+                            <i class="bi bi-person-plus"></i> Website Registration
                         </h3>
                     </div>
                     <div class="card-body">
-                        <p class="lead">Процесс создания нового credential для сайта:</p>
+                        <p class="lead">Process of creating a new credential for a website:</p>
 
                         <div class="d-flex align-items-start mb-4">
                             <div class="step-number">1</div>
                             <div>
-                                <h5>Откройте тестовый сайт</h5>
-                                <p>Для первого теста рекомендуем использовать:</p>
+                                <h5>Open Test Website</h5>
+                                <p>For first test, we recommend:</p>
                                 <ul>
                                     <li><a href="https://demo.yubico.com/webauthn" target="_blank">https://demo.yubico.com/webauthn</a></li>
                                     <li><a href="https://webauthn.io/" target="_blank">https://webauthn.io/</a></li>
                                 </ul>
                                 <div class="tip-box">
-                                    <p class="mb-0">Эти ссылки также доступны на главной странице FIDO устройства в блоке "Quick Actions"</p>
+                                    <p class="mb-0">These links are also available on the main FIDO device page in the "Quick Actions" section</p>
                                 </div>
                             </div>
                         </div>
@@ -227,19 +227,19 @@
                         <div class="d-flex align-items-start mb-4">
                             <div class="step-number">2</div>
                             <div>
-                                <h5>Начните регистрацию</h5>
-                                <p>На сайте найдите опцию "Register with Security Key" или "Sign up with WebAuthn"</p>
-                                <p>Введите ваши данные (username, email - зависит от сайта)</p>
+                                <h5>Start Registration</h5>
+                                <p>On the website, find "Register with Security Key" or "Sign up with WebAuthn" option</p>
+                                <p>Enter your details (username, email - depends on website)</p>
                             </div>
                         </div>
 
                         <div class="d-flex align-items-start mb-4">
                             <div class="step-number">3</div>
                             <div>
-                                <h5>Подтвердите регистрацию</h5>
-                                <p>Браузер покажет диалог "Вставьте security key". Виртуальное устройство автоматически ответит на запрос.</p>
+                                <h5>Confirm Registration</h5>
+                                <p>Browser will show "Insert security key" dialog. Virtual device will automatically respond to the request.</p>
                                 <div class="warning-box">
-                                    <p class="mb-0"><i class="bi bi-exclamation-triangle"></i> <strong>Внимание:</strong> Если браузер не видит устройство, убедитесь что FIDO device запущен (зеленый индикатор)</p>
+                                    <p class="mb-0"><i class="bi bi-exclamation-triangle"></i> <strong>Note:</strong> If browser doesn't see device, make sure FIDO device is running (green indicator)</p>
                                 </div>
                             </div>
                         </div>
@@ -247,12 +247,12 @@
                         <div class="d-flex align-items-start mb-4">
                             <div class="step-number">4</div>
                             <div>
-                                <h5>Проверьте credential</h5>
-                                <p>После успешной регистрации вернитесь на страницу FIDO устройства. В таблице "Registered Credentials" появится новая запись с:</p>
+                                <h5>Verify Credential</h5>
+                                <p>After successful registration, return to FIDO device page. A new entry will appear in "Registered Credentials" table with:</p>
                                 <ul>
-                                    <li><strong>RP ID:</strong> домен сайта (например, demo.yubico.com)</li>
-                                    <li><strong>User:</strong> ваше имя пользователя</li>
-                                    <li><strong>Created:</strong> дата и время регистрации</li>
+                                    <li><strong>RP ID:</strong> website domain (e.g., demo.yubico.com)</li>
+                                    <li><strong>User:</strong> your username</li>
+                                    <li><strong>Created:</strong> registration date and time</li>
                                 </ul>
                             </div>
                         </div>
@@ -265,33 +265,33 @@
                 <div class="card bg-dark">
                     <div class="card-header bg-warning text-dark">
                         <h3 class="mb-0">
-                            <i class="bi bi-key"></i> Аутентификация
+                            <i class="bi bi-key"></i> Authentication
                         </h3>
                     </div>
                     <div class="card-body">
-                        <p class="lead">Вход на сайт с использованием сохраненного credential:</p>
+                        <p class="lead">Login to website using saved credential:</p>
 
                         <ol>
                             <li class="mb-3">
-                                <strong>Убедитесь что FIDO устройство запущено</strong> (зеленый индикатор)
+                                <strong>Ensure FIDO device is running</strong> (green indicator)
                             </li>
                             <li class="mb-3">
-                                <strong>Откройте сайт</strong> на котором вы регистрировались
+                                <strong>Open the website</strong> where you registered
                             </li>
                             <li class="mb-3">
-                                <strong>Выберите вход через Security Key</strong> вместо ввода пароля
+                                <strong>Select Security Key login</strong> instead of password
                             </li>
                             <li class="mb-3">
-                                <strong>Браузер автоматически найдет credential</strong> для этого домена
+                                <strong>Browser will automatically find credential</strong> for this domain
                             </li>
                             <li class="mb-3">
-                                <strong>Подтвердите вход</strong> - вы будете авторизованы без ввода пароля!
+                                <strong>Confirm login</strong> - you'll be authenticated without entering password!
                             </li>
                         </ol>
 
                         <div class="tip-box">
-                            <h6><i class="bi bi-lightbulb"></i> Преимущество FIDO2:</h6>
-                            <p class="mb-0">Каждый credential привязан к конкретному домену. Фишинговый сайт не сможет украсть ваш credential, даже если вы попытаетесь войти через него!</p>
+                            <h6><i class="bi bi-lightbulb"></i> FIDO2 Advantage:</h6>
+                            <p class="mb-0">Each credential is bound to a specific domain. Phishing websites cannot steal your credential, even if you try to login through them!</p>
                         </div>
                     </div>
                 </div>
@@ -302,28 +302,28 @@
                 <div class="card bg-dark">
                     <div class="card-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                         <h3 class="text-white mb-0">
-                            <i class="bi bi-key-fill"></i> Управление Credentials
+                            <i class="bi bi-key-fill"></i> Credentials Management
                         </h3>
                     </div>
                     <div class="card-body">
-                        <h5>Просмотр credentials</h5>
-                        <p>Все зарегистрированные credentials отображаются в таблице на главной странице FIDO устройства.</p>
+                        <h5>Viewing Credentials</h5>
+                        <p>All registered credentials are displayed in the table on FIDO device main page.</p>
 
-                        <h5 class="mt-4">Удаление credential</h5>
+                        <h5 class="mt-4">Deleting Credential</h5>
                         <div class="warning-box">
-                            <h6><i class="bi bi-exclamation-triangle"></i> ВНИМАНИЕ!</h6>
-                            <p class="mb-0">Удаление credential необратимо! После удаления вы не сможете войти на сайт с помощью этого ключа. Вам придется заново регистрироваться.</p>
+                            <h6><i class="bi bi-exclamation-triangle"></i> WARNING!</h6>
+                            <p class="mb-0">Credential deletion is irreversible! After deletion, you won't be able to login to the website with this key. You'll need to register again.</p>
                         </div>
 
-                        <p class="mt-3">Для удаления credential:</p>
+                        <p class="mt-3">To delete a credential:</p>
                         <ol>
-                            <li>Найдите нужный credential в таблице</li>
-                            <li>Нажмите кнопку <span class="badge bg-danger">Delete</span></li>
-                            <li>Подтвердите удаление в диалоге</li>
+                            <li>Find the credential in the table</li>
+                            <li>Click the <span class="badge bg-danger">Delete</span> button</li>
+                            <li>Confirm deletion in the dialog</li>
                         </ol>
 
                         <div class="command-box mt-3">
-                            <p class="mb-1"><strong>Команда удаления:</strong></p>
+                            <p class="mb-1"><strong>Delete command:</strong></p>
                             <code>virtual-fido delete --vault vault.json --passphrase "passphrase" --id [credential_id]</code>
                         </div>
                     </div>
@@ -335,46 +335,46 @@
                 <div class="card bg-dark">
                     <div class="card-header bg-danger">
                         <h3 class="text-white mb-0">
-                            <i class="bi bi-download"></i> Backup и восстановление
+                            <i class="bi bi-download"></i> Backup & Restore
                         </h3>
                     </div>
                     <div class="card-body">
                         <div class="warning-box">
-                            <h6><i class="bi bi-exclamation-circle"></i> КРИТИЧЕСКИ ВАЖНО!</h6>
-                            <p class="mb-0">Vault файл содержит ВСЕ ваши credentials. Если вы потеряете его, восстановить доступ к сайтам будет невозможно!</p>
+                            <h6><i class="bi bi-exclamation-circle"></i> CRITICALLY IMPORTANT!</h6>
+                            <p class="mb-0">The vault file contains ALL your credentials. If you lose it, recovering access to websites will be impossible!</p>
                         </div>
 
-                        <h5 class="mt-4">Создание backup</h5>
-                        <p>Есть два способа:</p>
+                        <h5 class="mt-4">Creating Backup</h5>
+                        <p>Two methods available:</p>
 
-                        <h6>Способ 1: Через Web-интерфейс</h6>
+                        <h6>Method 1: Via Web Interface</h6>
                         <ol>
-                            <li>На странице FIDO устройства откройте блок "Quick Actions"</li>
-                            <li>Нажмите кнопку <span class="badge bg-primary">Backup Vault</span></li>
-                            <li>Backup будет создан автоматически с timestamp в имени</li>
-                            <li>Путь: <code>/home/runner/fido_data/vault_backup_YYYYMMDD_HHMMSS.json</code></li>
+                            <li>On FIDO device page, open "Quick Actions" section</li>
+                            <li>Click the <span class="badge bg-primary">Backup Vault</span> button</li>
+                            <li>Backup will be created automatically with timestamp in filename</li>
+                            <li>Path: <code>/home/runner/fido_data/vault_backup_YYYYMMDD_HHMMSS.json</code></li>
                         </ol>
 
-                        <h6 class="mt-3">Способ 2: Вручную через SSH</h6>
+                        <h6 class="mt-3">Method 2: Manual via SSH</h6>
                         <div class="command-box">
                             <code>cp /home/runner/fido_data/vault.json /home/runner/fido_data/vault_backup_$(date +%Y%m%d_%H%M%S).json</code>
                         </div>
 
-                        <h5 class="mt-4">Восстановление из backup</h5>
+                        <h5 class="mt-4">Restoring from Backup</h5>
                         <div class="warning-box">
-                            <p><i class="bi bi-exclamation-triangle"></i> <strong>Перед восстановлением ОБЯЗАТЕЛЬНО остановите FIDO устройство!</strong></p>
+                            <p><i class="bi bi-exclamation-triangle"></i> <strong>Before restoring, MUST stop FIDO device!</strong></p>
                         </div>
                         <div class="command-box">
                             <code>cp /home/runner/fido_data/vault_backup_YYYYMMDD_HHMMSS.json /home/runner/fido_data/vault.json</code>
                         </div>
 
                         <div class="tip-box mt-3">
-                            <h6><i class="bi bi-lightbulb"></i> Рекомендации:</h6>
+                            <h6><i class="bi bi-lightbulb"></i> Recommendations:</h6>
                             <ul class="mb-0">
-                                <li>Делайте backup перед каждым удалением credential</li>
-                                <li>Храните backup в безопасном месте (не на том же сервере)</li>
-                                <li>Создавайте регулярные backup (раз в неделю минимум)</li>
-                                <li>Тестируйте восстановление из backup периодически</li>
+                                <li>Create backup before each credential deletion</li>
+                                <li>Store backups in safe location (not on same server)</li>
+                                <li>Create regular backups (weekly minimum)</li>
+                                <li>Test backup restoration periodically</li>
                             </ul>
                         </div>
                     </div>
@@ -386,52 +386,52 @@
                 <div class="card bg-dark">
                     <div class="card-header bg-secondary">
                         <h3 class="text-white mb-0">
-                            <i class="bi bi-tools"></i> Решение проблем
+                            <i class="bi bi-tools"></i> Troubleshooting
                         </h3>
                     </div>
                     <div class="card-body">
-                        <h5>Проблема: Браузер не видит security key</h5>
-                        <p><strong>Решение:</strong></p>
+                        <h5>Problem: Browser doesn't see security key</h5>
+                        <p><strong>Solution:</strong></p>
                         <ol>
-                            <li>Убедитесь что FIDO устройство запущено (зеленый индикатор)</li>
-                            <li>Нажмите "Check Status" для обновления информации</li>
-                            <li>Проверьте что PID процесса отображается</li>
-                            <li>Попробуйте остановить и снова запустить устройство</li>
+                            <li>Ensure FIDO device is running (green indicator)</li>
+                            <li>Click "Check Status" to refresh information</li>
+                            <li>Verify process PID is displayed</li>
+                            <li>Try stopping and restarting the device</li>
                         </ol>
 
-                        <h5 class="mt-4">Проблема: Устройство не запускается</h5>
-                        <p><strong>Решение:</strong></p>
+                        <h5 class="mt-4">Problem: Device won't start</h5>
+                        <p><strong>Solution:</strong></p>
                         <ol>
-                            <li>Проверьте наличие binary: <code>/home/runner/fido_data/virtual-fido</code></li>
-                            <li>Проверьте права доступа на файл</li>
-                            <li>Посмотрите "Last Error" на странице устройства</li>
-                            <li>Проверьте логи в разделе "Recent Activity"</li>
+                            <li>Check binary exists: <code>/home/runner/fido_data/virtual-fido</code></li>
+                            <li>Verify file permissions</li>
+                            <li>Check "Last Error" on device page</li>
+                            <li>Review logs in "Recent Activity" section</li>
                         </ol>
 
-                        <h5 class="mt-4">Проблема: Credential не удаляется</h5>
-                        <p><strong>Решение:</strong></p>
+                        <h5 class="mt-4">Problem: Credential won't delete</h5>
+                        <p><strong>Solution:</strong></p>
                         <ol>
-                            <li>Убедитесь что устройство запущено</li>
-                            <li>Проверьте что vault файл существует и доступен для записи</li>
-                            <li>Попробуйте сначала остановить устройство, затем удалить credential</li>
+                            <li>Ensure device is running</li>
+                            <li>Check vault file exists and is writable</li>
+                            <li>Try stopping device first, then delete credential</li>
                         </ol>
 
-                        <h5 class="mt-4">Проблема: Потерян доступ к сайту</h5>
-                        <p><strong>Решение:</strong></p>
+                        <h5 class="mt-4">Problem: Lost access to website</h5>
+                        <p><strong>Solution:</strong></p>
                         <ol>
-                            <li>Проверьте наличие credential для этого домена в таблице</li>
-                            <li>Если credential был случайно удален - восстановите из backup</li>
-                            <li>Если backup нет - зарегистрируйтесь заново на сайте</li>
+                            <li>Check if credential exists for this domain in table</li>
+                            <li>If credential was accidentally deleted - restore from backup</li>
+                            <li>If no backup - register again on website</li>
                         </ol>
 
                         <div class="command-box mt-4">
-                            <p class="mb-2"><strong>Диагностические команды:</strong></p>
+                            <p class="mb-2"><strong>Diagnostic commands:</strong></p>
                             <code>
-                            # Проверить процесс<br>
+                            # Check process<br>
                             ps aux | grep virtual-fido<br><br>
-                            # Проверить vault файл<br>
+                            # Check vault file<br>
                             ls -lah /home/runner/fido_data/vault.json<br><br>
-                            # Список credentials вручную<br>
+                            # List credentials manually<br>
                             /home/runner/fido_data/virtual-fido list --vault /home/runner/fido_data/vault.json --passphrase "passphrase"
                             </code>
                         </div>
@@ -444,33 +444,33 @@
                 <div class="card bg-dark">
                     <div class="card-header bg-primary">
                         <h3 class="text-white mb-0">
-                            <i class="bi bi-question-circle"></i> Часто задаваемые вопросы
+                            <i class="bi bi-question-circle"></i> Frequently Asked Questions
                         </h3>
                     </div>
                     <div class="card-body">
-                        <h5>Q: Безопасно ли виртуальное FIDO устройство?</h5>
-                        <p><strong>A:</strong> Да, если vault файл надежно защищен. Credentials хранятся в зашифрованном виде с использованием passphrase. Однако физический security key (YubiKey) будет более безопасен, так как приватные ключи никогда не покидают устройство.</p>
+                        <h5>Q: Is virtual FIDO device secure?</h5>
+                        <p><strong>A:</strong> Yes, if vault file is properly protected. Credentials are stored encrypted using passphrase. However, physical security key (YubiKey) is more secure as private keys never leave the device.</p>
 
-                        <h5 class="mt-4">Q: Можно ли использовать виртуальное устройство для production?</h5>
-                        <p><strong>A:</strong> Для личного использования - да. Для критичных корпоративных систем рекомендуется физический security key.</p>
+                        <h5 class="mt-4">Q: Can I use virtual device for production?</h5>
+                        <p><strong>A:</strong> For personal use - yes. For critical corporate systems, physical security key is recommended.</p>
 
-                        <h5 class="mt-4">Q: Что такое RP ID?</h5>
-                        <p><strong>A:</strong> Relying Party ID - это домен сайта, для которого создан credential. Например: <code>google.com</code>, <code>github.com</code>, <code>demo.yubico.com</code></p>
+                        <h5 class="mt-4">Q: What is RP ID?</h5>
+                        <p><strong>A:</strong> Relying Party ID - the website domain for which credential was created. For example: <code>google.com</code>, <code>github.com</code>, <code>demo.yubico.com</code></p>
 
-                        <h5 class="mt-4">Q: Сколько credentials можно сохранить?</h5>
-                        <p><strong>A:</strong> Технически неограниченное количество. Все зависит от размера vault файла.</p>
+                        <h5 class="mt-4">Q: How many credentials can be stored?</h5>
+                        <p><strong>A:</strong> Technically unlimited. Depends only on vault file size.</p>
 
-                        <h5 class="mt-4">Q: Можно ли изменить passphrase?</h5>
-                        <p><strong>A:</strong> Да, но это требует пересоздания vault файла. В текущей версии используется дефолтная passphrase "passphrase". Функция смены будет добавлена в следующих обновлениях.</p>
+                        <h5 class="mt-4">Q: Can I change the passphrase?</h5>
+                        <p><strong>A:</strong> Yes, but requires recreating vault file. Current version uses default passphrase "passphrase". Passphrase change feature will be added in future updates.</p>
 
-                        <h5 class="mt-4">Q: Работает ли устройство с мобильными браузерами?</h5>
-                        <p><strong>A:</strong> Виртуальное устройство работает на сервере, поэтому доступно только через браузер на том же сервере. Для мобильных устройств используйте физический security key или platform authenticator (FaceID/TouchID).</p>
+                        <h5 class="mt-4">Q: Does device work with mobile browsers?</h5>
+                        <p><strong>A:</strong> Virtual device runs on server, so accessible only via browser on same server. For mobile devices, use physical security key or platform authenticator (FaceID/TouchID).</p>
 
-                        <h5 class="mt-4">Q: Что произойдет если я удалю vault файл?</h5>
-                        <p><strong>A:</strong> ВСЕ credentials будут потеряны безвозвратно! Вам придется заново регистрироваться на всех сайтах. Именно поэтому критически важно делать регулярные backup.</p>
+                        <h5 class="mt-4">Q: What happens if I delete vault file?</h5>
+                        <p><strong>A:</strong> ALL credentials will be lost permanently! You'll need to register again on all websites. This is why regular backups are critically important.</p>
 
-                        <h5 class="mt-4">Q: Как экспортировать credentials на другой сервер?</h5>
-                        <p><strong>A:</strong> Просто скопируйте vault.json файл на новый сервер. Убедитесь что используется та же passphrase.</p>
+                        <h5 class="mt-4">Q: How to export credentials to another server?</h5>
+                        <p><strong>A:</strong> Simply copy vault.json file to new server. Ensure same passphrase is used.</p>
                     </div>
                 </div>
             </div>
@@ -478,7 +478,7 @@
             <!-- Footer -->
             <div class="text-center mt-5 mb-5">
                 <a href="{{ url_for('fido.device_page') }}" class="btn btn-lg btn-primary">
-                    <i class="bi bi-arrow-left"></i> Вернуться к управлению устройством
+                    <i class="bi bi-arrow-left"></i> Back to Device Management
                 </a>
             </div>
 
@@ -486,7 +486,7 @@
                 <hr>
                 <p class="small">
                     <i class="bi bi-info-circle"></i> 
-                    Дополнительная информация: 
+                    Additional information: 
                     <a href="https://github.com/bulwarkid/virtual-fido" target="_blank">virtual-fido GitHub</a> | 
                     <a href="https://fidoalliance.org/" target="_blank">FIDO Alliance</a> |
                     <a href="https://webauthn.guide/" target="_blank">WebAuthn Guide</a>
