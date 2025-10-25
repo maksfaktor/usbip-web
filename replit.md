@@ -28,22 +28,26 @@ A comprehensive USB/IP device management web interface designed for robust devic
 ## Recent Changes
 
 ### October 25, 2025
-- **FIDO2 Virtual Device Integration - Help System**: Added comprehensive user help and progress tracking
-  - Created `FIDO2_PROGRESS.md` - detailed execution history file tracking 8/18 completed tasks (44%)
-  - Added progress link to main `FIDO2_INTEGRATION.md` documentation for quick navigation
-  - Implemented collapsible help section on `fido_device.html` with quick start guides
-  - Created separate help page `fido_help.html` (670 lines) with 8 detailed sections:
-    - What is FIDO2? - Introduction and key benefits
-    - First Start - Step-by-step device startup guide
-    - Registration - Website registration walkthrough
-    - Authentication - Login procedure explanation
-    - Credentials Management - Viewing and deleting credentials
-    - Backup & Restoration - Critical data protection instructions
-    - Troubleshooting - Common issues and solutions
-    - FAQ - Frequently asked questions
-  - Added `/fido/help` route in `fido_routes.py` for dedicated help page
-  - Fixed KeyError bug: changed `status_info['running']` to `status_info['is_running']` for proper status checking
-  - Help button with Quick Help accordion provides instant guidance without leaving device page
+- **FIDO2 Virtual Device Integration - Credentials & Help System**: Completed Tasks 8-10 (55.6% progress)
+  - **Task 8 - Help System**: Created comprehensive English-language help and progress tracking
+    - Created `FIDO2_PROGRESS.md` (370 lines) - detailed execution history file
+    - Added progress link to main `FIDO2_INTEGRATION.md` documentation
+    - Implemented collapsible help section on `fido_device.html`
+    - Created separate help page `fido_help.html` (498 lines) with 8 sections
+    - All help content in English (First Start, Registration, Authentication, Credentials, Backup, Troubleshooting, FAQ)
+    - Added `/fido/help` route in `fido_routes.py`
+    - Fixed KeyError bug: `status_info['running']` → `status_info['is_running']`
+  - **Task 9 - Credentials Listing**: Implemented credentials table display
+    - Table with RP ID (Domain), User, Created, Actions columns
+    - Backend: `list_fido_credentials()` parses CLI JSON output
+    - Frontend: Bootstrap table with hover effects and badge count
+    - Fallback message when no credentials exist
+  - **Task 10 - Delete Credentials** (TEST CHECKPOINT #2 PASSED):
+    - Delete button with JavaScript confirm dialog
+    - Backend route `/fido/credentials/<id>/delete` (DELETE method)
+    - Automatic database cleanup after vault deletion
+    - Flash messages for user feedback
+    - All operations logged to FidoLog table
 - **Complete Russian Translation Removal**: Removed all Russian language support for English-only interface
   - Deleted `translations.py` file (653 lines) containing Russian/English translation dictionaries
   - Replaced 307 `t()` function calls across 11 HTML templates with direct English text

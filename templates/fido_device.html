@@ -338,6 +338,48 @@
                 </div>
             </div>
 
+            <!-- Passphrase Management Card -->
+            <div class="card mb-3">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-key"></i> Passphrase Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning alert-sm">
+                        <small>
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            <strong>Warning:</strong> Changing passphrase requires device restart and vault backup.
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="currentPassphrase" class="form-label small">Current Passphrase:</label>
+                        <div class="input-group input-group-sm">
+                            <input type="password" class="form-control" id="currentPassphrase" value="********" readonly>
+                            <button class="btn btn-outline-secondary" type="button" id="showPassphraseBtn" onclick="togglePassphraseVisibility()">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted" id="passphraseStatus">Loading...</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="newPassphrase" class="form-label small">New Passphrase:</label>
+                        <input type="password" class="form-control form-control-sm" id="newPassphrase" placeholder="Min. 8 characters">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirmPassphrase" class="form-label small">Confirm Passphrase:</label>
+                        <input type="password" class="form-control form-control-sm" id="confirmPassphrase" placeholder="Re-enter new passphrase">
+                    </div>
+                    
+                    <button class="btn btn-sm btn-warning w-100" onclick="changePassphrase()">
+                        <i class="bi bi-shield-lock"></i> Change Passphrase
+                    </button>
+                </div>
+            </div>
+
             <!-- Recent Logs Card -->
             <div class="card mb-3">
                 <div class="card-header">
@@ -499,6 +541,94 @@ function deleteCredential(credentialId) {
         alert('Failed to delete credential');
     });
 }
+
+// Passphrase management functions
+let passphraseVisible = false;
+
+function loadPassphraseStatus() {
+    fetch('/fido/passphrase/get')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const statusEl = document.getElementById('passphraseStatus');
+                const currentPassEl = document.getElementById('currentPassphrase');
+                
+                currentPassEl.value = data.masked;
+                
+                if (data.is_default) {
+                    statusEl.innerHTML = '<i class="bi bi-exclamation-triangle text-warning"></i> Using default passphrase (insecure)';
+                } else {
+                    statusEl.innerHTML = '<i class="bi bi-shield-check text-success"></i> Custom passphrase set (' + data.length + ' chars)';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading passphrase status:', error);
+        });
+}
+
+function togglePassphraseVisibility() {
+    const currentPassEl = document.getElementById('currentPassphrase');
+    const btnIcon = document.querySelector('#showPassphraseBtn i');
+    
+    passphraseVisible = !passphraseVisible;
+    currentPassEl.type = passphraseVisible ? 'text' : 'password';
+    btnIcon.className = passphraseVisible ? 'bi bi-eye-slash' : 'bi bi-eye';
+}
+
+function changePassphrase() {
+    const newPass = document.getElementById('newPassphrase').value;
+    const confirmPass = document.getElementById('confirmPassphrase').value;
+    
+    if (!newPass || !confirmPass) {
+        alert('Please enter both passphrase fields');
+        return;
+    }
+    
+    if (newPass.length < 8) {
+        alert('Passphrase must be at least 8 characters long');
+        return;
+    }
+    
+    if (newPass !== confirmPass) {
+        alert('Passphrases do not match');
+        return;
+    }
+    
+    if (!confirm('WARNING: Changing passphrase requires:\n\n1. Device restart\n2. Vault backup (recommended)\n\nContinue?')) {
+        return;
+    }
+    
+    fetch('/fido/passphrase/change', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            new_passphrase: newPass
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Passphrase updated successfully!\n\nPlease restart the device for changes to take effect.');
+            document.getElementById('newPassphrase').value = '';
+            document.getElementById('confirmPassphrase').value = '';
+            loadPassphraseStatus();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to change passphrase');
+    });
+}
+
+// Load passphrase status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadPassphraseStatus();
+});
 
 // Auto-refresh status every 30 seconds
 setInterval(function() {

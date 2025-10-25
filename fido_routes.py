@@ -19,7 +19,9 @@ from fido_utils import (
     delete_fido_credential,
     get_vault_info,
     backup_vault,
-    restore_vault
+    restore_vault,
+    get_fido_passphrase,
+    set_fido_passphrase
 )
 
 logger = logging.getLogger(__name__)
@@ -335,6 +337,62 @@ def get_logs():
         
     except Exception as e:
         logger.error(f"Error getting FIDO logs: {e}")
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
+@fido_bp.route('/passphrase/get', methods=['GET'])
+@login_required
+def get_passphrase_status():
+    """Get current passphrase status (not the actual value for security)"""
+    try:
+        current = get_fido_passphrase()
+        is_default = (current == 'passphrase')
+        
+        return jsonify({
+            'success': True,
+            'is_default': is_default,
+            'length': len(current),
+            'masked': '*' * len(current)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting passphrase status: {e}")
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
+@fido_bp.route('/passphrase/change', methods=['POST'])
+@login_required
+def change_passphrase():
+    """Change FIDO passphrase"""
+    try:
+        data = request.get_json()
+        new_passphrase = data.get('new_passphrase')
+        
+        if not new_passphrase:
+            return jsonify({
+                'success': False,
+                'message': 'New passphrase is required'
+            }), 400
+        
+        result = set_fido_passphrase(new_passphrase)
+        
+        if result['success']:
+            flash('Passphrase updated successfully! Please restart device.', 'success')
+            log_fido_event('passphrase_change', 'success')
+            return jsonify(result)
+        else:
+            log_fido_event('passphrase_change', 'failed', details=result.get('error'))
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Error changing passphrase: {e}")
+        log_fido_event('passphrase_change', 'failed', details=str(e))
         return jsonify({
             'success': False,
             'message': f"Error: {str(e)}"

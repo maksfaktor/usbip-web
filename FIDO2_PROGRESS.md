@@ -1,8 +1,8 @@
 # FIDO2 Integration - История выполнения
 
 **Дата начала:** 25 октября 2025  
-**Статус:** В процессе (7 из 18 шагов выполнено)  
-**Прогресс:** 38.9% 
+**Статус:** В процессе (10 из 18 шагов выполнено)  
+**Прогресс:** 55.6% 
 
 ---
 
@@ -237,18 +237,78 @@ go build -o /home/runner/fido_data/virtual-fido ./cmd/virtual-fido
 
 ---
 
-## 🚧 Оставшиеся шаги (11)
-
 ### Шаг 8: Создание help/tips системы
-**Статус:** 🔄 В работе
-- Добавление подсказок на странице
-- Создание страницы помощи с инструкциями
+**Статус:** ✅ Выполнено  
+**Дата:** 25.10.2025 05:44 UTC
 
-### Шаг 9-18: Расширенный функционал
-**Статус:** ⏳ Ожидается
-- Улучшенный credentials listing (шаг 9)
-- Delete modal с подтверждением (шаг 10)
-- Управление passphrase (шаг 11)
+**Что сделано:**
+- Создан файл `FIDO2_PROGRESS.md` (306 строк) - детальная история выполнения
+- Добавлена ссылка на прогресс в `FIDO2_INTEGRATION.md`
+- Реализована collapsible help секция на странице `fido_device.html`:
+  - First Start guide (3 steps)
+  - Website Registration guide (4 steps)
+  - Testing section с ссылками на Yubico Demo и WebAuthn.io
+  - Important Notes и Useful Commands
+  - Поддерживаемые протоколы (FIDO2, U2F, WebAuthn)
+- Создана полная help страница `fido_help.html` (498 строк) с 8 разделами:
+  1. What is FIDO2? - Introduction and benefits
+  2. First Start - Step-by-step startup guide
+  3. Website Registration - Registration walkthrough
+  4. Authentication - Login procedure
+  5. Credentials Management - View/delete credentials
+  6. Backup & Restore - Critical data protection
+  7. Troubleshooting - Problem solutions
+  8. FAQ - 8 common questions with answers
+- Добавлен маршрут `/fido/help` в fido_routes.py
+- Весь интерфейс переведен на английский язык
+
+**Исправленные ошибки:**
+- Fixed KeyError 'running' → 'is_running' в status endpoint
+
+**Результат:** Comprehensive English-language help system completed
+
+---
+
+### Шаг 9: Реализация credentials listing
+**Статус:** ✅ Выполнено  
+**Дата:** 25.10.2025 05:45 UTC
+
+**Что сделано:**
+- Таблица "Registered Credentials" на главной странице устройства
+- Колонки: RP ID (Domain), User, Created, Actions
+- Backend: функция list_fido_credentials() парсит JSON вывод CLI
+- Frontend: Bootstrap table с hover эффектами
+- Badge с количеством credentials
+- Fallback message когда credentials отсутствуют
+
+**Результат:** Credentials listing fully functional
+
+---
+
+### Шаг 10: Delete credential функциональность
+**Статус:** ✅ Выполнено  
+**Дата:** 25.10.2025 05:45 UTC (TEST CHECKPOINT #2 PASSED)
+
+**Что сделано:**
+- Delete button для каждого credential в таблице
+- JavaScript функция deleteCredential() с confirm dialog
+- Backend маршрут `/fido/credentials/<id>/delete` (DELETE method)
+- Wrapper функция delete_fido_credential() в fido_utils.py
+- Автоматическое удаление из БД после успешного удаления из vault
+- Flash messages для feedback пользователю
+- Логирование операций удаления в FidoLog
+
+**Результат:** Delete functionality with confirmation implemented
+
+---
+
+## 🚧 Оставшиеся шаги (8)
+
+### Шаг 11: Управление passphrase
+**Статус:** 🔄 В работе  
+**Дата начала:** 25.10.2025 05:45 UTC
+- Set/change passphrase UI
+- Secure storage в переменных окружения
 - Backup/restore UI (шаг 12)
 - Logs viewer (шаг 13)
 - Statistics dashboard (шаг 14)
@@ -302,5 +362,5 @@ go build -o /home/runner/fido_data/virtual-fido ./cmd/virtual-fido
 
 ---
 
-**Последнее обновление:** 25 октября 2025, 02:25 UTC  
-**Следующий checkpoint:** После добавления help системы
+**Последнее обновление:** 25 октября 2025, 05:45 UTC  
+**Следующий checkpoint:** После реализации passphrase management (Task 11)

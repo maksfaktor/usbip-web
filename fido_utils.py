@@ -17,6 +17,53 @@ logger = logging.getLogger(__name__)
 FIDO_BINARY = '/home/runner/fido_data/virtual-fido-demo'
 FIDO_VAULT_PATH = '/home/runner/fido_data/vault.json'
 DEFAULT_PASSPHRASE = 'passphrase'
+PASSPHRASE_ENV_VAR = 'FIDO_PASSPHRASE'
+
+
+def get_fido_passphrase() -> str:
+    """
+    Get FIDO passphrase from environment variable or use default
+    
+    Returns:
+        Current passphrase (from env or default)
+    """
+    return os.environ.get(PASSPHRASE_ENV_VAR, DEFAULT_PASSPHRASE)
+
+
+def set_fido_passphrase(new_passphrase: str) -> Dict:
+    """
+    Set FIDO passphrase in environment variable
+    
+    NOTE: Environment variable changes are only valid for current process.
+    For permanent storage, add to .env file or system environment.
+    
+    Args:
+        new_passphrase: New passphrase to set
+        
+    Returns:
+        Dict with success status and message
+    """
+    try:
+        if not new_passphrase or len(new_passphrase) < 8:
+            return {
+                'success': False,
+                'error': 'Passphrase must be at least 8 characters long'
+            }
+        
+        # Set environment variable
+        os.environ[PASSPHRASE_ENV_VAR] = new_passphrase
+        logger.info("FIDO passphrase updated in environment")
+        
+        return {
+            'success': True,
+            'message': 'Passphrase updated successfully'
+        }
+    except Exception as e:
+        logger.error(f"Error setting passphrase: {str(e)}")
+        return {
+            'success': False,
+            'error': str(e)
+        }
 
 
 def check_fido_binary() -> bool:
@@ -48,7 +95,7 @@ def start_fido_device(passphrase: Optional[str] = None, vault_path: Optional[str
         if passphrase:
             cmd.extend(['--passphrase', passphrase])
         else:
-            cmd.extend(['--passphrase', DEFAULT_PASSPHRASE])
+            cmd.extend(['--passphrase', get_fido_passphrase()])
         
         if vault_path:
             cmd.extend(['--vault', vault_path])
@@ -212,7 +259,7 @@ def list_fido_credentials(passphrase: Optional[str] = None, vault_path: Optional
         if passphrase:
             cmd.extend(['--passphrase', passphrase])
         else:
-            cmd.extend(['--passphrase', DEFAULT_PASSPHRASE])
+            cmd.extend(['--passphrase', get_fido_passphrase()])
         
         if vault_path:
             cmd.extend(['--vault', vault_path])
@@ -283,7 +330,7 @@ def delete_fido_credential(credential_id: str, passphrase: Optional[str] = None,
         if passphrase:
             cmd.extend(['--passphrase', passphrase])
         else:
-            cmd.extend(['--passphrase', DEFAULT_PASSPHRASE])
+            cmd.extend(['--passphrase', get_fido_passphrase()])
         
         if vault_path:
             cmd.extend(['--vault', vault_path])
