@@ -134,9 +134,11 @@ from virtual_storage_utils import (
     delete_item, upload_file, get_storage_stats, download_file
 )
 from storage_routes import storage_bp
+from fido_routes import fido_bp
 
-# Регистрация Blueprint для управления хранилищем
+# Регистрация Blueprints
 app.register_blueprint(storage_bp)
+app.register_blueprint(fido_bp)
 
 # Инициализация базы данных
 with app.app_context():

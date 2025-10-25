@@ -409,20 +409,25 @@ def get_vault_info(vault_path: Optional[str] = None) -> Dict:
         }
 
 
-def backup_vault(backup_path: str, vault_path: Optional[str] = None) -> Dict:
+def backup_vault(backup_path: Optional[str] = None, vault_path: Optional[str] = None) -> Dict:
     """
     Create backup of vault file
     
     Args:
-        backup_path: Path for backup file
+        backup_path: Path for backup file (auto-generated if not provided)
         vault_path: Path to vault file (default: FIDO_VAULT_PATH)
     
     Returns:
-        Dict with success status
+        Dict with success status and backup_path
     """
     import shutil
     
     source = vault_path or FIDO_VAULT_PATH
+    
+    # Auto-generate backup path if not provided
+    if not backup_path:
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_path = os.path.join(FIDO_DATA_DIR, f'vault_backup_{timestamp}.json')
     
     try:
         if not os.path.exists(source):
