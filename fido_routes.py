@@ -59,6 +59,13 @@ def get_or_create_fido_device():
     return device
 
 
+@fido_bp.route('/help')
+@login_required
+def help_page():
+    """FIDO2 help and instructions page"""
+    return render_template('fido_help.html')
+
+
 @fido_bp.route('/device')
 @login_required
 def device_page():
@@ -218,8 +225,8 @@ def get_status():
         status_info = get_fido_status()
         
         # Update database if status changed
-        if status_info['running'] != device.is_running:
-            device.is_running = status_info['running']
+        if status_info['is_running'] != device.is_running:
+            device.is_running = status_info['is_running']
             device.pid = status_info.get('pid')
             db.session.commit()
             logger.info(f"FIDO device status updated: running={device.is_running}, pid={device.pid}")

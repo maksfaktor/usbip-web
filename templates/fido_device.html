@@ -55,9 +55,82 @@
             FIDO2 Virtual Security Key
         </h2>
         <div>
+            <button class="btn btn-info me-2" data-bs-toggle="collapse" data-bs-target="#helpSection">
+                <i class="bi bi-question-circle"></i> Quick Help
+            </button>
             <button class="btn btn-outline-secondary" onclick="location.reload()">
                 <i class="bi bi-arrow-clockwise"></i> Refresh
             </button>
+        </div>
+    </div>
+
+    <!-- Help Section (Collapsible) -->
+    <div class="collapse mb-4" id="helpSection">
+        <div class="card bg-info bg-opacity-10 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightbulb"></i> Как использовать FIDO2 виртуальное устройство
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-info"><i class="bi bi-1-circle"></i> Первый запуск</h6>
+                        <ol class="small">
+                            <li>Нажмите кнопку <span class="badge bg-success">Start Device</span> для запуска виртуального устройства</li>
+                            <li>Дождитесь появления зеленого индикатора статуса</li>
+                            <li>Устройство готово к использованию!</li>
+                        </ol>
+
+                        <h6 class="text-info mt-3"><i class="bi bi-2-circle"></i> Регистрация на сайте</h6>
+                        <ol class="small">
+                            <li>Откройте любой сайт с поддержкой WebAuthn/FIDO2</li>
+                            <li>Выберите вход через security key</li>
+                            <li>Credential автоматически сохранится в vault</li>
+                            <li>Вы увидите его в таблице "Registered Credentials"</li>
+                        </ol>
+
+                        <h6 class="text-info mt-3"><i class="bi bi-3-circle"></i> Тестирование</h6>
+                        <p class="small">Используйте тестовые сайты из блока "Quick Actions":</p>
+                        <ul class="small">
+                            <li><strong>Yubico Demo</strong> - официальная демонстрация от создателей YubiKey</li>
+                            <li><strong>WebAuthn.io</strong> - интерактивный тестовый стенд</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-warning"><i class="bi bi-exclamation-triangle"></i> Важные замечания</h6>
+                        <ul class="small">
+                            <li><strong>Vault файл:</strong> Все credentials хранятся в <code>/home/runner/fido_data/vault.json</code></li>
+                            <li><strong>Безопасность:</strong> Регулярно делайте backup vault файла</li>
+                            <li><strong>Остановка:</strong> При остановке устройства аутентификация станет невозможна</li>
+                            <li><strong>Удаление credentials:</strong> Будьте осторожны - восстановить удаленные credentials невозможно</li>
+                        </ul>
+
+                        <h6 class="text-success mt-3"><i class="bi bi-info-circle"></i> Полезные команды</h6>
+                        <div class="small">
+                            <p class="mb-1"><strong>Создать backup:</strong> Нажмите "Backup Vault" в Quick Actions</p>
+                            <p class="mb-1"><strong>Проверить статус:</strong> Кнопка "Check Status" обновит информацию</p>
+                            <p class="mb-1"><strong>Auto-refresh:</strong> Статус автоматически обновляется каждые 30 секунд</p>
+                        </div>
+
+                        <div class="alert alert-warning alert-sm mt-3 mb-0">
+                            <small>
+                                <i class="bi bi-shield-check"></i> 
+                                <strong>Протоколы:</strong> Устройство поддерживает FIDO2, U2F и WebAuthn
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-3">
+                
+                <div class="text-center">
+                    <a href="{{ url_for('fido.help_page') }}" class="btn btn-outline-info btn-sm" target="_blank">
+                        <i class="bi bi-book"></i> Открыть подробную инструкцию
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
