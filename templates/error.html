@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t('error') }} {{ error_code }} - {{ t('app_name') }}{% endblock %}
+{% block title %}Error {{ error_code }} - OrangeUSB - USB/IP Management System{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -9,16 +9,16 @@
             <div class="card border-danger">
                 <div class="card-body text-center">
                     <h1 class="display-1 text-danger mb-4">{{ error_code }}</h1>
-                    <h4 class="card-title text-danger mb-3">{{ t('server_error') }}</h4>
+                    <h4 class="card-title text-danger mb-3">Server Error</h4>
                     <p class="card-text mb-4">{{ error_message }}</p>
                     {% if error_details %}
                     <div class="alert alert-warning">
-                        <strong>{{ t('technical_details') }}:</strong><br>
+                        <strong>Technical Details:</strong><br>
                         <code>{{ error_details }}</code>
                     </div>
                     {% endif %}
                     <a href="{{ url_for('index') }}" class="btn btn-primary">
-                        {{ t('back_to_main') }}
+                        Back to Main Page
                     </a>
                 </div>
             </div>
