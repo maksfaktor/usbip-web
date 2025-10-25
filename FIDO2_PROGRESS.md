@@ -343,6 +343,54 @@ go build -o /home/runner/fido_data/virtual-fido ./cmd/virtual-fido
 
 ---
 
+## ✅ Task 11: Passphrase Management System (ЗАВЕРШЁН 25.10.2025 05:50 UTC)
+
+### 🎯 Выполнено:
+1. **Backend Functions (fido_utils.py):**
+   - `get_fido_passphrase()` - читает passphrase из environment variable FIDO_PASSPHRASE
+   - `set_fido_passphrase(new_passphrase)` - устанавливает новый passphrase в .env файл
+   - Обновлены `start_fido_device()`, `list_fido_credentials()`, `delete_fido_credential()` для использования динамического passphrase
+
+2. **API Routes (fido_routes.py):**
+   - `GET /fido/passphrase/get` - возвращает информацию о passphrase (masked, длина, default или custom)
+   - `POST /fido/passphrase/change` - изменяет passphrase с валидацией и логированием
+
+3. **Frontend UI (fido_device.html):**
+   - Новая карта "Passphrase Management" в правой колонке
+   - Поле с текущим passphrase (masked) с кнопкой show/hide
+   - Форма для изменения passphrase с confirmation полем
+   - Warning сообщение о необходимости backup и restart
+   - Bootstrap warning theme для выделения важности
+
+4. **JavaScript Functions:**
+   - `loadPassphraseStatus()` - загружает информацию о passphrase при загрузке страницы
+   - `togglePassphraseVisibility()` - показывает/скрывает текущий passphrase
+   - `changePassphrase()` - валидация и отправка нового passphrase
+   - Auto-load при DOMContentLoaded
+
+### 🔐 Security Features:
+- Passphrase хранится в environment variable (не в database)
+- API никогда не возвращает фактический passphrase (только masked)
+- Минимальная длина 8 символов
+- Confirmation поле для защиты от ошибок
+- Confirm dialog с предупреждением о backup
+- Все операции логируются в FidoLog
+
+### ⚙️ Технические детали:
+- Default passphrase: "passphrase" (insecure warning)
+- Хранение: `.env` файл, FIDO_PASSPHRASE переменная
+- Требуется restart устройства после изменения
+- Интеграция с существующей системой логирования
+- UI/UX: Bootstrap icons (bi-key, bi-shield-lock, bi-eye)
+
+### 📊 Результат:
+- **Progress: 11/18 tasks (61.1%)**
+- Пользователи могут безопасно менять passphrase через web-интерфейс
+- Визуальная индикация default/custom passphrase
+- Готовность к следующему шагу: Backup/Restore features (Task 12)
+
+---
+
 ## 📝 Следующие шаги
 
 **Приоритет 1 (в работе):**

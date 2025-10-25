@@ -28,9 +28,9 @@ A comprehensive USB/IP device management web interface designed for robust devic
 ## Recent Changes
 
 ### October 25, 2025
-- **FIDO2 Virtual Device Integration - Credentials & Help System**: Completed Tasks 8-10 (55.6% progress)
+- **FIDO2 Virtual Device Integration - Passphrase Management**: Completed Tasks 8-11 (61.1% progress)
   - **Task 8 - Help System**: Created comprehensive English-language help and progress tracking
-    - Created `FIDO2_PROGRESS.md` (370 lines) - detailed execution history file
+    - Created `FIDO2_PROGRESS.md` (420+ lines) - detailed execution history file
     - Added progress link to main `FIDO2_INTEGRATION.md` documentation
     - Implemented collapsible help section on `fido_device.html`
     - Created separate help page `fido_help.html` (498 lines) with 8 sections
@@ -48,6 +48,15 @@ A comprehensive USB/IP device management web interface designed for robust devic
     - Automatic database cleanup after vault deletion
     - Flash messages for user feedback
     - All operations logged to FidoLog table
+  - **Task 11 - Passphrase Management**:
+    - Backend: `get_fido_passphrase()` and `set_fido_passphrase()` functions with environment variable storage
+    - API routes: `GET /fido/passphrase/get` (status), `POST /fido/passphrase/change` (update)
+    - Updated all FIDO wrapper functions to use dynamic passphrase from FIDO_PASSPHRASE env var
+    - UI: Passphrase Management card with masked display, show/hide toggle, change form
+    - JavaScript: Auto-load status, visibility toggle, validation (min 8 chars, confirmation match)
+    - Security: Passphrase stored in .env (not database), API never returns actual value, all operations logged
+    - Warning alerts about backup and device restart requirements
+    - Default passphrase: "passphrase" with insecurity warning indicator
 - **Complete Russian Translation Removal**: Removed all Russian language support for English-only interface
   - Deleted `translations.py` file (653 lines) containing Russian/English translation dictionaries
   - Replaced 307 `t()` function calls across 11 HTML templates with direct English text
