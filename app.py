@@ -13,7 +13,6 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
-from translations import get_translation
 
 # Функция для добавления записей в журнал
 def add_log_entry(level, message, source):
@@ -116,23 +115,7 @@ def unauthorized_handler():
         }), 401
     return redirect(url_for('login'))
 
-# Helper function to get current language
-def get_current_language():
-    """
-    Получает текущий язык пользователя из сессии.
-    Если язык не выбран, возвращает язык по умолчанию (английский).
-    """
-    return session.get('language', 'en')
-
-# Add translation function to template context
-@app.context_processor
-def inject_translation():
-    """
-    Добавляет функцию перевода в контекст шаблона.
-    """
-    def translate(key, default=None):
-        return get_translation(key, get_current_language()) if default is None else default
-    return dict(t=translate)
+# Translation system removed - English only interface
 
 # Импортирование утилит
 from usbip_utils import get_local_usb_devices, bind_device, get_remote_usb_devices, attach_device, detach_device, get_attached_devices, get_published_devices
@@ -196,20 +179,7 @@ def login():
     network_interfaces = get_network_interfaces()
     return render_template('login.html', network_interfaces=network_interfaces)
 
-@app.route('/set_language/<language>')
-def set_language(language):
-    """
-    Устанавливает язык интерфейса.
-    
-    Args:
-        language (str): Код языка ('en' или 'ru')
-    """
-    if language in ['en', 'ru']:
-        session['language'] = language
-    
-    # Перенаправляем на предыдущую страницу или на главную
-    next_page = request.args.get('next') or request.referrer or url_for('index')
-    return redirect(next_page)
+# Language selection route removed - English only interface
 
 @app.route('/logout')
 @login_required
@@ -220,10 +190,7 @@ def logout():
     # Запись в лог
     add_log_entry('INFO', f'User {username} logged out', 'auth')
     
-    # Используем функцию перевода
-    lang = get_current_language()
-    message = 'You have been logged out' if lang == 'en' else 'Вы вышли из системы'
-    flash(message, 'info')
+    flash('You have been logged out', 'info')
     return redirect(url_for('login'))
 
 @app.route('/api/local_devices')
@@ -665,18 +632,16 @@ def virtual_devices():
     virtual_devices = VirtualUsbDevice.query.all()
     virtual_ports = VirtualUsbPort.query.all()
     
-    # Форматируем для шаблона
-    # Используем переводы для типов устройств
-    current_language = get_current_language()
+    # Device types for template
     device_types = [
-        {'id': 'storage', 'name': get_translation('storage_device', current_language)},
-        {'id': 'hid', 'name': get_translation('hid_device', current_language)},
-        {'id': 'serial', 'name': get_translation('serial_device', current_language)},
-        {'id': 'ethernet', 'name': get_translation('ethernet_device', current_language)},
-        {'id': 'audio', 'name': get_translation('audio_device', current_language)},
-        {'id': 'printer', 'name': get_translation('printer_device', current_language)},
-        {'id': 'camera', 'name': get_translation('camera_device', current_language)},
-        {'id': 'custom', 'name': get_translation('custom_device', current_language)}
+        {'id': 'storage', 'name': 'Storage Device (Flash Drive)'},
+        {'id': 'hid', 'name': 'HID (Mouse, Keyboard)'},
+        {'id': 'serial', 'name': 'Serial Port'},
+        {'id': 'ethernet', 'name': 'Network Adapter'},
+        {'id': 'audio', 'name': 'Audio Device'},
+        {'id': 'printer', 'name': 'Printer'},
+        {'id': 'camera', 'name': 'Web Camera'},
+        {'id': 'custom', 'name': 'Other (Custom Configuration)'}
     ]
     
     # Получаем информацию о сетевых интерфейсах
