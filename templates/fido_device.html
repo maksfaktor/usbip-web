@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+
+{% block title %}FIDO2 Virtual Device - OrangeUSB{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    .status-running {
+        background-color: #28a745;
+        box-shadow: 0 0 8px #28a745;
+    }
+    .status-stopped {
+        background-color: #6c757d;
+    }
+    .fido-action-btn {
+        min-width: 120px;
+    }
+    .credential-badge {
+        font-size: 0.85em;
+        padding: 0.4em 0.8em;
+    }
+    .log-timestamp {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+    }
+    .info-row {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #adb5bd;
+    }
+    .info-value {
+        color: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 px-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-shield-lock"></i> 
+            FIDO2 Virtual Security Key
+        </h2>
+        <div>
+            <button class="btn btn-outline-secondary" onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }}"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row g-3">
+        <!-- Left Column: Device Control and Info -->
+        <div class="col-lg-8">
+            <!-- Device Status Card -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear"></i> Device Control
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h4 class="mb-3">
+                                <span class="status-indicator {% if device.is_running %}status-running{% else %}status-stopped{% endif %}" id="status-indicator"></span>
+                                <span id="status-text">
+                                    {% if device.is_running %}
+                                        <span class="text-success">Running</span>
+                                    {% else %}
+                                        <span class="text-secondary">Stopped</span>
+                                    {% endif %}
+                                </span>
+                            </h4>
+                            <div class="info-row">
+                                <span class="info-label">PID:</span>
+                                <span class="info-value" id="device-pid">
+                                    {% if device.pid %}{{ device.pid }}{% else %}N/A{% endif %}
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Started:</span>
+                                <span class="info-value">
+                                    {% if device.started_at %}
+                                        {{ device.started_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    {% else %}
+                                        Never
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Auto-start:</span>
+                                <span class="info-value">
+                                    {% if device.auto_start %}
+                                        <span class="badge bg-success">Enabled</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Disabled</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 text-center">
+                            {% if device.is_running %}
+                                <button class="btn btn-danger fido-action-btn mb-2" onclick="controlDevice('stop')" id="stop-btn">
+                                    <i class="bi bi-stop-circle"></i> Stop Device
+                                </button>
+                            {% else %}
+                                <button class="btn btn-success fido-action-btn mb-2" onclick="controlDevice('start')" id="start-btn">
+                                    <i class="bi bi-play-circle"></i> Start Device
+                                </button>
+                            {% endif %}
+                            <br>
+                            <button class="btn btn-outline-info fido-action-btn" onclick="checkStatus()">
+                                <i class="bi bi-arrow-clockwise"></i> Check Status
+                            </button>
+                        </div>
+                    </div>
+
+                    {% if device.last_error %}
+                    <div class="alert alert-danger mt-3 mb-0">
+                        <strong>Last Error:</strong> {{ device.last_error }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Device Information Card -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Device Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <span class="info-label">Binary Status:</span>
+                        <span class="info-value">
+                            {% if binary_exists %}
+                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Available</span>
+                            {% else %}
+                                <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Not Found</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Binary Path:</span>
+                        <span class="info-value"><code>/home/runner/fido_data/virtual-fido</code></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Vault Path:</span>
+                        <span class="info-value"><code>{{ device.vault_path }}</code></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Vault Status:</span>
+                        <span class="info-value">
+                            {% if vault_info.exists %}
+                                <span class="badge bg-success">Exists</span>
+                                <small class="text-muted ms-2">{{ vault_info.size }} bytes</small>
+                            {% else %}
+                                <span class="badge bg-warning">Not Created</span>
+                                <small class="text-muted ms-2">Will be created on first use</small>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Protocol:</span>
+                        <span class="info-value">FIDO2 / U2F / WebAuthn</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credentials Card (placeholder) -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-key"></i> Registered Credentials
+                        <span class="badge bg-primary credential-badge">{{ credentials|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if credentials %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>RP ID (Domain)</th>
+                                        <th>User</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cred in credentials %}
+                                    <tr>
+                                        <td><code>{{ cred.rp_id }}</code></td>
+                                        <td>{{ cred.user_name|default('N/A', true) }}</td>
+                                        <td>{{ cred.created_at|default('Unknown', true) }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteCredential('{{ cred.credential_id }}')">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle"></i> 
+                            No credentials registered yet. Visit a WebAuthn-enabled website to register your first credential.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Logs and Actions -->
+        <div class="col-lg-4">
+            <!-- Quick Actions Card -->
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" onclick="backupVault()">
+                            <i class="bi bi-download"></i> Backup Vault
+                        </button>
+                        <a href="https://demo.yubico.com/webauthn" target="_blank" class="btn btn-outline-success">
+                            <i class="bi bi-box-arrow-up-right"></i> Test Device (Yubico Demo)
+                        </a>
+                        <a href="https://webauthn.io/" target="_blank" class="btn btn-outline-success">
+                            <i class="bi bi-box-arrow-up-right"></i> Test Device (WebAuthn.io)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Logs Card -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    {% if recent_logs %}
+                        <div class="list-group list-group-flush">
+                            {% for log in recent_logs %}
+                            <div class="list-group-item bg-dark border-secondary">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="badge bg-{% if log.status == 'success' %}success{% elif log.status == 'failed' %}danger{% else %}warning{% endif %}">
+                                            {{ log.event_type }}
+                                        </span>
+                                        {% if log.rp_id %}
+                                            <small class="text-muted ms-2">{{ log.rp_id }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <small class="log-timestamp text-muted">
+                                        {{ log.timestamp.strftime('%H:%M:%S') }}
+                                    </small>
+                                </div>
+                                {% if log.details %}
+                                    <small class="text-muted d-block mt-1">{{ log.details }}</small>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary mb-0">
+                            <i class="bi bi-inbox"></i> No activity logged yet
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for AJAX control -->
+<script>
+function controlDevice(action) {
+    const button = action === 'start' ? document.getElementById('start-btn') : document.getElementById('stop-btn');
+    const originalHtml = button.innerHTML;
+    
+    // Show loading state
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
+    
+    fetch('/fido/' + action, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+            button.disabled = false;
+            button.innerHTML = originalHtml;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to ' + action + ' device');
+        button.disabled = false;
+        button.innerHTML = originalHtml;
+    });
+}
+
+function checkStatus() {
+    fetch('/fido/status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Device status:', data.status);
+                const isRunning = data.status.running;
+                
+                // Update UI
+                const indicator = document.getElementById('status-indicator');
+                const statusText = document.getElementById('status-text');
+                const pidText = document.getElementById('device-pid');
+                
+                if (isRunning) {
+                    indicator.classList.remove('status-stopped');
+                    indicator.classList.add('status-running');
+                    statusText.innerHTML = '<span class="text-success">Running</span>';
+                    pidText.textContent = data.status.pid || 'N/A';
+                } else {
+                    indicator.classList.remove('status-running');
+                    indicator.classList.add('status-stopped');
+                    statusText.innerHTML = '<span class="text-secondary">Stopped</span>';
+                    pidText.textContent = 'N/A';
+                }
+                
+                alert('Status updated successfully!');
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to check status');
+        });
+}
+
+function backupVault() {
+    if (!confirm('Create backup of FIDO vault?')) {
+        return;
+    }
+    
+    fetch('/fido/vault/backup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Vault backup created successfully!\n\nBackup location: ' + data.backup_path);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to create backup');
+    });
+}
+
+function deleteCredential(credentialId) {
+    if (!confirm('Delete this credential? This action cannot be undone.')) {
+        return;
+    }
+    
+    fetch('/fido/credentials/' + credentialId, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to delete credential');
+    });
+}
+
+// Auto-refresh status every 30 seconds
+setInterval(function() {
+    fetch('/fido/status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const isRunning = data.status.running;
+                const indicator = document.getElementById('status-indicator');
+                const statusText = document.getElementById('status-text');
+                const pidText = document.getElementById('device-pid');
+                
+                if (isRunning) {
+                    indicator.classList.remove('status-stopped');
+                    indicator.classList.add('status-running');
+                    statusText.innerHTML = '<span class="text-success">Running</span>';
+                    pidText.textContent = data.status.pid || 'N/A';
+                } else {
+                    indicator.classList.remove('status-running');
+                    indicator.classList.add('status-stopped');
+                    statusText.innerHTML = '<span class="text-secondary">Stopped</span>';
+                    pidText.textContent = 'N/A';
+                }
+            }
+        })
+        .catch(error => console.error('Auto-refresh error:', error));
+}, 30000);
+</script>
+{% endblock %}
