@@ -121,7 +121,11 @@ def unauthorized_handler():
 from usbip_utils import get_local_usb_devices, bind_device, get_remote_usb_devices, attach_device, detach_device, get_attached_devices, get_published_devices
 
 # Импортирование моделей (после настройки db)
-from models import User, DeviceAlias, UsbPort, LogEntry, VirtualUsbDevice, VirtualUsbPort, VirtualUsbFile, TerminalCommand
+from models import (
+    User, DeviceAlias, UsbPort, LogEntry,
+    VirtualUsbDevice, VirtualUsbPort, VirtualUsbFile, TerminalCommand,
+    FidoDevice, FidoCredential, FidoLog
+)
 
 # Импортирование модулей для управления виртуальным хранилищем
 from virtual_storage_utils import (

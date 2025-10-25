@@ -125,3 +125,91 @@ class TerminalCommand(db.Model):
     
     def __repr__(self):
         return f'<TerminalCommand {self.name}>'
+
+
+class FidoDevice(db.Model):
+    """FIDO2 Virtual Device settings and status"""
+    __tablename__ = 'fido_devices'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    is_running = db.Column(db.Boolean, default=False)
+    pid = db.Column(db.Integer, nullable=True)
+    started_at = db.Column(db.DateTime, nullable=True)
+    stopped_at = db.Column(db.DateTime, nullable=True)
+    auto_start = db.Column(db.Boolean, default=False)
+    vault_path = db.Column(db.String(512), default='/home/runner/fido_data/vault.json')
+    passphrase_hash = db.Column(db.String(256), nullable=True)  # Хешированный passphrase
+    last_error = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        status = 'Running' if self.is_running else 'Stopped'
+        return f'<FidoDevice {status} (PID: {self.pid})>'
+
+
+class FidoCredential(db.Model):
+    """Metadata for FIDO2 credentials (not the actual credentials)"""
+    __tablename__ = 'fido_credentials'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    credential_id = db.Column(db.String(256), unique=True, nullable=False)  # ID из vault
+    rp_id = db.Column(db.String(256), nullable=False)  # Relying Party ID (domain)
+    user_id = db.Column(db.String(256), nullable=True)  # User ID
+    username = db.Column(db.String(256), nullable=True)  # Username/email
+    display_name = db.Column(db.String(256), nullable=True)  # Display name
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_used = db.Column(db.DateTime, nullable=True)
+    use_count = db.Column(db.Integer, default=0)
+    
+    def __repr__(self):
+        return f'<FidoCredential {self.rp_id} - {self.username}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'credential_id': self.credential_id,
+            'rp_id': self.rp_id,
+            'user_id': self.user_id,
+            'username': self.username,
+            'display_name': self.display_name,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'last_used': self.last_used.isoformat() if self.last_used else None,
+            'use_count': self.use_count
+        }
+
+
+class FidoLog(db.Model):
+    """Log of FIDO2 operations"""
+    __tablename__ = 'fido_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    event_type = db.Column(db.String(64), nullable=False)  # device_start, device_stop, registration, authentication, credential_delete
+    rp_id = db.Column(db.String(256), nullable=True)  # Domain для credential операций
+    credential_id = db.Column(db.String(256), nullable=True)  # ID credential если есть
+    status = db.Column(db.String(32), nullable=False)  # success, failed, pending
+    details = db.Column(db.Text, nullable=True)  # Дополнительные детали
+    ip_address = db.Column(db.String(64), nullable=True)  # IP пользователя
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
+    # Связь с пользователем
+    user = db.relationship('User', backref=db.backref('fido_logs', lazy=True))
+    
+    def __repr__(self):
+        return f'<FidoLog {self.timestamp} {self.event_type} - {self.status}>'
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'timestamp': self.timestamp.isoformat() if self.timestamp else None,
+            'event_type': self.event_type,
+            'rp_id': self.rp_id,
+            'credential_id': self.credential_id,
+            'status': self.status,
+            'details': self.details,
+            'ip_address': self.ip_address,
+            'user_id': self.user_id
+        }
