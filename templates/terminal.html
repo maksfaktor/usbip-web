@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t('terminal') }} - {{ t('app_name') }}{% endblock %}
+{% block title %}Terminal - OrangeUSB - USB/IP Management System{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4">
@@ -10,19 +10,19 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                        <i class="bi bi-terminal me-2"></i>{{ t('terminal') }}
+                        <i class="bi bi-terminal me-2"></i>Terminal
                     </h5>
                     <div>
                         <button class="btn btn-sm btn-outline-secondary" id="clearTerminal">
-                            <i class="bi bi-trash"></i> {{ t('clear') }}
+                            <i class="bi bi-trash"></i> Clear
                         </button>
                     </div>
                 </div>
                 <div class="card-body p-0">
                     <!-- Terminal Output -->
                     <div id="terminalOutput" class="bg-dark text-light p-3" style="height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 14px;">
-                        <div class="text-success">{{ t('terminal_welcome') }}</div>
-                        <div class="text-muted">{{ t('terminal_help') }}</div>
+                        <div class="text-success">Orange USB/IP Web Terminal</div>
+                        <div class="text-muted">Type commands below and press Enter to execute</div>
                         <div class="mb-2">---</div>
                     </div>
                     <!-- Terminal Input -->
@@ -31,7 +31,7 @@
                             <span class="input-group-text bg-success text-white">$</span>
                             <input type="text" class="form-control bg-dark text-light border-0" 
                                    id="terminalInput" 
-                                   placeholder="{{ t('enter_command') }}"
+                                   placeholder="Enter command..."
                                    autocomplete="off">
                             <button class="btn btn-success" type="button" id="executeCommand">
                                 <i class="bi bi-play-fill"></i>
@@ -47,10 +47,10 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                        <i class="bi bi-collection me-2"></i>{{ t('command_buttons') }}
+                        <i class="bi bi-collection me-2"></i>Command Buttons
                     </h5>
                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createCommandModal">
-                        <i class="bi bi-plus-lg"></i> {{ t('add') }}
+                        <i class="bi bi-plus-lg"></i> Add
                     </button>
                 </div>
                 <div class="card-body" style="max-height: 500px; overflow-y: auto;">
@@ -85,7 +85,7 @@
                     {% else %}
                         <div class="text-muted text-center py-4">
                             <i class="bi bi-collection display-4 d-block mb-3"></i>
-                            {{ t('no_commands') }}
+                            No command buttons created yet
                         </div>
                     {% endif %}
                 </div>
@@ -101,31 +101,31 @@
             <form method="post" action="{{ url_for('create_terminal_command') }}">
                 <div class="modal-header">
                     <h5 class="modal-title" id="createCommandModalLabel">
-                        {{ t('create_command') }}
+                        Create Command Button
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="commandName" class="form-label">{{ t('name') }} *</label>
+                        <label for="commandName" class="form-label">Name *</label>
                         <input type="text" class="form-control" id="commandName" name="name" required maxlength="64">
                     </div>
                     <div class="mb-3">
-                        <label for="commandCommand" class="form-label">{{ t('command') }} *</label>
+                        <label for="commandCommand" class="form-label">Command *</label>
                         <textarea class="form-control" id="commandCommand" name="command" rows="3" required></textarea>
-                        <div class="form-text">{{ t('command_help') }}</div>
+                        <div class="form-text">Enter the shell command to execute</div>
                     </div>
                     <div class="mb-3">
-                        <label for="commandDescription" class="form-label">{{ t('description') }}</label>
+                        <label for="commandDescription" class="form-label">Description</label>
                         <input type="text" class="form-control" id="commandDescription" name="description" maxlength="255">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        {{ t('cancel') }}
+                        Cancel
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        {{ t('create') }}
+                        Create
                     </button>
                 </div>
             </form>
@@ -140,30 +140,30 @@
             <form method="post" id="editCommandForm">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editCommandModalLabel">
-                        {{ t('edit_command') }}
+                        Edit Command Button
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="editCommandName" class="form-label">{{ t('name') }} *</label>
+                        <label for="editCommandName" class="form-label">Name *</label>
                         <input type="text" class="form-control" id="editCommandName" name="name" required maxlength="64">
                     </div>
                     <div class="mb-3">
-                        <label for="editCommandCommand" class="form-label">{{ t('command') }} *</label>
+                        <label for="editCommandCommand" class="form-label">Command *</label>
                         <textarea class="form-control" id="editCommandCommand" name="command" rows="3" required></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="editCommandDescription" class="form-label">{{ t('description') }}</label>
+                        <label for="editCommandDescription" class="form-label">Description</label>
                         <input type="text" class="form-control" id="editCommandDescription" name="description" maxlength="255">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        {{ t('cancel') }}
+                        Cancel
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        {{ t('save') }}
+                        Save
                     </button>
                 </div>
             </form>
@@ -178,20 +178,20 @@
             <form method="post" id="deleteCommandForm">
                 <div class="modal-header">
                     <h5 class="modal-title" id="deleteCommandModalLabel">
-                        {{ t('confirm_delete') }}
+                        Confirm Delete
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>{{ t('delete_command_confirm') }}</p>
+                    <p>Are you sure you want to delete this command button?</p>
                     <p class="text-muted"><strong id="deleteCommandName"></strong></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        {{ t('cancel') }}
+                        Cancel
                     </button>
                     <button type="submit" class="btn btn-danger">
-                        {{ t('delete') }}
+                        Delete
                     </button>
                 </div>
             </form>
@@ -312,8 +312,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обработчик кнопки очистки
     clearBtn.addEventListener('click', function() {
         terminalOutput.innerHTML = `
-            <div class="text-success">{{ t('terminal_welcome', 'Orange USB/IP Web Terminal') }}</div>
-            <div class="text-muted">{{ t('terminal_help', 'Type commands below and press Enter to execute') }}</div>
+            <div class="text-success">Orange USB/IP Web Terminal</div>
+            <div class="text-muted">Type commands below and press Enter to execute</div>
             <div class="mb-2">---</div>
         `;
     });
