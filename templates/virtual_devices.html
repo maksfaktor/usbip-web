@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ t('virtual_usb_devices') }} - OrangeUSB{% endblock %}
+{% block title %}Virtual USB Devices - OrangeUSB{% endblock %}
 
 {% block head %}
 <style>
@@ -64,9 +64,9 @@
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><i class="fas fa-microchip me-2"></i>{{ t('virtual_devices') }}</h4>
+                <h4 class="mb-0"><i class="fas fa-microchip me-2"></i>Virtual Devices</h4>
                 <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createDeviceModal">
-                    <i class="fas fa-plus me-1"></i>{{ t('create_device') }}
+                    <i class="fas fa-plus me-1"></i>Create Device
                 </button>
             </div>
             <div class="card-body p-0">
@@ -75,12 +75,12 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th>{{ t('name') }}</th>
-                                <th>{{ t('type') }}</th>
+                                <th>Name</th>
+                                <th>Type</th>
                                 <th>VID:PID</th>
-                                <th>{{ t('status') }}</th>
-                                <th>{{ t('info') }}</th>
-                                <th>{{ t('actions') }}</th>
+                                <th>Status</th>
+                                <th>Info</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -89,24 +89,24 @@
                                 <td>{{ device.name }}</td>
                                 <td>
                                     {% if device.device_type == 'hid' %}
-                                        <span class="badge bg-primary">{{ t('hid_device_badge') }}</span>
+                                        <span class="badge bg-primary">HID Device</span>
                                     {% elif device.device_type == 'storage' %}
-                                        <span class="badge bg-info">{{ t('storage_device_badge') }}</span>
+                                        <span class="badge bg-info">Storage</span>
                                         {% if device.is_system_path %}
-                                            <span class="badge bg-warning">{{ t('system_folder_badge') }}</span>
+                                            <span class="badge bg-warning">System Folder</span>
                                         {% else %}
-                                            <span class="badge bg-secondary">{{ t('virtual_badge') }}</span>
+                                            <span class="badge bg-secondary">Virtual</span>
                                         {% endif %}
                                     {% elif device.device_type == 'serial' %}
-                                        <span class="badge bg-secondary">{{ t('serial_device_badge') }}</span>
+                                        <span class="badge bg-secondary">COM Port</span>
                                     {% elif device.device_type == 'ethernet' %}
-                                        <span class="badge bg-dark">{{ t('ethernet_device_badge') }}</span>
+                                        <span class="badge bg-dark">Network</span>
                                     {% elif device.device_type == 'audio' %}
-                                        <span class="badge bg-success">{{ t('audio_device_badge') }}</span>
+                                        <span class="badge bg-success">Audio</span>
                                     {% elif device.device_type == 'printer' %}
-                                        <span class="badge bg-danger">{{ t('printer_device_badge') }}</span>
+                                        <span class="badge bg-danger">Printer</span>
                                     {% elif device.device_type == 'camera' %}
-                                        <span class="badge bg-warning">{{ t('camera_device_badge') }}</span>
+                                        <span class="badge bg-warning">Camera</span>
                                     {% else %}
                                         <span class="badge bg-light text-dark">{{ device.device_type }}</span>
                                     {% endif %}
@@ -114,21 +114,21 @@
                                 <td><code>{{ device.vendor_id }}:{{ device.product_id }}</code></td>
                                 <td>
                                     {% if device.is_active %}
-                                        <span class="badge bg-success">{{ t('active') }}</span>
+                                        <span class="badge bg-success">Active</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">{{ t('inactive') }}</span>
+                                        <span class="badge bg-secondary">Inactive</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if device.device_type == 'storage' %}
                                         <small>
                                         {% if device.is_system_path and device.storage_path %}
-                                            <strong>{{ t('path') }}: </strong>
+                                            <strong>Path: </strong>
                                             <span class="text-break d-inline-block" style="max-width: 150px;">
                                                 <code>{{ device.storage_path }}</code>
                                             </span><br>
                                         {% endif %}
-                                        <strong>{{ t('size') }}: </strong>{{ device.storage_size }} {{ t('mb_unit') }}
+                                        <strong>Size: </strong>{{ device.storage_size }} MB
                                         </small>
                                     {% endif %}
                                 </td>
@@ -139,16 +139,16 @@
                                                 data-bs-target="#connectDeviceModal"
                                                 data-device-id="{{ device.id }}"
                                                 data-device-name="{{ device.name }}">
-                                            <i class="fas fa-plug me-1"></i>{{ t('connect') }}
+                                            <i class="fas fa-plug me-1"></i>Connect
                                         </button>
                                         <button class="btn btn-sm btn-outline-danger delete-device-btn"
                                                 data-device-id="{{ device.id }}"
                                                 data-device-name="{{ device.name }}">
-                                            <i class="fas fa-trash me-1"></i>{{ t('delete') }}
+                                            <i class="fas fa-trash me-1"></i>Delete
                                         </button>
                                         {% if device.device_type == 'storage' %}
                                             <a href="{{ url_for('storage.manage_storage', device_id=device.id) }}" class="btn btn-sm btn-outline-info">
-                                                <i class="fas fa-hdd me-1"></i>{{ t('files') }}
+                                                <i class="fas fa-hdd me-1"></i>Files
                                             </a>
                                         {% endif %}
                                     </div>
@@ -160,7 +160,7 @@
                 </div>
                 {% else %}
                 <div class="alert alert-info m-3">
-                    <i class="fas fa-info-circle me-2"></i>{{ t('no_virtual_devices') }}
+                    <i class="fas fa-info-circle me-2"></i>No virtual devices
                 </div>
                 {% endif %}
             </div>
@@ -171,9 +171,9 @@
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>{{ t('virtual_ports') }}</h4>
+                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>Virtual Ports</h4>
                 <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createPortModal">
-                    <i class="fas fa-plus me-1"></i>{{ t('create_port') }}
+                    <i class="fas fa-plus me-1"></i>Create Port
                 </button>
             </div>
             <div class="card-body p-0">
@@ -182,11 +182,11 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th>{{ t('name') }}</th>
-                                <th>{{ t('number') }}</th>
-                                <th>{{ t('device') }}</th>
-                                <th>{{ t('status') }}</th>
-                                <th>{{ t('actions') }}</th>
+                                <th>Name</th>
+                                <th>Number</th>
+                                <th>Device</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -198,14 +198,14 @@
                                     {% if port.device %}
                                         {{ port.device.name }}
                                     {% else %}
-                                        <span class="text-muted">{{ t('not_connected') }}</span>
+                                        <span class="text-muted">Not Connected</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if port.is_connected %}
-                                        <span class="badge bg-success">{{ t('connected') }}</span>
+                                        <span class="badge bg-success">Connected</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">{{ t('disconnected') }}</span>
+                                        <span class="badge bg-secondary">Disconnected</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -214,7 +214,7 @@
                                             <form method="POST" action="{{ url_for('disconnect_virtual_device') }}" class="d-inline">
                                                 <input type="hidden" name="port_id" value="{{ port.id }}">
                                                 <button type="submit" class="btn btn-sm btn-outline-warning">
-                                                    <i class="fas fa-unlink me-1"></i>{{ t('disconnect') }}
+                                                    <i class="fas fa-unlink me-1"></i>Disconnect
                                                 </button>
                                             </form>
                                         {% else %}
@@ -223,13 +223,13 @@
                                                     data-bs-target="#connectDeviceModal"
                                                     data-port-id="{{ port.id }}"
                                                     data-port-name="{{ port.name }}">
-                                                <i class="fas fa-link me-1"></i>{{ t('connect') }}
+                                                <i class="fas fa-link me-1"></i>Connect
                                             </button>
                                         {% endif %}
                                         <button class="btn btn-sm btn-outline-danger delete-port-btn"
                                                 data-port-id="{{ port.id }}"
                                                 data-port-name="{{ port.name }}">
-                                            <i class="fas fa-trash me-1"></i>{{ t('delete') }}
+                                            <i class="fas fa-trash me-1"></i>Delete
                                         </button>
                                     </div>
                                 </td>
@@ -240,7 +240,7 @@
                 </div>
                 {% else %}
                 <div class="alert alert-info m-3">
-                    <i class="fas fa-info-circle me-2"></i>{{ t('no_virtual_ports') }}
+                    <i class="fas fa-info-circle me-2"></i>No virtual ports
                 </div>
                 {% endif %}
             </div>
@@ -253,17 +253,17 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createDeviceModalLabel">{{ t('create_virtual_device') }}</h5>
+                <h5 class="modal-title" id="createDeviceModalLabel">Create Virtual Device</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('create_virtual_device') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="name" class="form-label">{{ t('device_name') }}</label>
+                        <label for="name" class="form-label">Device Name</label>
                         <input type="text" class="form-control" id="name" name="name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="device_type" class="form-label">{{ t('device_type') }}</label>
+                        <label for="device_type" class="form-label">Device Type</label>
                         <select class="form-select" id="device_type" name="device_type" required>
                             {% for type in device_types %}
                                 <option value="{{ type.id }}">{{ type.name }}</option>
@@ -275,45 +275,45 @@
                     <div class="storage-options mb-3" style="display: none;">
                         <div class="card">
                             <div class="card-header bg-info bg-opacity-10">
-                                <h6 class="mb-0">{{ t('storage_settings') }}</h6>
+                                <h6 class="mb-0">Storage Settings</h6>
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="use_system_folder" name="use_system_folder">
-                                        <label class="form-check-label" for="use_system_folder">{{ t('use_existing_system_folder') }}</label>
+                                        <label class="form-check-label" for="use_system_folder">Use existing system folder</label>
                                     </div>
                                 </div>
                                 
                                 <!-- Опции для нового виртуального хранилища -->
                                 <div id="virtual_storage_options">
                                     <div class="mb-3">
-                                        <label for="storage_size" class="form-label">{{ t('storage_size_mb') }}</label>
+                                        <label for="storage_size" class="form-label">Storage Size (MB)</label>
                                         <input type="number" class="form-control" id="storage_size" name="storage_size" 
                                                value="1024" min="1" max="16384">
-                                        <div class="form-text">{{ t('storage_size_description') }}</div>
+                                        <div class="form-text">Storage size description</div>
                                     </div>
                                 </div>
                                 
                                 <!-- Опции для существующей системной папки -->
                                 <div id="system_folder_options" style="display: none;">
                                     <div class="mb-3">
-                                        <label for="system_path" class="form-label">{{ t('system_folder_path') }}</label>
+                                        <label for="system_path" class="form-label">System Folder Path</label>
                                         <div class="input-group">
                                             <input type="text" class="form-control" id="system_path" name="system_path" 
                                                    placeholder="/path/to/folder" readonly>
                                             <button type="button" class="btn btn-outline-primary" id="browse_button"
                                                     data-bs-toggle="modal" data-bs-target="#folderBrowserModal">
-                                                <i class="fas fa-folder-open"></i> {{ t('select') }}
+                                                <i class="fas fa-folder-open"></i> Select
                                             </button>
                                         </div>
-                                        <div class="form-text">{{ t('select_system_folder_description') }}</div>
+                                        <div class="form-text">Select system folder description</div>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="system_storage_size" class="form-label">{{ t('virtual_storage_size_mb') }}</label>
+                                        <label for="system_storage_size" class="form-label">Virtual Storage Size (MB)</label>
                                         <input type="number" class="form-control" id="system_storage_size" name="system_storage_size" 
                                                value="1024" min="1" max="16384">
-                                        <div class="form-text">{{ t('virtual_storage_size_description') }}</div>
+                                        <div class="form-text">Virtual storage size displayed in system</div>
                                     </div>
                                 </div>
                             </div>
@@ -321,31 +321,31 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="vendor_id" class="form-label">{{ t('vendor_id') }}</label>
+                            <label for="vendor_id" class="form-label">Vendor ID</label>
                             <input type="text" class="form-control" id="vendor_id" name="vendor_id" 
                                    placeholder="1a2b" pattern="[0-9a-fA-F]{4}" maxlength="4">
-                            <div class="form-text">{{ t('hex_format_4chars') }}</div>
+                            <div class="form-text">Hex format (4 characters)</div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="product_id" class="form-label">{{ t('product_id') }}</label>
+                            <label for="product_id" class="form-label">Product ID</label>
                             <input type="text" class="form-control" id="product_id" name="product_id"
                                    placeholder="3c4d" pattern="[0-9a-fA-F]{4}" maxlength="4">
-                            <div class="form-text">{{ t('hex_format_4chars') }}</div>
+                            <div class="form-text">Hex format (4 characters)</div>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="serial_number" class="form-label">{{ t('serial_number') }} ({{ t('optional') }})</label>
+                        <label for="serial_number" class="form-label">Serial Number (Optional)</label>
                         <input type="text" class="form-control" id="serial_number" name="serial_number">
                     </div>
                     <div class="mb-3">
-                        <label for="config_json" class="form-label">{{ t('configuration') }} (JSON, {{ t('optional') }})</label>
+                        <label for="config_json" class="form-label">Configuration (JSON, Optional)</label>
                         <textarea class="form-control" id="config_json" name="config_json" rows="3"></textarea>
-                        <div class="form-text">{{ t('json_config_description') }}</div>
+                        <div class="form-text">JSON configuration description</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('create') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
                 </div>
             </form>
         </div>
@@ -357,25 +357,25 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createPortModalLabel">{{ t('create_virtual_port') }}</h5>
+                <h5 class="modal-title" id="createPortModalLabel">Create Virtual Port</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('create_virtual_port') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="port_name" class="form-label">{{ t('port_name') }}</label>
+                        <label for="port_name" class="form-label">Port Name</label>
                         <input type="text" class="form-control" id="port_name" name="name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="port_number" class="form-label">{{ t('port_number') }} ({{ t('optional') }})</label>
+                        <label for="port_number" class="form-label">Port Number (Optional)</label>
                         <input type="text" class="form-control" id="port_number" name="port_number" 
-                               placeholder="{{ t('will_be_generated_automatically') }}">
-                        <div class="form-text">{{ t('if_not_specified_auto_generated') }}</div>
+                               placeholder="Will be generated automatically">
+                        <div class="form-text">If not specified, will be generated automatically</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('create') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
                 </div>
             </form>
         </div>
@@ -387,15 +387,15 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="connectDeviceModalLabel">{{ t('connect_device_to_port') }}</h5>
+                <h5 class="modal-title" id="connectDeviceModalLabel">Connect device to port</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('connect_virtual_device') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="connect_port_id" class="form-label">{{ t('select_port') }}</label>
+                        <label for="connect_port_id" class="form-label">Select Port</label>
                         <select class="form-select" id="connect_port_id" name="port_id" required>
-                            <option value="" selected disabled>{{ t('select_port') }}...</option>
+                            <option value="" selected disabled>Select Port...</option>
                             {% for port in virtual_ports %}
                                 {% if not port.is_connected %}
                                     <option value="{{ port.id }}">{{ port.name }} ({{ port.port_number }})</option>
@@ -404,9 +404,9 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="connect_device_id" class="form-label">{{ t('select_device') }}</label>
+                        <label for="connect_device_id" class="form-label">Select Device</label>
                         <select class="form-select" id="connect_device_id" name="device_id" required>
-                            <option value="" selected disabled>{{ t('select_device') }}...</option>
+                            <option value="" selected disabled>Select Device...</option>
                             {% for device in virtual_devices %}
                                 <option value="{{ device.id }}">{{ device.name }} ({{ device.vendor_id }}:{{ device.product_id }})</option>
                             {% endfor %}
@@ -414,8 +414,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('connect') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Connect</button>
                 </div>
             </form>
         </div>
@@ -435,7 +435,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="folderBrowserModalLabel">{{ t('select_folder') }}</h5>
+                <h5 class="modal-title" id="folderBrowserModalLabel">Select Folder</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -446,10 +446,10 @@
                         </ol>
                     </nav>
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="parent_dir_button">
-                        <i class="fas fa-level-up-alt"></i> {{ t('up') }}
+                        <i class="fas fa-level-up-alt"></i> Up
                     </button>
                     <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="refresh_dir_button">
-                        <i class="fas fa-sync-alt"></i> {{ t('refresh') }}
+                        <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
                 
@@ -460,22 +460,22 @@
                 <div class="directory-list" id="directory_list">
                     <div class="text-center p-5">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">{{ t('loading') }}...</span>
+                            <span class="visually-hidden">Loading...</span>
                         </div>
-                        <p class="mt-2">{{ t('loading_folders') }}...</p>
+                        <p class="mt-2">Loading folder list...</p>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <div class="d-flex justify-content-between w-100 align-items-center">
                     <div>
-                        <span class="me-2">{{ t('current_path') }}:</span>
+                        <span class="me-2">Current Path:</span>
                         <code id="current_path">/</code>
                         <span class="ms-2 badge" id="writable_badge"></span>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                        <button type="button" class="btn btn-primary" id="select_folder_button">{{ t('select') }}</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="select_folder_button">Select</button>
                     </div>
                 </div>
             </div>
@@ -493,7 +493,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const deviceId = this.getAttribute('data-device-id');
             const deviceName = this.getAttribute('data-device-name');
             
-            if (confirm(`{{ t('confirm_delete_device') }} "${deviceName}"?`)) {
+            if (confirm(`Are you sure you want to delete device "${deviceName}"?`)) {
                 document.getElementById('delete_device_id').value = deviceId;
                 document.getElementById('deleteDeviceForm').submit();
             }
@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const portId = this.getAttribute('data-port-id');
             const portName = this.getAttribute('data-port-name');
             
-            if (confirm(`{{ t('confirm_delete_port') }} "${portName}"?`)) {
+            if (confirm(`Are you sure you want to delete port "${portName}"?`)) {
                 document.getElementById('delete_port_id').value = portId;
                 document.getElementById('deletePortForm').submit();
             }
@@ -605,9 +605,9 @@ document.addEventListener('DOMContentLoaded', function() {
             directoryList.innerHTML = `
                 <div class="text-center p-5">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">{{ t('loading') }}...</span>
+                        <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p class="mt-2">{{ t('loading_folders') }}...</p>
+                    <p class="mt-2">Loading folder list...</p>
                 </div>
             `;
             
@@ -636,10 +636,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Обновляем статус доступа на запись
                     if (isWritable) {
                         writableBadge.className = 'badge bg-success';
-                        writableBadge.textContent = '{{ t('writable') }}';
+                        writableBadge.textContent = 'Writable';
                     } else {
                         writableBadge.className = 'badge bg-danger';
-                        writableBadge.textContent = '{{ t('readonly') }}';
+                        writableBadge.textContent = 'Read Only';
                     }
                     
                     // Обновляем хлебные крошки
@@ -649,7 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.directories.length === 0 && data.files.length === 0) {
                         directoryList.innerHTML = `
                             <div class="alert alert-info m-3">
-                                <i class="fas fa-info-circle me-2"></i>{{ t('directory_empty') }}
+                                <i class="fas fa-info-circle me-2"></i>This directory is empty
                             </div>
                         `;
                         return;
@@ -662,8 +662,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     data.directories.forEach(dir => {
                         const rowClass = dir.writable ? 'list-group-item-action' : 'text-muted';
                         const writableIcon = dir.writable 
-                            ? '<i class="fas fa-pencil-alt text-success ms-2" title="{{ t('writable') }}"></i>' 
-                            : '<i class="fas fa-lock text-danger ms-2" title="{{ t('readonly') }}"></i>';
+                            ? '<i class="fas fa-pencil-alt text-success ms-2" title="Writable"></i>' 
+                            : '<i class="fas fa-lock text-danger ms-2" title="Read Only"></i>';
                             
                         html += `
                             <a href="#" class="list-group-item ${rowClass} d-flex align-items-center folder-item"
@@ -702,9 +702,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 })
                 .catch(error => {
-                    console.error('{{ t('error_loading_directories') }}:', error);
+                    console.error('Error loading directories:', error);
                     errorBlock.style.display = 'block';
-                    document.getElementById('error_message').textContent = '{{ t('error_loading_directories_list') }}';
+                    document.getElementById('error_message').textContent = 'Error loading directory list';
                 });
         }
         
@@ -714,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const parts = path.split('/').filter(part => part.length > 0);
             
             // Очищаем текущие хлебные крошки
-            breadcrumb.innerHTML = `<li class="breadcrumb-item"><a href="#" data-path="/">{{ t('root') }}</a></li>`;
+            breadcrumb.innerHTML = `<li class="breadcrumb-item"><a href="#" data-path="/">Root</a></li>`;
             
             let currentPath = '/';
             parts.forEach((part, index) => {
@@ -775,7 +775,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Обработчик выбора папки
         document.getElementById('select_folder_button').addEventListener('click', function() {
             if (!isWritable) {
-                alert('{{ t('directory_not_writable') }}');
+                alert('Directory is not writable');
                 return;
             }
             

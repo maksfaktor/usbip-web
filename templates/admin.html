@@ -1,59 +1,35 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ t('admin_panel') }} - OrangeUSB{% endblock %}
+{% block title %}Admin Panel - OrangeUSB{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <!-- Выбор языка -->
-        <div class="card mb-4">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-language me-2"></i>{{ t('language') }}</h5>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6 mx-auto">
-                <div class="text-center">
-                    <div class="btn-group" role="group" aria-label="{{ t('language') }}">
-                        <a href="{{ url_for('set_language', language='ru') }}" class="btn btn-outline-primary {% if session.get('language') == 'ru' %}active{% endif %}">{{ t('russian') }}</a>
-                        <a href="{{ url_for('set_language', language='en') }}" class="btn btn-outline-primary {% if session.get('language', 'en') == 'en' %}active{% endif %}">{{ t('english') }}</a>
-                    </div>
-                    <p class="form-text mt-2">{{ t('select_writable_folder') }}</p>
-                </div>
-            </div>
-        </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="row">
     <!-- Левая колонка - Смена пароля -->
     <div class="col-lg-6 mb-4">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-key me-2"></i>{{ t('change_password') }}</h5>
+                <h5 class="mb-0"><i class="fas fa-key me-2"></i>Change Password</h5>
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('admin') }}">
                     <input type="hidden" name="change_password" value="1">
                     <div class="mb-3">
-                        <label for="current_password" class="form-label">{{ t('current_password') }}</label>
+                        <label for="current_password" class="form-label">Current Password</label>
                         <input type="password" class="form-control" id="current_password" name="current_password" required>
                     </div>
                     <div class="mb-3">
-                        <label for="new_password" class="form-label">{{ t('new_password') }}</label>
+                        <label for="new_password" class="form-label">New Password</label>
                         <input type="password" class="form-control" id="new_password" name="new_password" 
                                required minlength="6">
-                        <div class="form-text">{{ t('password_too_short') }}</div>
+                        <div class="form-text">New password must be at least 6 characters</div>
                     </div>
                     <div class="mb-3">
-                        <label for="confirm_password" class="form-label">{{ t('confirm_password') }}</label>
+                        <label for="confirm_password" class="form-label">Confirm New Password</label>
                         <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
                                required minlength="6">
                     </div>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i>{{ t('save') }}
+                        <i class="fas fa-save me-1"></i>Save
                     </button>
                 </form>
             </div>
@@ -65,16 +41,16 @@
         <!-- Названия USB портов -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-plug me-2"></i>{{ t('port_aliases') }}</h5>
+                <h5 class="mb-0"><i class="fas fa-plug me-2"></i>USB Port Aliases</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>{{ t('port_number') }}</th>
-                                <th>{{ t('device_name') }}</th>
-                                <th>{{ t('edit') }}</th>
+                                <th>Port Number</th>
+                                <th>Device Name</th>
+                                <th>Edit</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,7 +71,7 @@
                             {% else %}
                                 <tr>
                                     <td colspan="3" class="text-center py-3">
-                                        <span class="text-muted">{{ t('no_attached_devices') }}</span>
+                                        <span class="text-muted">No remote devices attached</span>
                                     </td>
                                 </tr>
                             {% endif %}
@@ -104,7 +80,7 @@
                 </div>
                 
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPortModal">
-                    <i class="fas fa-plus me-1"></i>{{ t('create') }}
+                    <i class="fas fa-plus me-1"></i>Create
                 </button>
             </div>
         </div>
@@ -112,17 +88,17 @@
         <!-- Алиасы устройств -->
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-tags me-2"></i>{{ t('device_aliases') }}</h5>
+                <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Device Aliases</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>{{ t('busid') }}</th>
-                                <th>{{ t('device_name') }}</th>
-                                <th>{{ t('device_info') }}</th>
-                                <th>{{ t('edit') }}</th>
+                                <th>Bus ID</th>
+                                <th>Device Name</th>
+                                <th>Device Info</th>
+                                <th>Edit</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -137,7 +113,7 @@
                                                 {{ alias.device_info }}
                                             </span>
                                         {% else %}
-                                            <span class="text-muted">{{ t('no_local_devices') }}</span>
+                                            <span class="text-muted">No local USB devices found</span>
                                         {% endif %}
                                     </td>
                                     <td>
@@ -153,7 +129,7 @@
                             {% else %}
                                 <tr>
                                     <td colspan="4" class="text-center py-3">
-                                        <span class="text-muted">{{ t('no_local_devices') }}</span>
+                                        <span class="text-muted">No local USB devices found</span>
                                     </td>
                                 </tr>
                             {% endif %}
@@ -170,23 +146,23 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addPortModalLabel">{{ t('create') }}</h5>
+                <h5 class="modal-title" id="addPortModalLabel">Create</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('port_name') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="port_number" class="form-label">{{ t('port_number') }}</label>
+                        <label for="port_number" class="form-label">Port Number</label>
                         <input type="text" class="form-control" id="port_number" name="port_number" required>
                     </div>
                     <div class="mb-3">
-                        <label for="custom_name" class="form-label">{{ t('port_name') }}</label>
+                        <label for="custom_name" class="form-label">Port Name</label>
                         <input type="text" class="form-control" id="custom_name" name="custom_name" required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('save') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
@@ -198,27 +174,27 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editAliasModalLabel">{{ t('edit') }}</h5>
+                <h5 class="modal-title" id="editAliasModalLabel">Edit</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('device_alias') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="busid" class="form-label">{{ t('busid') }}</label>
+                        <label for="busid" class="form-label">Bus ID</label>
                         <input type="text" class="form-control" id="edit_busid" name="busid" readonly>
                     </div>
                     <div class="mb-3">
-                        <label for="alias" class="form-label">{{ t('device_name') }}</label>
+                        <label for="alias" class="form-label">Device Name</label>
                         <input type="text" class="form-control" id="edit_alias" name="alias" required>
                     </div>
                     <div class="mb-3">
-                        <label for="device_info" class="form-label">{{ t('device_info') }}</label>
+                        <label for="device_info" class="form-label">Device Info</label>
                         <textarea class="form-control" id="edit_device_info" name="device_info" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('save') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
@@ -230,8 +206,8 @@
 <script>
 // Тексты для перевода
 const translations = {
-    edit_port: "{{ t('edit') }}",
-    add_port: "{{ t('create') }}"
+    edit_port: "Edit",
+    add_port: "Create"
 };
 
 // Обработчики для редактирования портов

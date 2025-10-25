@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}OrangeUSB - {{ t('local_devices') }}{% endblock %}
+{% block title %}OrangeUSB - Local USB Devices{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -8,13 +8,13 @@
     <div class="col-lg-6 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><i class="fas fa-hdd me-2"></i>{{ t('local_usb_devices') }}</h4>
+                <h4 class="mb-0"><i class="fas fa-hdd me-2"></i>Local USB Devices</h4>
                 <div class="btn-group">
                     <button class="btn btn-sm btn-outline-warning run-doctor-btn">
-                        <i class="fas fa-stethoscope me-1"></i>{{ t('diagnose') }}
+                        <i class="fas fa-stethoscope me-1"></i>Diagnose
                     </button>
                     <button class="btn btn-sm btn-outline-primary refresh-devices-btn">
-                        <i class="fas fa-sync-alt me-1"></i>{{ t('refresh') }}
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
                     </button>
                 </div>
             </div>
@@ -25,9 +25,9 @@
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>{{ t('busid') }}</th>
-                                        <th>{{ t('device') }}</th>
-                                        <th>{{ t('actions') }}</th>
+                                        <th>Bus ID</th>
+                                        <th>Device</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -45,7 +45,7 @@
                                             {% else %}
                                                 {{ device.busid }}
                                                 {% if device.is_virtual %}
-                                                <span class="badge bg-primary">{{ t('virtual') }}</span>
+                                                <span class="badge bg-primary">Virtual</span>
                                                 {% endif %}
                                             {% endif %}
                                         </td>
@@ -68,7 +68,7 @@
                                                 {% else %}
                                                     {% if device.is_published %}
                                                         <button class="btn btn-success" disabled>
-                                                            <i class="fas fa-check me-1"></i>{{ t('published') }}
+                                                            <i class="fas fa-check me-1"></i>Published
                                                         </button>
                                                     {% else %}
                                                         <button class="btn btn-primary bind-device-btn" 
@@ -77,14 +77,14 @@
                                                                 data-is-virtual="true" 
                                                                 data-virtual-id="{{ device.virtual_id }}"
                                                                 {% endif %}>
-                                                            <i class="fas fa-share me-1"></i>{{ t('publish') }}
+                                                            <i class="fas fa-share me-1"></i>Publish
                                                         </button>
                                                     {% endif %}
                                                     {% if not device.is_virtual %}
                                                     <button class="btn btn-outline-info set-alias-btn" 
                                                             data-busid="{{ device.busid }}" 
                                                             data-device="{{ device.device_name }}">
-                                                        <i class="fas fa-tag me-1"></i>{{ t('set_name') }}
+                                                        <i class="fas fa-tag me-1"></i>Set Name
                                                     </button>
                                                     {% endif %}
                                                 {% endif %}
@@ -97,7 +97,7 @@
                         </div>
                     {% else %}
                         <div class="alert alert-info m-3">
-                            <i class="fas fa-info-circle me-2"></i>{{ t('no_local_devices') }}
+                            <i class="fas fa-info-circle me-2"></i>No local USB devices found
                         </div>
                     {% endif %}
                 </div>
@@ -109,7 +109,7 @@
     <div class="col-lg-6">
         <div class="card mb-4">
             <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>{{ t('attached_devices') }}</h4>
+                <h4 class="mb-0"><i class="fas fa-plug me-2"></i>Attached Remote Devices</h4>
             </div>
             <div class="card-body p-0">
                 <div class="attached-devices-container">
@@ -118,9 +118,9 @@
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>{{ t('port') }}</th>
-                                        <th>{{ t('device') }}</th>
-                                        <th>{{ t('actions') }}</th>
+                                        <th>Port</th>
+                                        <th>Device</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -131,7 +131,7 @@
                                             <div>{{ device.device_name }}</div>
                                             <small class="text-muted">{{ device.remote_busid }} 
                                                 {% if device.is_virtual %}
-                                                    ({{ t('virtual') }})
+                                                    (Virtual)
                                                 {% else %}
                                                     ({{ device.remote_host }})
                                                 {% endif %}
@@ -145,12 +145,12 @@
                                                         data-is-virtual="true" 
                                                         data-virtual-port-id="{{ device.virtual_port_id }}"
                                                         {% endif %}>
-                                                    <i class="fas fa-unlink me-1"></i>{{ t('disconnect') }}
+                                                    <i class="fas fa-unlink me-1"></i>Disconnect
                                                 </button>
                                                 {% if not device.is_virtual %}
                                                 <button class="btn btn-outline-info set-port-name-btn" 
                                                         data-port="{{ device.port }}">
-                                                    <i class="fas fa-tag me-1"></i>{{ t('port_name') }}
+                                                    <i class="fas fa-tag me-1"></i>Port Name
                                                 </button>
                                                 {% endif %}
                                             </div>
@@ -162,7 +162,7 @@
                         </div>
                     {% else %}
                         <div class="alert alert-info m-3">
-                            <i class="fas fa-info-circle me-2"></i>{{ t('no_attached_devices') }}
+                            <i class="fas fa-info-circle me-2"></i>No remote devices attached
                         </div>
                     {% endif %}
                 </div>
@@ -178,27 +178,27 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="setAliasModalLabel">{{ t('set_device_name') }}</h5>
+                <h5 class="modal-title" id="setAliasModalLabel">Set Device Name</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('device_alias') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="busid" class="form-label">{{ t('busid') }}</label>
+                        <label for="busid" class="form-label">Bus ID</label>
                         <input type="text" class="form-control" id="alias_busid" name="busid" readonly>
                     </div>
                     <div class="mb-3">
-                        <label for="alias" class="form-label">{{ t('device_name') }}</label>
+                        <label for="alias" class="form-label">Device Name</label>
                         <input type="text" class="form-control" id="alias_name" name="alias" required>
                     </div>
                     <div class="mb-3">
-                        <label for="device_info" class="form-label">{{ t('additional_info') }}</label>
+                        <label for="device_info" class="form-label">Additional Info</label>
                         <textarea class="form-control" id="device_info" name="device_info" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('save') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
@@ -212,24 +212,24 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="setPortNameModalLabel">{{ t('set_port_name') }}</h5>
+                <h5 class="modal-title" id="setPortNameModalLabel">Set Port Name</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('port_name') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="port_number" class="form-label">{{ t('port_number') }}</label>
+                        <label for="port_number" class="form-label">Port Number</label>
                         <input type="text" class="form-control" id="port_number_field" name="port_number" readonly>
                     </div>
                     <div class="mb-3">
-                        <label for="custom_name" class="form-label">{{ t('port_name') }}</label>
+                        <label for="custom_name" class="form-label">Port Name</label>
                         <input type="text" class="form-control" id="port_custom_name" name="custom_name" required>
-                        <div class="form-text">{{ t('port_example') }}</div>
+                        <div class="form-text">Port Example</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('save') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
@@ -241,7 +241,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="connectVirtualDeviceModalLabel">{{ t('connect_virtual_device') }}</h5>
+                <h5 class="modal-title" id="connectVirtualDeviceModalLabel">Connect Virtual Device</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('connect_virtual_device') }}">
@@ -249,21 +249,21 @@
                     <input type="hidden" id="virtual_device_id" name="device_id">
                     
                     <div class="mb-3">
-                        <label for="connect_virtual_port_id" class="form-label">{{ t('select_virtual_port') }}</label>
+                        <label for="connect_virtual_port_id" class="form-label">Select Virtual Port</label>
                         <select class="form-select" id="connect_virtual_port_id" name="port_id" required>
-                            <option value="" selected disabled>{{ t('select_port') }}</option>
+                            <option value="" selected disabled>Select Port</option>
                             {% for port in available_virtual_ports %}
                                 <option value="{{ port.id }}">{{ port.name }} ({{ port.port_number or t('no_number') }})</option>
                             {% endfor %}
                         </select>
                         <div class="form-text">
-                            {{ t('no_available_ports') }}
+                            No available ports
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ t('connect') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Connect</button>
                 </div>
             </form>
         </div>
@@ -284,22 +284,22 @@ const URLS = {
 // Обработчик для кнопки публикации устройства
 // Тексты сообщений для использования в JS
 const messages = {
-    busid_not_specified: "{{ t('busid_not_specified') }}",
-    publishing: "{{ t('publishing') }}",
-    publish_success: "{{ t('publish_success') }}",
-    error: "{{ t('error') }}",
-    port_not_specified: "{{ t('port_not_specified') }}",
-    refreshing: "{{ t('refreshing') }}",
-    devices_refreshed: "{{ t('devices_refreshed') }}",
-    busid: "{{ t('busid') }}",
-    device: "{{ t('device') }}",
-    actions: "{{ t('actions') }}",
-    virtual: "{{ t('virtual') }}",
-    publish: "{{ t('publish') }}",
-    set_name: "{{ t('set_name') }}",
-    no_local_devices: "{{ t('no_local_devices') }}",
-    running_doctor: "{{ t('running_doctor') }}",
-    doctor_results: "{{ t('doctor_results') }}"
+    busid_not_specified: "Bus ID not specified",
+    publishing: "Publishing...",
+    publish_success: "Device published successfully",
+    error: "Error",
+    port_not_specified: "Port not specified",
+    refreshing: "Refreshing...",
+    devices_refreshed: "Devices refreshed",
+    busid: "Bus ID",
+    device: "Device",
+    actions: "Actions",
+    virtual: "Virtual",
+    publish: "Publish",
+    set_name: "Set Name",
+    no_local_devices: "No local USB devices found",
+    running_doctor: "Running diagnostics...",
+    doctor_results: "Diagnostic Results"
 };
 
 document.querySelectorAll('.bind-device-btn').forEach(button => {
@@ -373,13 +373,13 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
         
         if (isVirtual && virtualPortId) {
             // Для виртуальных портов отправляем запрос на отключение виртуального устройства
-            if (!confirm(`{{ t('confirm_disconnect_virtual') }}`)) {
+            if (!confirm(`Confirm disconnect virtual device`)) {
                 return;
             }
             
             // Меняем состояние кнопки
             const originalText = this.innerHTML;
-            this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>{{ t('disconnecting') }}`;
+            this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>Disconnecting...`;
             this.disabled = true;
             
             // Отправляем форму на отключение виртуального устройства
@@ -394,11 +394,11 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
             })
             .then(response => {
                 if (response.ok) {
-                    showNotification('{{ t('virtual_device_disconnected') }}', 'success');
+                    showNotification('Virtual device disconnected', 'success');
                     // Перезагружаем страницу для обновления списка
                     window.location.reload();
                 } else {
-                    showNotification('{{ t('virtual_device_disconnect_error') }}', 'danger');
+                    showNotification('Error disconnecting virtual device', 'danger');
                     // Восстанавливаем состояние кнопки
                     this.innerHTML = originalText;
                     this.disabled = false;
@@ -415,13 +415,13 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
         }
         
         // Для реальных устройств выполняем обычное отключение через USBIP
-        if (!confirm(`{{ t('confirm_disconnect') }} ${port}?`)) {
+        if (!confirm(`Confirm disconnect ${port}?`)) {
             return;
         }
         
         // Меняем состояние кнопки
         const originalText = this.innerHTML;
-        this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>{{ t('disconnecting') }}`;
+        this.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>Disconnecting...`;
         this.disabled = true;
         
         // Отправляем запрос на отключение
@@ -437,14 +437,14 @@ document.querySelectorAll('.detach-device-btn').forEach(button => {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showNotification(`{{ t('device_disconnected') }} ${port}`, 'success');
+                showNotification(`Device disconnected from port ${port}`, 'success');
                 // Удаляем строку из таблицы
                 this.closest('tr').remove();
                 // Если таблица пуста, показываем сообщение
                 if (document.querySelectorAll('.attached-devices-container tbody tr').length === 0) {
                     document.querySelector('.attached-devices-container').innerHTML = `
                         <div class="alert alert-info m-3">
-                            <i class="fas fa-info-circle me-2"></i>{{ t('no_attached_devices') }}
+                            <i class="fas fa-info-circle me-2"></i>No remote devices attached
                         </div>
                     `;
                 }
@@ -570,7 +570,7 @@ function refreshDevicesList() {
                             </div>
                             <div class="mt-3">
                                 <button class="btn btn-warning run-doctor-btn">
-                                    <i class="fas fa-stethoscope me-1"></i>{{ t('run_doctor') }}
+                                    <i class="fas fa-stethoscope me-1"></i>Run Diagnostics
                                 </button>
                             </div>
                         </div>
