@@ -28,6 +28,22 @@ A comprehensive USB/IP device management web interface designed for robust devic
 ## Recent Changes
 
 ### October 25, 2025
+- **FIDO2 Virtual Device Integration - Help System**: Added comprehensive user help and progress tracking
+  - Created `FIDO2_PROGRESS.md` - detailed execution history file tracking 8/18 completed tasks (44%)
+  - Added progress link to main `FIDO2_INTEGRATION.md` documentation for quick navigation
+  - Implemented collapsible help section on `fido_device.html` with quick start guides
+  - Created separate help page `fido_help.html` (670 lines) with 8 detailed sections:
+    - What is FIDO2? - Introduction and key benefits
+    - First Start - Step-by-step device startup guide
+    - Registration - Website registration walkthrough
+    - Authentication - Login procedure explanation
+    - Credentials Management - Viewing and deleting credentials
+    - Backup & Restoration - Critical data protection instructions
+    - Troubleshooting - Common issues and solutions
+    - FAQ - Frequently asked questions
+  - Added `/fido/help` route in `fido_routes.py` for dedicated help page
+  - Fixed KeyError bug: changed `status_info['running']` to `status_info['is_running']` for proper status checking
+  - Help button with Quick Help accordion provides instant guidance without leaving device page
 - **Complete Russian Translation Removal**: Removed all Russian language support for English-only interface
   - Deleted `translations.py` file (653 lines) containing Russian/English translation dictionaries
   - Replaced 307 `t()` function calls across 11 HTML templates with direct English text
