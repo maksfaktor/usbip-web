@@ -4,7 +4,7 @@
 A comprehensive USB/IP device management web interface designed for robust device configuration, monitoring, and advanced system diagnostics across Linux architectures.
 
 ## User Preferences
-- Language: Russian/English multilingual support
+- Language: English-only interface (Russian translations removed October 2025)
 - UI Style: Bootstrap dark theme with clean, professional design
 - Icon Style: Orange fruit-based branding to match "Orange Pi" hardware
 
@@ -15,18 +15,29 @@ A comprehensive USB/IP device management web interface designed for robust devic
 - **Database Models** (`models.py`): SQLAlchemy models for users, devices, logs
 - **USB/IP Utilities** (`usbip_utils.py`): Core device management functions
 - **Virtual Storage** (`virtual_storage_utils.py`): Virtual USB device file management
-- **Translation System** (`translations.py`): Multilingual interface support
 
 ### Key Features
 - Enhanced USB device binding and publication capabilities
 - Advanced real-time monitoring for local and remote USB devices
 - Intelligent error detection and recovery mechanisms
 - Cross-platform device compatibility with detailed diagnostic tools
-- Internationalized user interface supporting multiple languages
+- English-only interface for simplified maintenance and consistency
 - Streamlined installation and uninstallation processes
 - Improved session and error handling for API requests
 
 ## Recent Changes
+
+### October 25, 2025
+- **Complete Russian Translation Removal**: Removed all Russian language support for English-only interface
+  - Deleted `translations.py` file (653 lines) containing Russian/English translation dictionaries
+  - Replaced 307 `t()` function calls across 11 HTML templates with direct English text
+  - Removed language selector UI components from `base.html`, `login.html`, and `admin.html`
+  - Removed translation functions from `app.py`: `get_current_language()`, `inject_translation()`, `/set_language` route
+  - Updated device type labels in virtual devices page with English descriptions
+  - Simplified logout message handling (removed conditional Russian/English logic)
+  - Created automation script (`remove_translations.py`) for bulk t() replacements
+  - Synchronized all changes between Replit and GitHub repository
+  - **Rationale**: English-only interface simplifies maintenance, reduces complexity, and aligns with professional deployment standards
 
 ### July 8-9, 2025
 - **Device Publication Fix**: Fixed JavaScript syntax errors preventing device publication
@@ -110,7 +121,6 @@ A comprehensive USB/IP device management web interface designed for robust devic
 ├── models.py              # Database models
 ├── usbip_utils.py         # USB/IP device management
 ├── virtual_storage_utils.py # Virtual device file handling
-├── translations.py        # Multilingual support
 ├── templates/             # HTML templates
 │   ├── base.html         # Base template with navigation
 │   ├── login.html        # Login interface
