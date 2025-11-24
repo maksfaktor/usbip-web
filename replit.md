@@ -40,6 +40,10 @@ The application is designed to be cross-platform compatible within Linux environ
 ## Recent Changes
 
 ### November 24, 2025
+- **Uninstall Script Hotfix**: Fixed uninstall.sh to correctly remove project folder
+  - Auto-detects installation path (~$USER/orange-usbip instead of hardcoded /opt/orangeusb)
+  - Automatically removes project folder without confirmation
+  - Proper cleanup of all application files
 - **Doctor.sh Sudo Permissions Hotfix**: Fixed diagnostic tool to run without password prompts
   - Added doctor.sh to sudoers configuration with NOPASSWD
   - Fixed script path to use absolute path instead of relative

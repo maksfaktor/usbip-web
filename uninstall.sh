@@ -11,7 +11,16 @@ NC='\033[0m' # No Color
 
 # Application info
 APP_NAME="OrangeUSB Web Interface"
-APP_DIR="/opt/orangeusb"
+
+# Determine the real user (not sudo)
+if [ -n "$SUDO_USER" ]; then
+    REAL_USER=$SUDO_USER
+else
+    REAL_USER=$(whoami)
+fi
+USER_HOME=$(eval echo ~$REAL_USER)
+APP_DIR="$USER_HOME/orange-usbip"
+
 SERVICE_NAME="orange-usbip"
 SUDOERS_FILE="/etc/sudoers.d/usbip-"
 BACKUP_DIR="/var/backups/orangeusb"
@@ -105,21 +114,14 @@ remove_application() {
         print_warning "Sudoers configuration not found, skipping."
     fi
     
-    # Ask about removing application files
-    print_step "Application files..."
+    # Remove application files
+    print_step "Removing application files..."
     
     if [ -d "$APP_DIR" ]; then
-        read -p "Do you want to delete the local project folder ($APP_DIR)? [y/N] " -n 1 -r
-        echo
-        
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            rm -rf "$APP_DIR"
-            print_success "Application files removed."
-        else
-            print_warning "Application files were kept at $APP_DIR."
-        fi
+        rm -rf "$APP_DIR"
+        print_success "Application files removed from $APP_DIR."
     else
-        print_warning "Application directory not found, skipping."
+        print_warning "Application directory not found at $APP_DIR, skipping."
     fi
     
     print_success "Uninstallation completed."
