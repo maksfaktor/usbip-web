@@ -20,8 +20,12 @@ from fido_utils import (
     get_vault_info,
     backup_vault,
     restore_vault,
+    delete_backup,
     get_fido_passphrase,
-    set_fido_passphrase
+    set_fido_passphrase,
+    get_vault_path,
+    set_vault_path,
+    get_backup_history
 )
 
 logger = logging.getLogger(__name__)
@@ -426,6 +430,163 @@ def backup_vault_route():
     except Exception as e:
         logger.error(f"Error creating vault backup: {e}")
         log_fido_event('vault_backup', 'failed', details=str(e))
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
+@fido_bp.route('/vault/path', methods=['GET'])
+@login_required
+def get_vault_path_route():
+    """Get current vault file path"""
+    try:
+        path = get_vault_path()
+        return jsonify({
+            'success': True,
+            'path': path
+        })
+    except Exception as e:
+        logger.error(f"Error getting vault path: {e}")
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
+@fido_bp.route('/vault/path', methods=['POST'])
+@login_required
+def set_vault_path_route():
+    """Set new vault file path"""
+    try:
+        data = request.get_json()
+        new_path = data.get('path')
+        
+        if not new_path:
+            return jsonify({
+                'success': False,
+                'message': 'Path is required'
+            }), 400
+        
+        result = set_vault_path(new_path)
+        
+        if result['success']:
+            log_fido_event('vault_path_change', 'success', details=new_path)
+            flash(f'Vault path updated to: {new_path}', 'success')
+        else:
+            log_fido_event('vault_path_change', 'failed', details=result.get('error'))
+            
+        return jsonify(result)
+            
+    except Exception as e:
+        logger.error(f"Error setting vault path: {e}")
+        log_fido_event('vault_path_change', 'failed', details=str(e))
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
+@fido_bp.route('/vault/backups', methods=['GET'])
+@login_required
+def get_backups_route():
+    """Get list of all backup files"""
+    try:
+        result = get_backup_history()
+        return jsonify(result)
+            
+    except Exception as e:
+        logger.error(f"Error getting backup history: {e}")
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}",
+            'backups': [],
+            'count': 0
+        }), 500
+
+
+@fido_bp.route('/vault/restore', methods=['POST'])
+@login_required
+def restore_vault_route():
+    """Restore vault from backup"""
+    try:
+        data = request.get_json()
+        backup_filename = data.get('backup_filename')
+        
+        if not backup_filename:
+            return jsonify({
+                'success': False,
+                'message': 'Backup filename is required'
+            }), 400
+        
+        result = restore_vault(backup_filename)
+        
+        if result['success']:
+            log_fido_event('vault_restore', 'success', details=f"From: {backup_filename}")
+            flash(f'Vault restored from backup: {backup_filename}', 'success')
+        else:
+            log_fido_event('vault_restore', 'failed', details=result.get('error'))
+            
+        return jsonify(result)
+            
+    except Exception as e:
+        logger.error(f"Error restoring vault: {e}")
+        log_fido_event('vault_restore', 'failed', details=str(e))
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
+@fido_bp.route('/vault/backup/<filename>', methods=['DELETE'])
+@login_required
+def delete_backup_route(filename):
+    """Delete a backup file"""
+    try:
+        result = delete_backup(filename)
+        
+        if result['success']:
+            log_fido_event('backup_delete', 'success', details=filename)
+            flash(f'Backup deleted: {filename}', 'success')
+        else:
+            log_fido_event('backup_delete', 'failed', details=result.get('error'))
+            
+        return jsonify(result)
+            
+    except Exception as e:
+        logger.error(f"Error deleting backup: {e}")
+        log_fido_event('backup_delete', 'failed', details=str(e))
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
+@fido_bp.route('/vault/backup/<filename>/download', methods=['GET'])
+@login_required
+def download_backup_route(filename):
+    """Download a backup file"""
+    try:
+        from flask import send_file
+        from fido_utils import get_backup_directory
+        import os
+        
+        backup_dir = get_backup_directory()
+        backup_path = os.path.join(backup_dir, filename)
+        
+        if not os.path.exists(backup_path):
+            flash(f'Backup file not found: {filename}', 'error')
+            return jsonify({
+                'success': False,
+                'message': f'Backup file not found: {filename}'
+            }), 404
+        
+        log_fido_event('backup_download', 'success', details=filename)
+        return send_file(backup_path, as_attachment=True, download_name=filename)
+            
+    except Exception as e:
+        logger.error(f"Error downloading backup: {e}")
+        log_fido_event('backup_download', 'failed', details=str(e))
         return jsonify({
             'success': False,
             'message': f"Error: {str(e)}"

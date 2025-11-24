@@ -312,6 +312,56 @@
                     {% endif %}
                 </div>
             </div>
+            
+            <!-- Storage & Backup Configuration Card -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-hdd"></i> Storage & Backup Configuration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Left Column: Vault Path Configuration -->
+                        <div class="col-md-6">
+                            <h6 class="mb-3"><i class="bi bi-folder"></i> Vault Path</h6>
+                            <div class="mb-3">
+                                <label for="vaultPath" class="form-label small">Current Vault Location:</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" id="vaultPath" value="Loading..." readonly>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="promptVaultPath()">
+                                        <i class="bi bi-pencil"></i> Change
+                                    </button>
+                                </div>
+                                <small class="text-muted">Location where credentials are stored</small>
+                            </div>
+                            
+                            <h6 class="mb-3 mt-4"><i class="bi bi-archive"></i> Backup Actions</h6>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-sm btn-success" onclick="createBackup()">
+                                    <i class="bi bi-plus-circle"></i> Create New Backup
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="loadBackupHistory()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh Backup List
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column: Backup History -->
+                        <div class="col-md-6">
+                            <h6 class="mb-3"><i class="bi bi-clock-history"></i> Backup History</h6>
+                            <div id="backupHistoryContainer" style="max-height: 400px; overflow-y: auto;">
+                                <div class="text-center text-muted py-3">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2 small">Loading backup history...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Right Column: Logs and Actions -->
@@ -625,9 +675,180 @@ function changePassphrase() {
     });
 }
 
-// Load passphrase status on page load
+// Storage & Backup Configuration Functions
+function loadVaultPath() {
+    fetch('/fido/vault/path')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('vaultPath').value = data.path;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading vault path:', error);
+        });
+}
+
+function promptVaultPath() {
+    const currentPath = document.getElementById('vaultPath').value;
+    const newPath = prompt('Enter new vault file path:', currentPath);
+    
+    if (!newPath || newPath === currentPath) {
+        return;
+    }
+    
+    if (!confirm('WARNING: Changing vault path will affect where credentials are stored.\n\nContinue?')) {
+        return;
+    }
+    
+    fetch('/fido/vault/path', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            path: newPath
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Vault path updated successfully!\n\nPath: ' + data.path);
+            loadVaultPath();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to update vault path');
+    });
+}
+
+function loadBackupHistory() {
+    const container = document.getElementById('backupHistoryContainer');
+    container.innerHTML = '<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm"></div><p class="mt-2 small">Loading...</p></div>';
+    
+    fetch('/fido/vault/backups')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.backups.length > 0) {
+                let html = '<div class="list-group list-group-flush">';
+                data.backups.forEach(backup => {
+                    html += '<div class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-start">';
+                    html += '<div class="flex-grow-1">';
+                    html += '<div class="fw-bold small"><i class="bi bi-file-earmark-zip"></i> ' + backup.filename + '</div>';
+                    html += '<small class="text-muted">' + backup.created_at + ' • ' + backup.size_mb + ' MB</small>';
+                    html += '</div>';
+                    html += '<div class="btn-group btn-group-sm" role="group">';
+                    html += '<button class="btn btn-outline-success" onclick="restoreBackup(\'' + backup.filename + '\')" title="Restore"><i class="bi bi-arrow-clockwise"></i></button>';
+                    html += '<button class="btn btn-outline-primary" onclick="downloadBackup(\'' + backup.filename + '\')" title="Download"><i class="bi bi-download"></i></button>';
+                    html += '<button class="btn btn-outline-danger" onclick="deleteBackupConfirm(\'' + backup.filename + '\')" title="Delete"><i class="bi bi-trash"></i></button>';
+                    html += '</div>';
+                    html += '</div>';
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<div class="alert alert-secondary mb-0 small"><i class="bi bi-info-circle"></i> No backups found</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading backups:', error);
+            container.innerHTML = '<div class="alert alert-danger mb-0 small"><i class="bi bi-exclamation-triangle"></i> Error loading backups</div>';
+        });
+}
+
+function createBackup() {
+    if (!confirm('Create a backup of the current vault?')) {
+        return;
+    }
+    
+    fetch('/fido/vault/backup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Backup created successfully!\n\nFile: ' + data.filename + '\nTime: ' + data.timestamp);
+            loadBackupHistory();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to create backup');
+    });
+}
+
+function restoreBackup(filename) {
+    if (!confirm('RESTORE vault from backup?\n\nFile: ' + filename + '\n\nCurrent vault will be backed up before restore.\n\nContinue?')) {
+        return;
+    }
+    
+    fetch('/fido/vault/restore', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            backup_filename: filename
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Vault restored successfully!\n\nFrom: ' + data.filename);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to restore vault');
+    });
+}
+
+function deleteBackupConfirm(filename) {
+    if (!confirm('DELETE backup file?\n\nFile: ' + filename + '\n\nThis action cannot be undone.')) {
+        return;
+    }
+    
+    fetch('/fido/vault/backup/' + filename, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Backup deleted: ' + filename);
+            loadBackupHistory();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to delete backup');
+    });
+}
+
+function downloadBackup(filename) {
+    window.location.href = '/fido/vault/backup/' + filename + '/download';
+}
+
+// Load passphrase status and vault path on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadPassphraseStatus();
+    loadVaultPath();
+    loadBackupHistory();
 });
 
 // Auto-refresh status every 30 seconds

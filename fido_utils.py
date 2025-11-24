@@ -15,9 +15,11 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 FIDO_BINARY = '/home/runner/fido_data/virtual-fido-demo'
+FIDO_DATA_DIR = '/home/runner/fido_data'
 FIDO_VAULT_PATH = '/home/runner/fido_data/vault.json'
 DEFAULT_PASSPHRASE = 'passphrase'
 PASSPHRASE_ENV_VAR = 'FIDO_PASSPHRASE'
+VAULT_PATH_ENV_VAR = 'FIDO_VAULT_PATH'
 
 
 def get_fido_passphrase() -> str:
@@ -63,6 +65,116 @@ def set_fido_passphrase(new_passphrase: str) -> Dict:
         return {
             'success': False,
             'error': str(e)
+        }
+
+
+def get_vault_path() -> str:
+    """
+    Get current vault path from environment variable or use default
+    
+    Returns:
+        Current vault path
+    """
+    return os.environ.get(VAULT_PATH_ENV_VAR, FIDO_VAULT_PATH)
+
+
+def set_vault_path(new_path: str) -> Dict:
+    """
+    Set vault path in environment variable
+    
+    Args:
+        new_path: New vault file path
+        
+    Returns:
+        Dict with success status and message
+    """
+    try:
+        if not new_path:
+            return {
+                'success': False,
+                'error': 'Vault path cannot be empty'
+            }
+        
+        # Ensure directory exists
+        vault_dir = os.path.dirname(new_path)
+        if not os.path.exists(vault_dir):
+            os.makedirs(vault_dir, exist_ok=True)
+            logger.info(f"Created vault directory: {vault_dir}")
+        
+        # Set environment variable
+        os.environ[VAULT_PATH_ENV_VAR] = new_path
+        logger.info(f"Vault path updated to: {new_path}")
+        
+        return {
+            'success': True,
+            'message': f'Vault path updated to {new_path}',
+            'path': new_path
+        }
+    except Exception as e:
+        logger.error(f"Error setting vault path: {str(e)}")
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+
+def get_backup_directory() -> str:
+    """Get directory for storing backup files"""
+    backup_dir = os.path.join(FIDO_DATA_DIR, 'backups')
+    os.makedirs(backup_dir, exist_ok=True)
+    return backup_dir
+
+
+def get_backup_history() -> Dict:
+    """
+    Get list of all backup files with metadata
+    
+    Returns:
+        Dict with success status and list of backups
+    """
+    try:
+        backup_dir = get_backup_directory()
+        backups = []
+        
+        # Find all backup files
+        for filename in os.listdir(backup_dir):
+            if filename.startswith('vault_backup_') and filename.endswith('.json'):
+                filepath = os.path.join(backup_dir, filename)
+                stat_info = os.stat(filepath)
+                
+                # Extract timestamp from filename (format: vault_backup_YYYYMMDD_HHMMSS.json)
+                timestamp_str = filename.replace('vault_backup_', '').replace('.json', '')
+                try:
+                    created_at = datetime.strptime(timestamp_str, '%Y%m%d_%H%M%S')
+                except ValueError:
+                    created_at = datetime.fromtimestamp(stat_info.st_mtime)
+                
+                backups.append({
+                    'filename': filename,
+                    'filepath': filepath,
+                    'size': stat_info.st_size,
+                    'size_mb': round(stat_info.st_size / 1024 / 1024, 2),
+                    'created_at': created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                    'timestamp': created_at.isoformat()
+                })
+        
+        # Sort by creation date (newest first)
+        backups.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        return {
+            'success': True,
+            'backups': backups,
+            'count': len(backups),
+            'backup_dir': backup_dir
+        }
+    
+    except Exception as e:
+        logger.exception("Error getting backup history")
+        return {
+            'success': False,
+            'error': str(e),
+            'backups': [],
+            'count': 0
         }
 
 
@@ -462,19 +574,20 @@ def backup_vault(backup_path: Optional[str] = None, vault_path: Optional[str] = 
     
     Args:
         backup_path: Path for backup file (auto-generated if not provided)
-        vault_path: Path to vault file (default: FIDO_VAULT_PATH)
+        vault_path: Path to vault file (default: current vault path from env)
     
     Returns:
         Dict with success status and backup_path
     """
     import shutil
     
-    source = vault_path or FIDO_VAULT_PATH
+    source = vault_path or get_vault_path()
     
     # Auto-generate backup path if not provided
     if not backup_path:
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        backup_path = os.path.join(FIDO_DATA_DIR, f'vault_backup_{timestamp}.json')
+        backup_dir = get_backup_directory()
+        backup_path = os.path.join(backup_dir, f'vault_backup_{timestamp}.json')
     
     try:
         if not os.path.exists(source):
@@ -485,12 +598,18 @@ def backup_vault(backup_path: Optional[str] = None, vault_path: Optional[str] = 
         
         shutil.copy2(source, backup_path)
         
+        # Get file size
+        file_size = os.path.getsize(backup_path)
+        
         logger.info(f"Vault backed up: {source} -> {backup_path}")
         return {
             'success': True,
-            'message': f'Vault backed up to {backup_path}',
+            'message': f'Vault backed up successfully',
             'source': source,
-            'backup': backup_path
+            'backup': backup_path,
+            'filename': os.path.basename(backup_path),
+            'size': file_size,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
     
     except Exception as e:
@@ -506,15 +625,20 @@ def restore_vault(backup_path: str, vault_path: Optional[str] = None) -> Dict:
     Restore vault from backup
     
     Args:
-        backup_path: Path to backup file
-        vault_path: Path to vault file (default: FIDO_VAULT_PATH)
+        backup_path: Path to backup file (or just filename if in backup directory)
+        vault_path: Path to vault file (default: current vault path from env)
     
     Returns:
         Dict with success status
     """
     import shutil
     
-    destination = vault_path or FIDO_VAULT_PATH
+    destination = vault_path or get_vault_path()
+    
+    # If backup_path is just a filename, look in backup directory
+    if not os.path.dirname(backup_path):
+        backup_dir = get_backup_directory()
+        backup_path = os.path.join(backup_dir, backup_path)
     
     try:
         if not os.path.exists(backup_path):
@@ -534,13 +658,50 @@ def restore_vault(backup_path: str, vault_path: Optional[str] = None) -> Dict:
         logger.info(f"Vault restored: {backup_path} -> {destination}")
         return {
             'success': True,
-            'message': f'Vault restored from {backup_path}',
+            'message': f'Vault restored successfully',
             'backup': backup_path,
-            'destination': destination
+            'destination': destination,
+            'filename': os.path.basename(backup_path)
         }
     
     except Exception as e:
         logger.exception("Error restoring vault")
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+
+def delete_backup(backup_filename: str) -> Dict:
+    """
+    Delete a backup file
+    
+    Args:
+        backup_filename: Filename of backup to delete
+        
+    Returns:
+        Dict with success status
+    """
+    try:
+        backup_dir = get_backup_directory()
+        backup_path = os.path.join(backup_dir, backup_filename)
+        
+        if not os.path.exists(backup_path):
+            return {
+                'success': False,
+                'error': f'Backup file not found: {backup_filename}'
+            }
+        
+        os.remove(backup_path)
+        logger.info(f"Backup deleted: {backup_path}")
+        
+        return {
+            'success': True,
+            'message': f'Backup {backup_filename} deleted successfully'
+        }
+    
+    except Exception as e:
+        logger.exception("Error deleting backup")
         return {
             'success': False,
             'error': str(e)
