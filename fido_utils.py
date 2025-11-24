@@ -590,11 +590,25 @@ def backup_vault(backup_path: Optional[str] = None, vault_path: Optional[str] = 
         backup_path = os.path.join(backup_dir, f'vault_backup_{timestamp}.json')
     
     try:
+        # Check if vault file exists
         if not os.path.exists(source):
             return {
                 'success': False,
                 'error': f'Vault file not found: {source}'
             }
+        
+        # Check if vault file is not empty
+        file_size = os.path.getsize(source)
+        if file_size == 0:
+            return {
+                'success': False,
+                'error': 'Vault file is empty. Cannot create backup of empty vault.'
+            }
+        
+        # Check if device is running (warn but don't block)
+        status = get_fido_status()
+        if status.get('running', False):
+            logger.warning("FIDO device is running during backup. Data may not be fully flushed.")
         
         shutil.copy2(source, backup_path)
         
@@ -624,12 +638,15 @@ def restore_vault(backup_path: str, vault_path: Optional[str] = None) -> Dict:
     """
     Restore vault from backup
     
+    IMPORTANT: This function will stop the FIDO device if running,
+    restore the vault file, and provide instructions to restart.
+    
     Args:
         backup_path: Path to backup file (or just filename if in backup directory)
         vault_path: Path to vault file (default: current vault path from env)
     
     Returns:
-        Dict with success status
+        Dict with success status and restart instructions
     """
     import shutil
     
@@ -641,27 +658,54 @@ def restore_vault(backup_path: str, vault_path: Optional[str] = None) -> Dict:
         backup_path = os.path.join(backup_dir, backup_path)
     
     try:
+        # Validate backup file exists
         if not os.path.exists(backup_path):
             return {
                 'success': False,
                 'error': f'Backup file not found: {backup_path}'
             }
         
+        # Validate backup file is not empty
+        backup_size = os.path.getsize(backup_path)
+        if backup_size == 0:
+            return {
+                'success': False,
+                'error': 'Backup file is empty. Cannot restore from empty backup.'
+            }
+        
+        # Stop FIDO device if running (required for safe restore)
+        device_was_running = False
+        status = get_fido_status()
+        if status.get('running', False):
+            device_was_running = True
+            logger.info("Stopping FIDO device for safe vault restore...")
+            stop_result = stop_fido()
+            if not stop_result.get('success', False):
+                return {
+                    'success': False,
+                    'error': 'Failed to stop FIDO device before restore. Restore aborted for safety.'
+                }
+        
         # Create backup of current vault if exists
         if os.path.exists(destination):
-            temp_backup = f"{destination}.before_restore"
+            temp_backup = f"{destination}.before_restore_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             shutil.copy2(destination, temp_backup)
             logger.info(f"Current vault backed up to: {temp_backup}")
         
+        # Restore vault file
         shutil.copy2(backup_path, destination)
         
         logger.info(f"Vault restored: {backup_path} -> {destination}")
+        
         return {
             'success': True,
             'message': f'Vault restored successfully',
             'backup': backup_path,
             'destination': destination,
-            'filename': os.path.basename(backup_path)
+            'filename': os.path.basename(backup_path),
+            'device_was_running': device_was_running,
+            'restart_required': device_was_running,
+            'note': 'Device was stopped for safe restore. Please restart device to use restored credentials.' if device_was_running else 'Vault restored successfully.'
         }
     
     except Exception as e:
@@ -676,22 +720,60 @@ def delete_backup(backup_filename: str) -> Dict:
     """
     Delete a backup file
     
+    SECURITY: Only deletes files from backup directory. Path traversal is blocked.
+    
     Args:
-        backup_filename: Filename of backup to delete
+        backup_filename: Filename of backup to delete (no path separators allowed)
         
     Returns:
         Dict with success status
     """
     try:
+        # SECURITY: Validate filename to prevent path traversal attacks
+        if not backup_filename:
+            return {
+                'success': False,
+                'error': 'Backup filename is required'
+            }
+        
+        # Block path traversal attempts (../, ..\, absolute paths)
+        if '/' in backup_filename or '\\' in backup_filename or backup_filename.startswith('.'):
+            logger.warning(f"Path traversal attempt blocked: {backup_filename}")
+            return {
+                'success': False,
+                'error': 'Invalid filename. Path separators and hidden files not allowed.'
+            }
+        
+        # Construct safe path within backup directory
         backup_dir = get_backup_directory()
         backup_path = os.path.join(backup_dir, backup_filename)
         
+        # SECURITY: Verify final path is within backup directory (double-check)
+        real_backup_dir = os.path.realpath(backup_dir)
+        real_backup_path = os.path.realpath(backup_path)
+        
+        if not real_backup_path.startswith(real_backup_dir):
+            logger.error(f"Path traversal blocked: {backup_filename} resolves outside backup directory")
+            return {
+                'success': False,
+                'error': 'Invalid backup file path'
+            }
+        
+        # Check if file exists
         if not os.path.exists(backup_path):
             return {
                 'success': False,
                 'error': f'Backup file not found: {backup_filename}'
             }
         
+        # Check if it's actually a file (not directory)
+        if not os.path.isfile(backup_path):
+            return {
+                'success': False,
+                'error': f'Not a file: {backup_filename}'
+            }
+        
+        # Delete the file
         os.remove(backup_path)
         logger.info(f"Backup deleted: {backup_path}")
         
