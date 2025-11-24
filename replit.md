@@ -36,3 +36,18 @@ The application is designed to be cross-platform compatible within Linux environ
 - **python-dotenv**: For loading environment variables (e.g., FIDO_PASSPHRASE)
 - **USB/IP tools**: Underlying Linux utilities for USB device virtualization
 - **PostgreSQL**: Primary database for persistent storage (SQLite also supported)
+
+## Recent Changes
+
+### November 24, 2025
+- **Doctor.sh Sudo Permissions Hotfix**: Fixed diagnostic tool to run without password prompts
+  - Added doctor.sh to sudoers configuration with NOPASSWD
+  - Fixed script path to use absolute path instead of relative
+  - Added sudo -n flag for non-interactive execution
+- **Database Permissions Hotfix**: Fixed installation script to create database with correct ownership
+  - Database now initialized as user (not root) before service starts
+  - Automatic permission setup prevents "readonly database" errors
+  - Installation is now fully automatic with no manual configuration needed
+- **FIDO2 Virtual Device Integration - Logs Viewer & Portable Paths**: Completed Tasks 13 & 13.1 (73.0% progress)
+  - Task 13: Comprehensive logs viewer with filtering, pagination, and cleanup
+  - Task 13.1: Universal Linux compatibility with environment variable support

@@ -781,6 +781,8 @@ $REAL_USER ALL=(ALL) NOPASSWD: /usr/bin/find
 $REAL_USER ALL=(ALL) NOPASSWD: /bin/find
 $REAL_USER ALL=(ALL) NOPASSWD: /usr/bin/lsusb
 $REAL_USER ALL=(ALL) NOPASSWD: /bin/lsusb
+$REAL_USER ALL=(ALL) NOPASSWD: $APP_DIR/doctor.sh
+$REAL_USER ALL=(ALL) NOPASSWD: /usr/local/bin/doctor.sh
 EOF
     chmod 440 "/etc/sudoers.d/usbip-$REAL_USER"
 fi

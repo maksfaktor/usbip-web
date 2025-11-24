@@ -599,5 +599,29 @@ sqlite3.OperationalError: attempt to write a readonly database
 
 ---
 
-**Последнее обновление:** 24 ноября 2025, 22:00 UTC  
-**Следующий checkpoint:** TEST CHECKPOINT #3 — после Task 13 (Logs Viewer + Portable Paths + DB Fix)
+---
+
+## 🔧 HOTFIX 2: Doctor.sh Sudo Permissions (November 24, 2025)
+**Проблема:** Диагностика выдавала ошибку:
+```
+sudo: a terminal is required to read the password
+```
+
+**Причина:** `doctor.sh` не был добавлен в sudoers конфигурацию.
+
+**Решение:**
+1. **install_debian.sh:** Добавлены sudo права для doctor.sh:
+   ```bash
+   $REAL_USER ALL=(ALL) NOPASSWD: $APP_DIR/doctor.sh
+   ```
+2. **app.py:** Исправлен путь к скрипту (абсолютный) и добавлен флаг `-n`:
+   ```python
+   ['sudo', '-n', '/full/path/to/doctor.sh']
+   ```
+
+**Результат:** Диагностика работает без запроса пароля из веб-интерфейса.
+
+---
+
+**Последнее обновление:** 24 ноября 2025, 23:00 UTC  
+**Следующий checkpoint:** TEST CHECKPOINT #3 — после Task 13 (Logs + Paths + DB + Doctor fix)

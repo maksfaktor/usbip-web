@@ -1043,19 +1043,23 @@ def run_doctor():
     API для запуска скрипта doctor.sh и получения результатов диагностики
     """
     try:
+        # Определяем путь к скрипту doctor.sh
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        doctor_script = os.path.join(script_dir, 'doctor.sh')
+        
         # Проверяем, что скрипт существует
-        if not os.path.exists('./doctor.sh'):
+        if not os.path.exists(doctor_script):
             return jsonify({
                 'success': False,
                 'message': 'Скрипт doctor.sh не найден'
             }), 404
         
         # Делаем скрипт исполняемым, если он еще не такой
-        os.chmod('./doctor.sh', 0o755)
+        os.chmod(doctor_script, 0o755)
         
-        # Запускаем скрипт doctor.sh и получаем вывод
+        # Запускаем скрипт doctor.sh и получаем вывод с использованием sudo -n (без запроса пароля)
         process = subprocess.Popen(
-            ['sudo', './doctor.sh'], 
+            ['sudo', '-n', doctor_script], 
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True
