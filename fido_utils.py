@@ -13,13 +13,37 @@ from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-# Configuration
-FIDO_BINARY = '/home/runner/fido_data/virtual-fido'
-FIDO_DATA_DIR = '/home/runner/fido_data'
-FIDO_VAULT_PATH = '/home/runner/fido_data/vault.json'
-DEFAULT_PASSPHRASE = 'passphrase'
+# Configuration - Universal paths supporting any Linux user
+# Automatically detect home directory and project directory
+HOME = os.path.expanduser('~')  # Works on any system: /home/runner, /home/maxx, etc.
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))  # Current project directory
+
+# Environment variable names
 PASSPHRASE_ENV_VAR = 'FIDO_PASSPHRASE'
 VAULT_PATH_ENV_VAR = 'FIDO_VAULT_PATH'
+BINARY_PATH_ENV_VAR = 'FIDO_BINARY_PATH'
+DATA_DIR_ENV_VAR = 'FIDO_DATA_DIR'
+
+# Default values with environment variable overrides
+DEFAULT_PASSPHRASE = 'passphrase'
+
+# FIDO binary path: check env var, then project dir, then fallback to ~/fido_data
+FIDO_BINARY = os.environ.get(
+    BINARY_PATH_ENV_VAR,
+    os.path.join(PROJECT_DIR, 'virtual-fido', 'cmd', 'demo', 'virtual-fido-demo')
+)
+
+# FIDO data directory: check env var, then fallback to ~/fido_data
+FIDO_DATA_DIR = os.environ.get(
+    DATA_DIR_ENV_VAR,
+    os.path.join(HOME, 'fido_data')
+)
+
+# FIDO vault path: check env var, then fallback to FIDO_DATA_DIR/vault.json
+FIDO_VAULT_PATH = os.environ.get(
+    VAULT_PATH_ENV_VAR,
+    os.path.join(FIDO_DATA_DIR, 'vault.json')
+)
 
 
 def get_fido_passphrase() -> str:

@@ -28,7 +28,7 @@ A comprehensive USB/IP device management web interface designed for robust devic
 ## Recent Changes
 
 ### November 24, 2025
-- **FIDO2 Virtual Device Integration - Logs Viewer**: Completed Task 13 (72.2% progress)
+- **FIDO2 Virtual Device Integration - Logs Viewer & Portable Paths**: Completed Tasks 13 & 13.1 (73.0% progress)
   - **Task 13 - Logs Viewer**: Comprehensive operation history display with filtering and pagination
     - Backend API routes: GET `/fido/logs` (with filters), POST `/fido/logs/clear`, GET `/fido/logs/stats`
     - Logs table with columns: Timestamp, Event Type, Status, RP ID/Details, IP Address
@@ -39,6 +39,13 @@ A comprehensive USB/IP device management web interface designed for robust devic
     - JavaScript functions: toggleLogFilters(), loadLogs(), displayLogs(), updatePagination(), changePage(), clearOldLogs()
     - Auto-load logs on page load with real-time filtering
     - All operations logged to FidoLog table with user tracking and IP addresses
+  - **Task 13.1 - Portable Paths Fix**: Universal Linux compatibility (works on any user/system)
+    - Fixed hardcoded `/home/runner` paths in fido_utils.py to use `os.path.expanduser('~')`
+    - Added environment variable support: FIDO_BINARY_PATH, FIDO_DATA_DIR, FIDO_VAULT_PATH, FIDO_PASSPHRASE
+    - Updated models.py: removed hardcoded vault_path default
+    - Enhanced install_debian.sh: NEW Step 9 creates ~/fido_data, copies binary, generates .env file
+    - Added python-dotenv dependency for .env file loading in Flask
+    - Project now works on any Linux system (Ubuntu, Debian, Replit) without path modifications
 
 ### October 25, 2025
 - **FIDO2 Virtual Device Integration - Passphrase Management**: Completed Tasks 8-11 (61.1% progress)

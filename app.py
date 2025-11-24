@@ -6,6 +6,7 @@ import logging
 import socket
 import subprocess
 import netifaces
+from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, send_file, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -13,6 +14,9 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Функция для добавления записей в журнал
 def add_log_entry(level, message, source):

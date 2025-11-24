@@ -173,7 +173,7 @@ echo ""
 echo_color "yellow" "This script will set up the USB/IP server and client on your system."
 echo ""
 
-TOTAL_STEPS=10
+TOTAL_STEPS=11
 CURRENT_STEP=0
 
 # Step 1: Check operating system
@@ -649,7 +649,67 @@ fi
 
 echo_color "green" "✓ Python virtual environment configured."
 
-# Step 9: Create systemd service
+# Step 9: Configure FIDO2 virtual device
+CURRENT_STEP=$((CURRENT_STEP + 1))
+progress_update $CURRENT_STEP $TOTAL_STEPS "Configuring FIDO2 virtual device..."
+
+# Create FIDO data directory
+FIDO_DATA_DIR="$USER_HOME/fido_data"
+if [ ! -d "$FIDO_DATA_DIR" ]; then
+    mkdir -p "$FIDO_DATA_DIR"
+    chown $REAL_USER:$REAL_USER "$FIDO_DATA_DIR"
+    echo_color "green" "  ✓ Created FIDO data directory: $FIDO_DATA_DIR"
+else
+    echo_color "blue" "  → FIDO data directory already exists"
+fi
+
+# Create backups subdirectory
+FIDO_BACKUP_DIR="$FIDO_DATA_DIR/backups"
+if [ ! -d "$FIDO_BACKUP_DIR" ]; then
+    mkdir -p "$FIDO_BACKUP_DIR"
+    chown $REAL_USER:$REAL_USER "$FIDO_BACKUP_DIR"
+    echo_color "green" "  ✓ Created FIDO backups directory"
+fi
+
+# Check if virtual-fido binary exists in project
+FIDO_BINARY_SOURCE="$APP_DIR/virtual-fido/cmd/demo/virtual-fido-demo"
+FIDO_BINARY_DEST="$FIDO_DATA_DIR/virtual-fido"
+
+if [ -f "$FIDO_BINARY_SOURCE" ]; then
+    # Copy binary to fido_data directory
+    cp "$FIDO_BINARY_SOURCE" "$FIDO_BINARY_DEST"
+    chmod +x "$FIDO_BINARY_DEST"
+    chown $REAL_USER:$REAL_USER "$FIDO_BINARY_DEST"
+    echo_color "green" "  ✓ FIDO binary installed: $FIDO_BINARY_DEST"
+else
+    echo_color "yellow" "  ⚠ FIDO binary not found in project repository"
+    echo_color "yellow" "  → Binary location: $FIDO_BINARY_SOURCE (will be used if exists)"
+fi
+
+# Create .env file with FIDO configuration
+ENV_FILE="$APP_DIR/.env"
+if [ ! -f "$ENV_FILE" ]; then
+    cat > "$ENV_FILE" <<EOF
+# FIDO2 Virtual Device Configuration
+FIDO_BINARY_PATH=$FIDO_BINARY_DEST
+FIDO_DATA_DIR=$FIDO_DATA_DIR
+FIDO_VAULT_PATH=$FIDO_DATA_DIR/vault.json
+FIDO_PASSPHRASE=passphrase
+
+# Session Configuration
+SESSION_SECRET=$(openssl rand -hex 32)
+EOF
+    chown $REAL_USER:$REAL_USER "$ENV_FILE"
+    chmod 600 "$ENV_FILE"  # Secure permissions
+    echo_color "green" "  ✓ Created .env configuration file"
+else
+    echo_color "blue" "  → .env file already exists, skipping creation"
+    echo_color "yellow" "  → Please verify FIDO paths in .env manually if needed"
+fi
+
+echo_color "green" "✓ FIDO2 virtual device configured."
+
+# Step 10: Create systemd service
 CURRENT_STEP=$((CURRENT_STEP + 1))
 progress_update $CURRENT_STEP $TOTAL_STEPS "Creating systemd service..."
 
@@ -676,7 +736,7 @@ systemctl start orange-usbip
 
 echo_color "green" "✓ Systemd service created and started."
 
-# Step 10: Configure access to USB/IP via sudo
+# Step 11: Configure access to USB/IP via sudo
 CURRENT_STEP=$((CURRENT_STEP + 1))
 progress_update $CURRENT_STEP $TOTAL_STEPS "Configuring access rights for USB/IP..."
 

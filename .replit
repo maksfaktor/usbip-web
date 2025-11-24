@@ -2,7 +2,7 @@ modules = ["python-3.11", "postgresql-16"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["openssl", "postgresql", "go_1_21", "git"]
+packages = ["git", "go_1_21", "openssl", "postgresql"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -46,7 +46,3 @@ externalPort = 80
 [[ports]]
 localPort = 41235
 externalPort = 3001
-
-[[ports]]
-localPort = 45991
-externalPort = 3002

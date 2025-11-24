@@ -137,7 +137,7 @@ class FidoDevice(db.Model):
     started_at = db.Column(db.DateTime, nullable=True)
     stopped_at = db.Column(db.DateTime, nullable=True)
     auto_start = db.Column(db.Boolean, default=False)
-    vault_path = db.Column(db.String(512), default='/home/runner/fido_data/vault.json')
+    vault_path = db.Column(db.String(512), nullable=True)  # Path determined dynamically from env or fido_utils
     passphrase_hash = db.Column(db.String(256), nullable=True)  # Хешированный passphrase
     last_error = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
