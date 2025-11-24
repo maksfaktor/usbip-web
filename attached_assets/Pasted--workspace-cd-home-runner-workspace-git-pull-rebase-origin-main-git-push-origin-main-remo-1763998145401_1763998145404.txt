@@ -1,0 +1,30 @@
+~/workspace$ cd /home/runner/workspace && git pull --rebase origin main && git push origin main
+remote: Enumerating objects: 1442, done.
+remote: Counting objects: 100% (71/71), done.
+remote: Compressing objects: 100% (58/58), done.
+remote: Total 1442 (delta 54), reused 13 (delta 13), pack-reused 1371 (from 2)
+Receiving objects: 100% (1442/1442), 56.48 MiB | 47.56 MiB/s, done.
+Resolving deltas: 100% (1172/1172), completed with 3 local objects.
+From https://github.com/maksfaktor/usbip-web
+ * branch            main       -> FETCH_HEAD
+   8c879d8..5f9467e  main       -> origin/main
+warning: skipped previously applied commit 2ced7c9
+warning: skipped previously applied commit 973414d
+warning: skipped previously applied commit 7cccfc2
+warning: skipped previously applied commit 5f96bad
+warning: skipped previously applied commit 1159015
+warning: skipped previously applied commit e803659
+warning: skipped previously applied commit 80361b5
+warning: skipped previously applied commit eff9600
+warning: skipped previously applied commit f8efd79
+warning: skipped previously applied commit 6532f35
+hint: use --reapply-cherry-picks to include skipped commits
+hint: Disable this message with "git config advice.skippedCherryPicks false"
+CONFLICT (modify/delete): translations.py deleted in HEAD and modified in a40d4d0 (Improve user experience by translating file storage interface elements).  Version a40d4d0 (Improve user experience by translating file storage interface elements) of translations.py left in tree.
+error: could not apply a40d4d0... Improve user experience by translating file storage interface elements
+hint: Resolve all conflicts manually, mark them as resolved with
+hint: "git add/rm <conflicted_files>", then run "git rebase --continue".
+hint: You can instead skip this commit: run "git rebase --skip".
+hint: To abort and get back to the state before "git rebase", run "git rebase --abort".
+Could not apply a40d4d0... Improve user experience by translating file storage interface elements
+~/workspace$ 
