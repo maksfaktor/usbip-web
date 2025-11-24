@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Tuple
 logger = logging.getLogger(__name__)
 
 # Configuration
-FIDO_BINARY = '/home/runner/fido_data/virtual-fido-demo'
+FIDO_BINARY = '/home/runner/fido_data/virtual-fido'
 FIDO_DATA_DIR = '/home/runner/fido_data'
 FIDO_VAULT_PATH = '/home/runner/fido_data/vault.json'
 DEFAULT_PASSPHRASE = 'passphrase'
@@ -269,7 +269,7 @@ def stop_fido_device() -> Dict:
     try:
         # Find and kill the process
         # First try to find by name
-        find_cmd = ['pgrep', '-f', 'virtual-fido-demo.*start']
+        find_cmd = ['pgrep', '-f', 'virtual-fido.*start']
         result = subprocess.run(find_cmd, capture_output=True, text=True)
         
         if result.returncode == 0 and result.stdout.strip():
@@ -316,7 +316,7 @@ def get_fido_status() -> Dict:
     """
     try:
         # Check if process is running
-        cmd = ['pgrep', '-f', 'virtual-fido-demo.*start']
+        cmd = ['pgrep', '-f', 'virtual-fido.*start']
         result = subprocess.run(cmd, capture_output=True, text=True)
         
         if result.returncode == 0 and result.stdout.strip():
