@@ -90,12 +90,29 @@
                             <li>You'll see it in the "Registered Credentials" table</li>
                         </ol>
 
-                        <h6 class="text-info mt-3"><i class="bi bi-3-circle"></i> Testing</h6>
-                        <p class="small">Use test sites from the "Quick Actions" section:</p>
-                        <ul class="small">
-                            <li><strong>Yubico Demo</strong> - official demo from YubiKey creators</li>
-                            <li><strong>WebAuthn.io</strong> - interactive testing platform</li>
+                        <h6 class="text-info mt-3"><i class="bi bi-3-circle"></i> Testing Your Device</h6>
+                        <p class="small mb-2"><strong>Step 1: Choose a test site</strong></p>
+                        <ul class="small mb-2">
+                            <li><strong>Yubico Demo</strong> - demo.yubico.com/webauthn</li>
+                            <li><strong>WebAuthn.io</strong> - webauthn.io</li>
                         </ul>
+                        
+                        <p class="small mb-2"><strong>Step 2: Create a test account</strong></p>
+                        <div class="alert alert-info alert-sm mb-2" style="font-size: 0.85rem; padding: 0.5rem;">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Important:</strong> You need to register a temporary demo account on the test site. 
+                            This is <strong>NOT a real registration</strong> - accounts expire after 24 hours and are only used for testing.
+                            Use any credentials (e.g., username: "test123", password: "test123456").
+                        </div>
+                        
+                        <p class="small mb-2"><strong>Step 3: Register your security key</strong></p>
+                        <ol class="small mb-0" style="font-size: 0.85rem;">
+                            <li>After creating account, look for "Add authenticator" or "Register security key" button</li>
+                            <li>Click it - browser will ask: "Use your security key with..."</li>
+                            <li>Click "Allow" or "OK"</li>
+                            <li>New credential will appear in "Registered Credentials" section below</li>
+                            <li>Success! Your FIDO2 device is working! ✅</li>
+                        </ol>
                     </div>
                     
                     <div class="col-md-6">
