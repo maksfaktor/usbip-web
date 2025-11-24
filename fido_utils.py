@@ -679,7 +679,7 @@ def restore_vault(backup_path: str, vault_path: Optional[str] = None) -> Dict:
         if status.get('running', False):
             device_was_running = True
             logger.info("Stopping FIDO device for safe vault restore...")
-            stop_result = stop_fido()
+            stop_result = stop_fido_device()
             if not stop_result.get('success', False):
                 return {
                     'success': False,
