@@ -1,0 +1,228 @@
+Semiconductor Corp. Wireless Keyboard/Mouse
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:lsusb: 04f3:22e8 = Elan Microelectronics Corp. Touchscreen
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:lsusb: 8087:0a2a = Intel Corp. Bluetooth wireless interface
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:lsusb: 04f2:b5d8 = Chicony Electronics Co., Ltd EasyCamera
+--
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: ERROR:usbip_utils:Ошибка при добавлении лога парсинга: (sqlite3.OperationalError) attempt to write a readonly database
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: [SQL: INSERT INTO logs (timestamp, level, message, source) VALUES (?, ?, ?, ?)]
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: [parameters: ('2025-11-24 20:42:10.613234', 'DEBUG', 'Начинаем парсинг вывода usbip, длина текста: 353', 'usbip')]
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: (Background on this error at: https://sqlalche.me/e/20/e3q8)
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Обрабатываем строку 1: '- busid 1-3 (062a:4101)'
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Найдено соответствие по шаблону usbip list -l: '- busid 1-3 (062a:4101)'
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Извлечено имя устройства: 'MosArt Semiconductor Corp. : Wireless Keyboard/Mouse'
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Создано устройство: {'busid': '1-3', 'info': '1-3: MosArt Semiconductor Corp. : Wireless Keyboard/Mouse (062a:4101)', 'details': [], 'vendor_id': '062a', 'product_id': '4101', 'device_name': 'MosArt Semiconductor Corp. : Wireless Keyboard/Mouse'}
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Обрабатываем строку 4: '- busid 1-6 (04f3:22e8)'
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Найдено соответствие по шаблону usbip list -l: '- busid 1-6 (04f3:22e8)'
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Извлечено имя устройства: 'Elan Microelectronics Corp. : unknown product'
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Создано устройство: {'busid': '1-6', 'info': '1-6: Elan Microelectronics Corp. : unknown product (04f3:22e8)', 'details': [], 'vendor_id': '04f3', 'product_id': '22e8', 'device_name': 'Elan Microelectronics Corp. : unknown product'}
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Обрабатываем строку 7: '- busid 1-7 (8087:0a2a)'
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Найдено соответствие по шаблону usbip list -l: '- busid 1-7 (8087:0a2a)'
+--
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: ERROR:usbip_utils:Ошибка при добавлении лога: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) attempt to write a readonly database
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: [SQL: INSERT INTO logs (timestamp, level, message, source) VALUES (?, ?, ?, ?)]
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: [parameters: ('2025-11-24 20:42:10.613234', 'DEBUG', 'Начинаем парсинг вывода usbip, длина текста: 353', 'usbip')]
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Найдено 4 устройств с полными названиями
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Получаем список опубликованных устройств
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Пробуем получить список опубликованных устройств через usbip list -b
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Выполнение команды: sudo -n usbip list -b
+Nov 24 14:42:10 maxx-Lenovo sudo[80723]:     maxx : PWD=/home/maxx/orange-usbip ; USER=root ; COMMAND=/usr/bin/usbip list -b
+Nov 24 14:42:10 maxx-Lenovo sudo[80723]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Nov 24 14:42:10 maxx-Lenovo sudo[80723]: pam_unix(sudo:session): session closed for user root
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: ERROR:usbip_utils:Ошибка при добавлении лога: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) attempt to write a readonly database
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: [SQL: INSERT INTO logs (timestamp, level, message, source) VALUES (?, ?, ?, ?)]
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: [parameters: ('2025-11-24 20:42:10.613234', 'DEBUG', 'Начинаем парсинг вывода usbip, длина текста: 353', 'usbip')]
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: WARNING:usbip_utils:Метод 1 неудачен:
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Пробуем получить список опубликованных устройств через doctor.sh
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Пробуем запустить doctor.sh по пути: ./doctor.sh
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Выполнение команды: sudo -n ./doctor.sh
+Nov 24 14:42:10 maxx-Lenovo sudo[80727]:     maxx : a password is required ; PWD=/home/maxx/orange-usbip ; USER=root ; COMMAND=./doctor.sh
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Sudo с -n не сработал, пробуем использовать pkexec
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Выполнение команды: pkexec ./doctor.sh
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Пробуем запустить doctor.sh по пути: /usr/local/bin/doctor.sh
+Nov 24 14:42:10 maxx-Lenovo gunicorn[26528]: DEBUG:usbip_utils:Выполнение команды: sudo -n /usr/local/bin/doctor.sh
+Nov 24 14:42:10 maxx-Lenovo sudo[80733]:     maxx : a password is required ; PWD=/home/maxx/orange-usbip ; USER=root ; COMMAND=/usr/local/bin/doctor.sh
+--
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: ERROR:app:Unhandled error: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) attempt to write a readonly database
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [SQL: INSERT INTO logs (timestamp, level, message, source) VALUES (?, ?, ?, ?)]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [parameters: ('2025-11-24 20:42:10.613234', 'DEBUG', 'Начинаем парсинг вывода usbip, длина текста: 353', 'usbip')]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: ERROR:app:Exception on / [GET]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: Traceback (most recent call last):
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 870, in full_dispatch_request
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     rv = self.dispatch_request()
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:          ^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 855, in dispatch_request
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask_login/utils.py", line 290, in decorated_view
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return current_app.ensure_sync(func)(*args, **kwargs)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/app.py", line 271, in index
+--
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     raise sa_exc.PendingRollbackError(
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) attempt to write a readonly database
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [SQL: INSERT INTO logs (timestamp, level, message, source) VALUES (?, ?, ?, ?)]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [parameters: ('2025-11-24 20:42:10.613234', 'DEBUG', 'Начинаем парсинг вывода usbip, длина текста: 353', 'usbip')]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: During handling of the above exception, another exception occurred:
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: Traceback (most recent call last):
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 1463, in wsgi_app
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     response = self.full_dispatch_request()
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 872, in full_dispatch_request
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     rv = self.handle_user_exception(e)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 762, in handle_user_exception
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return self.ensure_sync(handler)(e)  # type: ignore[no-any-return]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/app.py", line 1030, in handle_exception
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     code = 500
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:        ^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/templating.py", line 150, in render_template
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return _render(app, template, context)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/templating.py", line 131, in _render
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     rv = template.render(context)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:          ^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/jinja2/environment.py", line 1295, in render
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     self.environment.handle_exception()
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/jinja2/environment.py", line 942, in handle_exception
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     raise rewrite_traceback_stack(source=source)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/templates/error.html", line 1, in top-level template code
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     {% extends "base.html" %}
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/templates/base.html", line 123, in top-level template code
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     {% if current_user.is_admin %}
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     ^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/jinja2/environment.py", line 490, in getattr
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return getattr(obj, attribute)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py", line 566, in __get__
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     raise sa_exc.PendingRollbackError(
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) attempt to write a readonly database
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [SQL: INSERT INTO logs (timestamp, level, message, source) VALUES (?, ?, ?, ?)]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [parameters: ('2025-11-24 20:42:10.613234', 'DEBUG', 'Начинаем парсинг вывода usbip, длина текста: 353', 'usbip')]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [2025-11-24 14:42:11 -0600] [26528] [ERROR] Error handling request /
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: Traceback (most recent call last):
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 870, in full_dispatch_request
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     rv = self.dispatch_request()
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:          ^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 855, in dispatch_request
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask_login/utils.py", line 290, in decorated_view
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return current_app.ensure_sync(func)(*args, **kwargs)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/app.py", line 271, in index
+--
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     raise sa_exc.PendingRollbackError(
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) attempt to write a readonly database
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [SQL: INSERT INTO logs (timestamp, level, message, source) VALUES (?, ?, ?, ?)]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [parameters: ('2025-11-24 20:42:10.613234', 'DEBUG', 'Начинаем парсинг вывода usbip, длина текста: 353', 'usbip')]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: During handling of the above exception, another exception occurred:
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: Traceback (most recent call last):
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 1463, in wsgi_app
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     response = self.full_dispatch_request()
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 872, in full_dispatch_request
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     rv = self.handle_user_exception(e)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 762, in handle_user_exception
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return self.ensure_sync(handler)(e)  # type: ignore[no-any-return]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/app.py", line 1030, in handle_exception
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     code = 500
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:        ^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/templating.py", line 150, in render_template
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return _render(app, template, context)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/templating.py", line 131, in _render
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     rv = template.render(context)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:          ^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/jinja2/environment.py", line 1295, in render
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     self.environment.handle_exception()
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/jinja2/environment.py", line 942, in handle_exception
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     raise rewrite_traceback_stack(source=source)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/templates/error.html", line 1, in top-level template code
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     {% extends "base.html" %}
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/templates/base.html", line 123, in top-level template code
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     {% if current_user.is_admin %}
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     ^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/jinja2/environment.py", line 490, in getattr
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return getattr(obj, attribute)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py", line 566, in __get__
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     raise sa_exc.PendingRollbackError(
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) attempt to write a readonly database
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [SQL: INSERT INTO logs (timestamp, level, message, source) VALUES (?, ?, ?, ?)]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [parameters: ('2025-11-24 20:42:10.613234', 'DEBUG', 'Начинаем парсинг вывода usbip, длина текста: 353', 'usbip')]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: During handling of the above exception, another exception occurred:
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: Traceback (most recent call last):
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/workers/sync.py", line 134, in handle
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     self.handle_request(listener, req, client, addr)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/workers/sync.py", line 177, in handle_request
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     respiter = self.wsgi(environ, resp.start_response)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 1488, in __call__
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return self.wsgi_app(environ, start_response)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/werkzeug/middleware/proxy_fix.py", line 182, in __call__
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return self.app(environ, start_response)
+--
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     response = self.handle_exception(e)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:                ^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/app.py", line 813, in handle_exception
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     server_error = self.ensure_sync(handler)(server_error)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/app.py", line 1007, in internal_server_error
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     error_description="Запрашиваемая страница не существует. Возможно, она была удалена или перемещена."), 404
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/templating.py", line 150, in render_template
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return _render(app, template, context)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/flask/templating.py", line 131, in _render
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     rv = template.render(context)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:          ^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/jinja2/environment.py", line 1295, in render
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     self.environment.handle_exception()
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/jinja2/environment.py", line 942, in handle_exception
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     raise rewrite_traceback_stack(source=source)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/templates/error.html", line 1, in top-level template code
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     {% extends "base.html" %}
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/templates/base.html", line 123, in top-level template code
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     {% if current_user.is_admin %}
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     ^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/jinja2/environment.py", line 490, in getattr
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return getattr(obj, attribute)
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py", line 566, in __get__
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]:     raise sa_exc.PendingRollbackError(
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) attempt to write a readonly database
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [SQL: INSERT INTO logs (timestamp, level, message, source) VALUES (?, ?, ?, ?)]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: [parameters: ('2025-11-24 20:42:10.613234', 'DEBUG', 'Начинаем парсинг вывода usbip, длина текста: 353', 'usbip')]
+Nov 24 14:42:11 maxx-Lenovo gunicorn[26528]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26517]: [2025-11-24 14:42:42 -0600] [26517] [CRITICAL] WORKER TIMEOUT (pid:26528)
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]: [2025-11-24 14:42:42 -0600] [26528] [ERROR] Error handling request (no URI read)
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]: Traceback (most recent call last):
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/workers/sync.py", line 133, in handle
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]:     req = next(parser)
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]:           ^^^^^^^^^^^^
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/http/parser.py", line 41, in __next__
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]:     self.mesg = self.mesg_class(self.cfg, self.unreader, self.source_addr, self.req_count)
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/http/message.py", line 259, in __init__
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]:     super().__init__(cfg, unreader, peer_addr)
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/http/message.py", line 60, in __init__
+Nov 24 14:42:42 maxx-Lenovo gunicorn[26528]:     unused = self.parse(self.unreader)
