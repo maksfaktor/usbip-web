@@ -732,6 +732,36 @@ EOF
 
 systemctl daemon-reload
 systemctl enable orange-usbip
+
+# Initialize database with correct permissions BEFORE starting service
+echo_color "blue" "  → Initializing database with correct permissions..."
+
+# Create instance directory with correct ownership
+mkdir -p "$APP_DIR/instance"
+chown -R $REAL_USER:$REAL_USER "$APP_DIR/instance"
+
+# Initialize database as the real user (not root)
+su - $REAL_USER -c "cd $APP_DIR && source venv/bin/activate && python3 << 'DBINIT'
+import os
+os.chdir('$APP_DIR')
+from app import app, db
+with app.app_context():
+    db.create_all()
+    print('Database initialized successfully')
+DBINIT
+"
+
+# Ensure all application files have correct ownership
+chown -R $REAL_USER:$REAL_USER "$APP_DIR"
+chmod 755 "$APP_DIR"
+chmod 755 "$APP_DIR/instance"
+if [ -f "$APP_DIR/instance/app.db" ]; then
+    chmod 664 "$APP_DIR/instance/app.db"
+fi
+
+echo_color "green" "  ✓ Database initialized with correct permissions"
+
+# Now start the service
 systemctl start orange-usbip
 
 echo_color "green" "✓ Systemd service created and started."
@@ -803,9 +833,6 @@ echo "   cd ~/orange-usbip && chmod +x uninstall.sh && sudo ./uninstall.sh"
 echo ""
 
 exit 0
-
-# End of normal installation flow
-fi
 
 # Functions for uninstallation - only run when --uninstall is specified
 if [ "$UNINSTALL_MODE" = true ]; then
