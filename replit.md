@@ -27,6 +27,19 @@ A comprehensive USB/IP device management web interface designed for robust devic
 
 ## Recent Changes
 
+### November 24, 2025
+- **FIDO2 Virtual Device Integration - Logs Viewer**: Completed Task 13 (72.2% progress)
+  - **Task 13 - Logs Viewer**: Comprehensive operation history display with filtering and pagination
+    - Backend API routes: GET `/fido/logs` (with filters), POST `/fido/logs/clear`, GET `/fido/logs/stats`
+    - Logs table with columns: Timestamp, Event Type, Status, RP ID/Details, IP Address
+    - Advanced filters: Event Type (device_start, device_stop, credential_delete, vault_backup, etc.), Status (success/failed/pending)
+    - Pagination: 50 logs per page with Prev/Next navigation
+    - Clear Old Logs: Interactive cleanup with customizable retention period (default 30 days)
+    - Color-coded status badges: success (green), failed (red), pending (yellow)
+    - JavaScript functions: toggleLogFilters(), loadLogs(), displayLogs(), updatePagination(), changePage(), clearOldLogs()
+    - Auto-load logs on page load with real-time filtering
+    - All operations logged to FidoLog table with user tracking and IP addresses
+
 ### October 25, 2025
 - **FIDO2 Virtual Device Integration - Passphrase Management**: Completed Tasks 8-11 (61.1% progress)
   - **Task 8 - Help System**: Created comprehensive English-language help and progress tracking

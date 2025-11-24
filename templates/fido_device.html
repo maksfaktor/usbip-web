@@ -430,42 +430,81 @@
                 </div>
             </div>
 
-            <!-- Recent Logs Card -->
+            <!-- Logs Viewer Card -->
             <div class="card mb-3">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Recent Activity
-                    </h5>
+                <div class="card-header bg-secondary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-journal-text"></i> Operation Logs
+                            <span id="logCount" class="badge bg-dark">0</span>
+                        </h5>
+                        <button class="btn btn-sm btn-outline-light" onclick="toggleLogFilters()">
+                            <i class="bi bi-funnel"></i> Filters
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
-                    {% if recent_logs %}
-                        <div class="list-group list-group-flush">
-                            {% for log in recent_logs %}
-                            <div class="list-group-item bg-dark border-secondary">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <span class="badge bg-{% if log.status == 'success' %}success{% elif log.status == 'failed' %}danger{% else %}warning{% endif %}">
-                                            {{ log.event_type }}
-                                        </span>
-                                        {% if log.rp_id %}
-                                            <small class="text-muted ms-2">{{ log.rp_id }}</small>
-                                        {% endif %}
-                                    </div>
-                                    <small class="log-timestamp text-muted">
-                                        {{ log.timestamp.strftime('%H:%M:%S') }}
-                                    </small>
-                                </div>
-                                {% if log.details %}
-                                    <small class="text-muted d-block mt-1">{{ log.details }}</small>
-                                {% endif %}
+                
+                <!-- Filters Section (collapsible) -->
+                <div id="logFilters" class="card-body border-bottom" style="display: none;">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="form-label small">Event Type:</label>
+                            <select class="form-select form-select-sm" id="filterEventType" onchange="loadLogs()">
+                                <option value="all">All Types</option>
+                                <option value="device_start">Device Start</option>
+                                <option value="device_stop">Device Stop</option>
+                                <option value="credential_delete">Credential Delete</option>
+                                <option value="vault_backup">Vault Backup</option>
+                                <option value="vault_restore">Vault Restore</option>
+                                <option value="passphrase_change">Passphrase Change</option>
+                                <option value="logs_clear">Logs Clear</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small">Status:</label>
+                            <select class="form-select form-select-sm" id="filterStatus" onchange="loadLogs()">
+                                <option value="all">All Status</option>
+                                <option value="success">Success</option>
+                                <option value="failed">Failed</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small">Actions:</label>
+                            <button class="btn btn-sm btn-danger w-100" onclick="clearOldLogs()">
+                                <i class="bi bi-trash"></i> Clear Old Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Logs Table -->
+                <div class="card-body p-0">
+                    <div id="logsContainer" style="max-height: 500px; overflow-y: auto;">
+                        <div class="text-center text-muted py-3">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
                             </div>
-                            {% endfor %}
+                            <p class="mt-2 small">Loading logs...</p>
                         </div>
-                    {% else %}
-                        <div class="alert alert-secondary mb-0">
-                            <i class="bi bi-inbox"></i> No activity logged yet
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="card-footer bg-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">Page <span id="currentPage">1</span> of <span id="totalPages">1</span></small>
                         </div>
-                    {% endif %}
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button class="btn btn-outline-secondary" id="prevPageBtn" onclick="changePage(-1)" disabled>
+                                <i class="bi bi-chevron-left"></i> Prev
+                            </button>
+                            <button class="btn btn-outline-secondary" id="nextPageBtn" onclick="changePage(1)" disabled>
+                                Next <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -844,11 +883,168 @@ function downloadBackup(filename) {
     window.location.href = '/fido/vault/backup/' + filename + '/download';
 }
 
+// Logs Viewer Functions
+let currentPage = 1;
+const logsPerPage = 50;
+
+function toggleLogFilters() {
+    const filters = document.getElementById('logFilters');
+    if (filters.style.display === 'none') {
+        filters.style.display = 'block';
+    } else {
+        filters.style.display = 'none';
+    }
+}
+
+function loadLogs(page = 1) {
+    currentPage = page;
+    const eventType = document.getElementById('filterEventType').value;
+    const status = document.getElementById('filterStatus').value;
+    
+    const params = new URLSearchParams({
+        page: currentPage,
+        per_page: logsPerPage
+    });
+    
+    if (eventType && eventType !== 'all') {
+        params.append('event_type', eventType);
+    }
+    
+    if (status && status !== 'all') {
+        params.append('status', status);
+    }
+    
+    fetch('/fido/logs?' + params.toString())
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayLogs(data.logs);
+                updatePagination(data.pagination);
+            } else {
+                document.getElementById('logsContainer').innerHTML = 
+                    '<div class="alert alert-danger m-3">Error loading logs: ' + data.message + '</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading logs:', error);
+            document.getElementById('logsContainer').innerHTML = 
+                '<div class="alert alert-danger m-3">Failed to load logs</div>';
+        });
+}
+
+function displayLogs(logs) {
+    const container = document.getElementById('logsContainer');
+    
+    if (logs.length === 0) {
+        container.innerHTML = 
+            '<div class="alert alert-secondary m-3">' +
+            '<i class="bi bi-inbox"></i> No logs found' +
+            '</div>';
+        document.getElementById('logCount').textContent = '0';
+        return;
+    }
+    
+    let html = '<table class="table table-dark table-striped table-hover mb-0">';
+    html += '<thead>';
+    html += '<tr>';
+    html += '<th style="width: 140px;">Timestamp</th>';
+    html += '<th style="width: 150px;">Event Type</th>';
+    html += '<th style="width: 80px;">Status</th>';
+    html += '<th>RP ID / Details</th>';
+    html += '<th style="width: 100px;">IP Address</th>';
+    html += '</tr>';
+    html += '</thead>';
+    html += '<tbody>';
+    
+    logs.forEach(log => {
+        const statusClass = log.status === 'success' ? 'success' : 
+                          log.status === 'failed' ? 'danger' : 'warning';
+        
+        html += '<tr>';
+        html += '<td><small>' + log.timestamp + '</small></td>';
+        html += '<td><span class="badge bg-primary">' + log.event_type + '</span></td>';
+        html += '<td><span class="badge bg-' + statusClass + '">' + log.status + '</span></td>';
+        html += '<td>';
+        if (log.rp_id) {
+            html += '<strong>' + log.rp_id + '</strong><br>';
+        }
+        if (log.details) {
+            html += '<small class="text-muted">' + log.details + '</small>';
+        }
+        html += '</td>';
+        html += '<td><small>' + (log.ip_address || 'N/A') + '</small></td>';
+        html += '</tr>';
+    });
+    
+    html += '</tbody>';
+    html += '</table>';
+    
+    container.innerHTML = html;
+    document.getElementById('logCount').textContent = logs.length;
+}
+
+function updatePagination(pagination) {
+    document.getElementById('currentPage').textContent = pagination.page;
+    document.getElementById('totalPages').textContent = pagination.pages;
+    
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    
+    prevBtn.disabled = !pagination.has_prev;
+    nextBtn.disabled = !pagination.has_next;
+}
+
+function changePage(delta) {
+    loadLogs(currentPage + delta);
+}
+
+function clearOldLogs() {
+    const days = prompt('Clear logs older than how many days?\n\nEnter number of days (default: 30):', '30');
+    
+    if (days === null) {
+        return; // User cancelled
+    }
+    
+    const daysNum = parseInt(days);
+    if (isNaN(daysNum) || daysNum < 1) {
+        alert('Please enter a valid number of days');
+        return;
+    }
+    
+    if (!confirm('Clear all logs older than ' + daysNum + ' days?\n\nThis action cannot be undone.')) {
+        return;
+    }
+    
+    fetch('/fido/logs/clear', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            days: daysNum
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message + '\n\nDeleted: ' + data.deleted_count + ' log entries');
+            loadLogs(1); // Reload first page
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to clear logs');
+    });
+}
+
 // Load passphrase status and vault path on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadPassphraseStatus();
     loadVaultPath();
     loadBackupHistory();
+    loadLogs(1); // Load first page of logs
 });
 
 // Auto-refresh status every 30 seconds

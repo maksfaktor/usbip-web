@@ -591,3 +591,146 @@ def download_backup_route(filename):
             'success': False,
             'message': f"Error: {str(e)}"
         }), 500
+
+
+@fido_bp.route('/logs', methods=['GET'])
+@login_required
+def get_logs_route():
+    """Get FIDO operation logs with filtering and pagination"""
+    try:
+        # Get query parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        event_type = request.args.get('event_type', None)
+        status = request.args.get('status', None)
+        
+        # Build query
+        query = FidoLog.query
+        
+        # Apply filters
+        if event_type and event_type != 'all':
+            query = query.filter_by(event_type=event_type)
+        
+        if status and status != 'all':
+            query = query.filter_by(status=status)
+        
+        # Order by timestamp descending (newest first)
+        query = query.order_by(FidoLog.timestamp.desc())
+        
+        # Paginate
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        # Format logs for JSON response
+        logs = []
+        for log in pagination.items:
+            logs.append({
+                'id': log.id,
+                'timestamp': log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'N/A',
+                'event_type': log.event_type,
+                'status': log.status,
+                'rp_id': log.rp_id,
+                'credential_id': log.credential_id[:16] + '...' if log.credential_id and len(log.credential_id) > 16 else log.credential_id,
+                'details': log.details,
+                'ip_address': log.ip_address,
+                'user_id': log.user_id
+            })
+        
+        return jsonify({
+            'success': True,
+            'logs': logs,
+            'pagination': {
+                'page': pagination.page,
+                'per_page': pagination.per_page,
+                'total': pagination.total,
+                'pages': pagination.pages,
+                'has_prev': pagination.has_prev,
+                'has_next': pagination.has_next
+            }
+        })
+    
+    except Exception as e:
+        logger.error(f"Error fetching logs: {e}")
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}",
+            'logs': []
+        }), 500
+
+
+@fido_bp.route('/logs/clear', methods=['POST'])
+@login_required
+def clear_logs_route():
+    """Clear old FIDO logs"""
+    try:
+        data = request.get_json() or {}
+        days = data.get('days', 30)  # Default: clear logs older than 30 days
+        
+        from datetime import datetime, timedelta
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        
+        # Delete old logs
+        deleted_count = FidoLog.query.filter(FidoLog.timestamp < cutoff_date).delete()
+        db.session.commit()
+        
+        logger.info(f"Cleared {deleted_count} logs older than {days} days")
+        log_fido_event('logs_clear', 'success', details=f"Deleted {deleted_count} logs older than {days} days")
+        
+        return jsonify({
+            'success': True,
+            'message': f'Cleared {deleted_count} logs older than {days} days',
+            'deleted_count': deleted_count
+        })
+    
+    except Exception as e:
+        logger.error(f"Error clearing logs: {e}")
+        db.session.rollback()
+        log_fido_event('logs_clear', 'failed', details=str(e))
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
+@fido_bp.route('/logs/stats', methods=['GET'])
+@login_required
+def get_log_stats_route():
+    """Get statistics about FIDO logs"""
+    try:
+        from sqlalchemy import func
+        
+        # Total logs count
+        total_logs = FidoLog.query.count()
+        
+        # Count by event type
+        event_counts = db.session.query(
+            FidoLog.event_type,
+            func.count(FidoLog.id).label('count')
+        ).group_by(FidoLog.event_type).all()
+        
+        # Count by status
+        status_counts = db.session.query(
+            FidoLog.status,
+            func.count(FidoLog.id).label('count')
+        ).group_by(FidoLog.status).all()
+        
+        # Recent activity (last 24 hours)
+        from datetime import datetime, timedelta
+        last_24h = datetime.utcnow() - timedelta(hours=24)
+        recent_count = FidoLog.query.filter(FidoLog.timestamp >= last_24h).count()
+        
+        return jsonify({
+            'success': True,
+            'stats': {
+                'total_logs': total_logs,
+                'recent_24h': recent_count,
+                'by_event_type': {item[0]: item[1] for item in event_counts},
+                'by_status': {item[0]: item[1] for item in status_counts}
+            }
+        })
+    
+    except Exception as e:
+        logger.error(f"Error fetching log stats: {e}")
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
