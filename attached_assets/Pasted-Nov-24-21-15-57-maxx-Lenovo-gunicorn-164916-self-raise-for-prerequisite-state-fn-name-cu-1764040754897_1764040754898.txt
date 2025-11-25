@@ -1,0 +1,37 @@
+Nov 24 21:15:57 maxx-Lenovo gunicorn[164916]:     self._raise_for_prerequisite_state(fn.__name__, current_state)
+Nov 24 21:15:57 maxx-Lenovo gunicorn[164916]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 928, in _raise_for_prerequisite_state
+Nov 24 21:15:57 maxx-Lenovo gunicorn[164916]:     raise sa_exc.PendingRollbackError(
+Nov 24 21:15:57 maxx-Lenovo gunicorn[164916]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) attempt to write a readonly database
+Nov 24 21:15:57 maxx-Lenovo gunicorn[164916]: [SQL: INSERT INTO logs (timestamp, level, message, source) VALUES (?, ?, ?, ?)]
+Nov 24 21:15:57 maxx-Lenovo gunicorn[164916]: [parameters: ('2025-11-25 03:15:57.385814', 'INFO', 'User admin logged in successfully', 'auth')]
+Nov 24 21:15:57 maxx-Lenovo gunicorn[164916]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+Nov 24 21:16:27 maxx-Lenovo gunicorn[153128]: [2025-11-24 21:16:27 -0600] [153128] [CRITICAL] WORKER TIMEOUT (pid:164916)
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]: [2025-11-24 21:16:27 -0600] [164916] [ERROR] Error handling request (no URI read)
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]: Traceback (most recent call last):
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/workers/sync.py", line 133, in handle
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:     req = next(parser)
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:           ^^^^^^^^^^^^
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/http/parser.py", line 41, in __next__
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:     self.mesg = self.mesg_class(self.cfg, self.unreader, self.source_addr, self.req_count)
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/http/message.py", line 259, in __init__
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:     super().__init__(cfg, unreader, peer_addr)
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/http/message.py", line 60, in __init__
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:     unused = self.parse(self.unreader)
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:              ^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/http/message.py", line 271, in parse
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:     self.get_data(unreader, buf, stop=True)
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/http/message.py", line 262, in get_data
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:     data = unreader.read()
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:            ^^^^^^^^^^^^^^^
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/http/unreader.py", line 36, in read
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:     d = self.chunk()
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:         ^^^^^^^^^^^^
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/http/unreader.py", line 63, in chunk
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:     return self.sock.recv(self.mxchunk)
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 204, in handle_abort
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]:     sys.exit(1)
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]: SystemExit: 1
+Nov 24 21:16:27 maxx-Lenovo gunicorn[164916]: [2025-11-24 21:16:27 -0600] [164916] [INFO] Worker exiting (pid: 164916)
+Nov 24 21:16:27 maxx-Lenovo gunicorn[167594]: [2025-11-24 21:16:27 -0600] [167594] [INFO] Booting worker with pid: 167594
