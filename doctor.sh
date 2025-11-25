@@ -333,11 +333,11 @@ if [ $? -eq 0 ]; then
     echo ""
     echo "Published devices:"
     
-    # Проверка через usbip port
-    PUBLISHED_PORT=$(sudo usbip port | grep -c "usbip" 2>/dev/null)
+    # Проверка через usbip port (suppress stderr)
+    PUBLISHED_PORT=$(sudo usbip port 2>/dev/null | grep -c "usbip" 2>/dev/null || echo "0")
     
-    # Проверка через usbip list -b
-    sudo $USBIP_PATH list -b > /tmp/doctor_usbip_published.txt 2>/dev/null
+    # Проверка через usbip list -b (suppress stderr)
+    sudo usbip list -b > /tmp/doctor_usbip_published.txt 2>/dev/null || true
     PUBLISHED_LIST=$(grep -E "^[0-9]-[0-9]" /tmp/doctor_usbip_published.txt | wc -l)
     
     # Дополнительная проверка через директории ядра
@@ -358,7 +358,7 @@ if [ $? -eq 0 ]; then
         
         if [ $PUBLISHED_PORT -gt 0 ]; then
             echo "Via usbip port:"
-            sudo usbip port | grep -A 1 "Port" | grep -v "\-\-" | sed 's/^/  /'
+            sudo usbip port 2>/dev/null | grep -A 1 "Port" | grep -v "\-\-" | sed 's/^/  /'
         fi
         
         if [ $PUBLISHED_LIST -gt 0 ]; then
