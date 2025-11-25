@@ -651,6 +651,7 @@ After=network.target usbipd.service
 User=$REAL_USER
 Group=$REAL_USER
 WorkingDirectory=$APP_DIR
+EnvironmentFile=$APP_DIR/.env
 ExecStart=$APP_DIR/venv/bin/gunicorn --bind 0.0.0.0:5000 main:app
 Restart=on-failure
 Environment="PATH=$APP_DIR/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
