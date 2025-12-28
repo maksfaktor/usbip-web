@@ -253,7 +253,7 @@
                         <select class="form-select" id="connect_virtual_port_id" name="port_id" required>
                             <option value="" selected disabled>Select Port</option>
                             {% for port in available_virtual_ports %}
-                                <option value="{{ port.id }}">{{ port.name }} ({{ port.port_number or t('no_number') }})</option>
+                                <option value="{{ port.id }}">{{ port.name }} ({{ port.port_number or 'No number' }})</option>
                             {% endfor %}
                         </select>
                         <div class="form-text">
