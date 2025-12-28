@@ -27,34 +27,41 @@ DATA_DIR_ENV_VAR = 'FIDO_DATA_DIR'
 # Default values with environment variable overrides
 DEFAULT_PASSPHRASE = 'passphrase'
 
-# FIDO binary path: check env var, then ~/fido_data, then project dir
+# FIDO data directory: inside project folder for better portability
+FIDO_DATA_DIR = os.environ.get(
+    DATA_DIR_ENV_VAR,
+    os.path.join(PROJECT_DIR, 'fido_data')
+)
+
+# Create fido_data directory if it doesn't exist
+if not os.path.exists(FIDO_DATA_DIR):
+    try:
+        os.makedirs(FIDO_DATA_DIR, exist_ok=True)
+    except Exception as e:
+        logger.warning(f"Could not create FIDO data directory: {e}")
+
+# FIDO binary path: check env var, then project fido_data, then source dir
 def get_fido_binary_path():
-    """Find FIDO binary in order: env var -> ~/fido_data -> project dir"""
+    """Find FIDO binary in order: env var -> project/fido_data -> source dir"""
     # Check environment variable first
     env_path = os.environ.get(BINARY_PATH_ENV_VAR)
     if env_path and os.path.isfile(env_path):
         return env_path
     
-    # Check ~/fido_data/virtual-fido (installed by install script)
-    user_binary = os.path.join(HOME, 'fido_data', 'virtual-fido')
-    if os.path.isfile(user_binary):
-        return user_binary
-    
-    # Fallback to project directory
-    project_binary = os.path.join(PROJECT_DIR, 'virtual-fido', 'cmd', 'demo', 'virtual-fido-demo')
+    # Check project/fido_data/virtual-fido (primary location)
+    project_binary = os.path.join(FIDO_DATA_DIR, 'virtual-fido')
     if os.path.isfile(project_binary):
         return project_binary
     
+    # Fallback to source directory (for development)
+    source_binary = os.path.join(PROJECT_DIR, 'virtual-fido', 'cmd', 'demo', 'virtual-fido-demo')
+    if os.path.isfile(source_binary):
+        return source_binary
+    
     # Return default path (will show error when used)
-    return user_binary
+    return project_binary
 
 FIDO_BINARY = get_fido_binary_path()
-
-# FIDO data directory: check env var, then fallback to ~/fido_data
-FIDO_DATA_DIR = os.environ.get(
-    DATA_DIR_ENV_VAR,
-    os.path.join(HOME, 'fido_data')
-)
 
 # FIDO vault path: check env var, then fallback to FIDO_DATA_DIR/vault.json
 FIDO_VAULT_PATH = os.environ.get(

@@ -608,6 +608,39 @@ def download_backup_route(filename):
         }), 500
 
 
+@fido_bp.route('/vault/download', methods=['GET'])
+@login_required
+def download_vault_route():
+    """Download current vault.json file for backup"""
+    try:
+        from flask import send_file
+        from fido_utils import FIDO_VAULT_PATH
+        import os
+        from datetime import datetime
+        
+        if not os.path.exists(FIDO_VAULT_PATH):
+            flash('Vault file not found', 'error')
+            return jsonify({
+                'success': False,
+                'message': 'Vault file not found'
+            }), 404
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        download_name = f'vault_backup_{timestamp}.json'
+        
+        log_fido_event('vault_download', 'success', details='Current vault downloaded')
+        return send_file(FIDO_VAULT_PATH, as_attachment=True, download_name=download_name)
+            
+    except Exception as e:
+        logger.error(f"Error downloading vault: {e}")
+        log_fido_event('vault_download', 'failed', details=str(e))
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
 @fido_bp.route('/logs', methods=['GET'])
 @login_required
 def get_logs_route():

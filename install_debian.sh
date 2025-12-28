@@ -582,8 +582,8 @@ echo_color "green" "✓ Python virtual environment configured."
 CURRENT_STEP=$((CURRENT_STEP + 1))
 progress_update $CURRENT_STEP $TOTAL_STEPS "Configuring FIDO2 virtual device..."
 
-# Create FIDO data directory
-FIDO_DATA_DIR="$USER_HOME/fido_data"
+# Create FIDO data directory INSIDE project folder for better portability
+FIDO_DATA_DIR="$APP_DIR/fido_data"
 if [ ! -d "$FIDO_DATA_DIR" ]; then
     mkdir -p "$FIDO_DATA_DIR"
     chown $REAL_USER:$REAL_USER "$FIDO_DATA_DIR"
@@ -640,12 +640,13 @@ else
     echo_color "blue" "  → FIDO binary already exists: $FIDO_BINARY_DEST"
 fi
 
-# Create .env file with FIDO configuration
+# Create .env file with FIDO configuration (paths inside project folder)
 ENV_FILE="$APP_DIR/.env"
 if [ ! -f "$ENV_FILE" ]; then
     cat > "$ENV_FILE" <<EOF
-# FIDO2 Virtual Device Configuration
-FIDO_BINARY_PATH=$FIDO_BINARY_DEST
+# FIDO2 Virtual Device Configuration (stored in project folder)
+# Paths are relative to project for portability
+FIDO_BINARY_PATH=$FIDO_DATA_DIR/virtual-fido
 FIDO_DATA_DIR=$FIDO_DATA_DIR
 FIDO_VAULT_PATH=$FIDO_DATA_DIR/vault.json
 FIDO_PASSPHRASE=passphrase
@@ -657,8 +658,12 @@ EOF
     chmod 600 "$ENV_FILE"  # Secure permissions
     echo_color "green" "  ✓ Created .env configuration file"
 else
-    echo_color "blue" "  → .env file already exists, skipping creation"
-    echo_color "yellow" "  → Please verify FIDO paths in .env manually if needed"
+    echo_color "blue" "  → .env file already exists, updating FIDO paths..."
+    # Update FIDO paths in existing .env to use project folder
+    sed -i "s|FIDO_BINARY_PATH=.*|FIDO_BINARY_PATH=$FIDO_DATA_DIR/virtual-fido|" "$ENV_FILE"
+    sed -i "s|FIDO_DATA_DIR=.*|FIDO_DATA_DIR=$FIDO_DATA_DIR|" "$ENV_FILE"
+    sed -i "s|FIDO_VAULT_PATH=.*|FIDO_VAULT_PATH=$FIDO_DATA_DIR/vault.json|" "$ENV_FILE"
+    echo_color "green" "  ✓ Updated FIDO paths in .env"
 fi
 
 echo_color "green" "✓ FIDO2 virtual device configured."
