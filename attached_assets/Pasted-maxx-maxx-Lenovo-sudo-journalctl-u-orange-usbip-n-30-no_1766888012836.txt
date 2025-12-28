@@ -1,0 +1,32 @@
+maxx@maxx-Lenovo:~$ sudo journalctl -u orange-usbip -n 30 --no-pager
+[sudo] password for maxx: 
+Dec 27 20:08:01 maxx-Lenovo gunicorn[6724]: DEBUG:usbip_utils:Итого найдено 0 опубликованных устройств: []
+Dec 27 20:08:01 maxx-Lenovo gunicorn[6724]: DEBUG:app:Log added: [DEBUG] Published devices: [] (Source: usbip)
+Dec 27 20:08:01 maxx-Lenovo gunicorn[6724]: DEBUG:app:Log added: [DEBUG] Device 1-3 NOT marked as published (Source: usbip)
+Dec 27 20:08:01 maxx-Lenovo gunicorn[6724]: DEBUG:app:Log added: [DEBUG] Device 1-6 NOT marked as published (Source: usbip)
+Dec 27 20:08:01 maxx-Lenovo gunicorn[6724]: DEBUG:app:Log added: [DEBUG] Device 1-7 NOT marked as published (Source: usbip)
+Dec 27 20:08:01 maxx-Lenovo gunicorn[6724]: DEBUG:app:Log added: [DEBUG] Device 1-8 NOT marked as published (Source: usbip)
+Dec 27 20:08:01 maxx-Lenovo gunicorn[6724]: DEBUG:usbip_utils:Выполнение команды: sudo -n /usr/bin/usbip port
+Dec 27 20:08:01 maxx-Lenovo sudo[8041]:     maxx : PWD=/home/maxx/orange-usbip ; USER=root ; COMMAND=/usr/bin/usbip port
+Dec 27 20:08:01 maxx-Lenovo sudo[8041]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Dec 27 20:08:01 maxx-Lenovo sudo[8041]: pam_unix(sudo:session): session closed for user root
+Dec 27 20:08:01 maxx-Lenovo gunicorn[6724]: DEBUG:app:Найденные сетевые интерфейсы: {'WiFi': [{'name': 'wlp2s0', 'ip': '192.168.0.212', 'url': 'http://192.168.0.212:5000'}], 'Ethernet': [{'name': 'virbr0', 'ip': '192.168.122.1', 'url': 'http://192.168.122.1:5000'}]}
+Dec 27 20:08:01 maxx-Lenovo gunicorn[6724]: ERROR:app:Unhandled error: 't' is undefined
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]: DEBUG:fido_utils:Listing credentials: /home/maxx/fido_data/virtual-fido list --passphrase passphrase --vault /home/maxx/fido_data/vault.json
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]: ERROR:fido_utils:Error listing credentials
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]: Traceback (most recent call last):
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]:   File "/home/maxx/orange-usbip/fido_utils.py", line 407, in list_fido_credentials
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]:     result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]:   File "/usr/lib/python3.12/subprocess.py", line 548, in run
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]:     with Popen(*popenargs, **kwargs) as process:
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]:   File "/usr/lib/python3.12/subprocess.py", line 1026, in __init__
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]:     self._execute_child(args, executable, preexec_fn, close_fds,
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]:   File "/usr/lib/python3.12/subprocess.py", line 1955, in _execute_child
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]:     raise child_exception_type(errno_num, err_msg, err_filename)
+Dec 27 20:09:23 maxx-Lenovo gunicorn[6724]: FileNotFoundError: [Errno 2] No such file or directory: '/home/maxx/fido_data/virtual-fido'
+Dec 27 20:09:26 maxx-Lenovo gunicorn[6724]: DEBUG:app:Найденные сетевые интерфейсы: {'WiFi': [{'name': 'wlp2s0', 'ip': '192.168.0.212', 'url': 'http://192.168.0.212:5000'}], 'Ethernet': [{'name': 'virbr0', 'ip': '192.168.122.1', 'url': 'http://192.168.122.1:5000'}]}
+Dec 27 20:09:32 maxx-Lenovo gunicorn[6724]: DEBUG:app:Найденные сетевые интерфейсы: {'WiFi': [{'name': 'wlp2s0', 'ip': '192.168.0.212', 'url': 'http://192.168.0.212:5000'}], 'Ethernet': [{'name': 'virbr0', 'ip': '192.168.122.1', 'url': 'http://192.168.122.1:5000'}]}
+Dec 27 20:09:34 maxx-Lenovo gunicorn[6724]: DEBUG:app:Найденные сетевые интерфейсы: {'WiFi': [{'name': 'wlp2s0', 'ip': '192.168.0.212', 'url': 'http://192.168.0.212:5000'}], 'Ethernet': [{'name': 'virbr0', 'ip': '192.168.122.1', 'url': 'http://192.168.122.1:5000'}]}
+Dec 27 20:09:43 maxx-Lenovo gunicorn[6724]: DEBUG:app:Найденные сетевые интерфейсы: {'WiFi': [{'name': 'wlp2s0', 'ip': '192.168.0.212', 'url': 'http://192.168.0.212:5000'}], 'Ethernet': [{'name': 'virbr0', 'ip': '192.168.122.1', 'url': 'http://192.168.122.1:5000'}]}

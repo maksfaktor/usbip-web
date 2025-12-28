@@ -1,0 +1,22 @@
+Logs
+Time	Level	Source	Message
+28.12.2025 02:08:01	DEBUG	USB/IP	Device 1-8 NOT marked as published
+28.12.2025 02:08:01	DEBUG	USB/IP	Device 1-7 NOT marked as published
+28.12.2025 02:08:01	DEBUG	USB/IP	Device 1-6 NOT marked as published
+28.12.2025 02:08:01	DEBUG	USB/IP	Device 1-3 NOT marked as published
+28.12.2025 02:08:01	DEBUG	USB/IP	Published devices: []
+28.12.2025 02:07:52	DEBUG	USB/IP	usbip list -b: code=1, stdout=usage: usbip list [-p|--parsable] <args> -p, --parsable Parsable list format -r, --remote=<host> List the exportable USB devices on <host> -l, --local List the local USB devices -d, --device List the local USB gadgets bound to usbip-vudc , stderr=
+28.12.2025 02:07:51	DEBUG	USB/IP	Анализируемые строки: [' - busid 1-3 (062a:4101)', ' MosArt Semiconductor Corp. : Wireless Keyboard/Mouse (062a:4101)', '', ' - busid 1-6 (04f3:22e8)', ' Elan Microelectronics Corp. : unknown product (04f3:22e8)', '', ' - busid 1-7 (8087:0a2a)', ' Intel Corp. : Bluetooth wireless interface (8087:0a2a)', '', ' - busid 1-8 (04f2:b5d8)', ' Chicony Electronics Co., Ltd : unknown product (04f2:b5d8)', '', '']
+28.12.2025 02:07:51	DEBUG	USB/IP	Начинаем парсинг вывода usbip, длина текста: 353
+28.12.2025 02:07:19	DEBUG	USB/IP	Device 1-8 NOT marked as published
+28.12.2025 02:07:18	DEBUG	USB/IP	Device 1-7 NOT marked as published
+28.12.2025 02:07:17	DEBUG	USB/IP	Device 1-6 NOT marked as published
+28.12.2025 02:07:17	DEBUG	USB/IP	Device 1-3 NOT marked as published
+28.12.2025 02:07:16	DEBUG	USB/IP	Published devices: []
+28.12.2025 02:07:07	DEBUG	USB/IP	usbip list -b: code=1, stdout=usage: usbip list [-p|--parsable] <args> -p, --parsable Parsable list format -r, --remote=<host> List the exportable USB devices on <host> -l, --local List the local USB devices -d, --device List the local USB gadgets bound to usbip-vudc , stderr=
+28.12.2025 02:07:06	DEBUG	USB/IP	Анализируемые строки: [' - busid 1-3 (062a:4101)', ' MosArt Semiconductor Corp. : Wireless Keyboard/Mouse (062a:4101)', '', ' - busid 1-6 (04f3:22e8)', ' Elan Microelectronics Corp. : unknown product (04f3:22e8)', '', ' - busid 1-7 (8087:0a2a)', ' Intel Corp. : Bluetooth wireless interface (8087:0a2a)', '', ' - busid 1-8 (04f2:b5d8)', ' Chicony Electronics Co., Ltd : unknown product (04f2:b5d8)', '', '']
+28.12.2025 02:07:06	DEBUG	USB/IP	Начинаем парсинг вывода usbip, длина текста: 353
+28.12.2025 02:06:51	DEBUG	USB/IP	Device 1-8 NOT marked as published
+28.12.2025 02:06:51	DEBUG	USB/IP	Device 1-7 NOT marked as published
+28.12.2025 02:06:51	DEBUG	USB/IP	Device 1-6 NOT marked as published
+28.12.2025 02:06:50	DEBUG	USB/IP	Device 1-3 NOT marked as published
