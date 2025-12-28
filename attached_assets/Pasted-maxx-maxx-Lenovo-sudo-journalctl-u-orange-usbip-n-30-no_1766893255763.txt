@@ -1,0 +1,31 @@
+maxx@maxx-Lenovo:~$ sudo journalctl -u orange-usbip -n 30 --no-pager
+Dec 27 21:35:20 maxx-Lenovo gunicorn[28308]:   File "/usr/lib/python3.12/subprocess.py", line 1026, in __init__
+Dec 27 21:35:20 maxx-Lenovo gunicorn[28308]:     self._execute_child(args, executable, preexec_fn, close_fds,
+Dec 27 21:35:20 maxx-Lenovo gunicorn[28308]:   File "/usr/lib/python3.12/subprocess.py", line 1955, in _execute_child
+Dec 27 21:35:20 maxx-Lenovo gunicorn[28308]:     raise child_exception_type(errno_num, err_msg, err_filename)
+Dec 27 21:35:20 maxx-Lenovo gunicorn[28308]: FileNotFoundError: [Errno 2] No such file or directory: '/home/maxx/fido_data/virtual-fido'
+Dec 27 21:35:20 maxx-Lenovo gunicorn[28308]: DEBUG:fido_routes:FIDO event logged: device_start - failed
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]: INFO:fido_utils:Starting FIDO device: /home/maxx/fido_data/virtual-fido start --passphrase passphrase --vault /home/maxx/fido_data/vault.json
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]: ERROR:fido_utils:Error starting FIDO device
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]: Traceback (most recent call last):
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]:   File "/home/maxx/orange-usbip/fido_utils.py", line 264, in start_fido_device
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]:     process = subprocess.Popen(
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]:               ^^^^^^^^^^^^^^^^^
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]:   File "/usr/lib/python3.12/subprocess.py", line 1026, in __init__
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]:     self._execute_child(args, executable, preexec_fn, close_fds,
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]:   File "/usr/lib/python3.12/subprocess.py", line 1955, in _execute_child
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]:     raise child_exception_type(errno_num, err_msg, err_filename)
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]: FileNotFoundError: [Errno 2] No such file or directory: '/home/maxx/fido_data/virtual-fido'
+Dec 27 21:35:40 maxx-Lenovo gunicorn[28308]: DEBUG:fido_routes:FIDO event logged: device_start - failed
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]: INFO:fido_utils:Starting FIDO device: /home/maxx/fido_data/virtual-fido start --passphrase passphrase --vault /home/maxx/fido_data/vault.json
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]: ERROR:fido_utils:Error starting FIDO device
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]: Traceback (most recent call last):
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]:   File "/home/maxx/orange-usbip/fido_utils.py", line 264, in start_fido_device
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]:     process = subprocess.Popen(
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]:               ^^^^^^^^^^^^^^^^^
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]:   File "/usr/lib/python3.12/subprocess.py", line 1026, in __init__
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]:     self._execute_child(args, executable, preexec_fn, close_fds,
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]:   File "/usr/lib/python3.12/subprocess.py", line 1955, in _execute_child
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]:     raise child_exception_type(errno_num, err_msg, err_filename)
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]: FileNotFoundError: [Errno 2] No such file or directory: '/home/maxx/fido_data/virtual-fido'
+Dec 27 21:38:57 maxx-Lenovo gunicorn[28308]: DEBUG:fido_routes:FIDO event logged: device_start - failed

@@ -1,0 +1,32 @@
+maxx@maxx-Lenovo:~$ sudo journalctl -u orange-usbip -n 30 --no-pager
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:              ^^^^^^^^^^^^^^
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/loading.py", line 509, in load_on_ident
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:     return load_on_pk_identity(
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:            ^^^^^^^^^^^^^^^^^^^^
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/loading.py", line 694, in load_on_pk_identity
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:     session.execute(
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2306, in execute
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:     return self._execute_internal(
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:            ^^^^^^^^^^^^^^^^^^^^^^^
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2170, in _execute_internal
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:     ) = compile_state_cls.orm_pre_session_exec(
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/context.py", line 549, in orm_pre_session_exec
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:     session._autoflush()
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2994, in _autoflush
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:     self.flush()
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 4296, in flush
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:     self._flush(objects)
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 4388, in _flush
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:     flush_context.transaction = transaction = self._autobegin_t()._begin()
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:   File "<string>", line 2, in _begin
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/state_changes.py", line 103, in _go
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:     self._raise_for_prerequisite_state(fn.__name__, current_state)
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:   File "/home/maxx/orange-usbip/venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 928, in _raise_for_prerequisite_state
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]:     raise sa_exc.PendingRollbackError(
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]: sqlalchemy.exc.PendingRollbackError: This Session's transaction has been rolled back due to a previous exception during flush. To begin a new transaction with this Session, first issue Session.rollback(). Original exception was: (sqlite3.OperationalError) attempt to write a readonly database
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]: [SQL: INSERT INTO logs (timestamp, level, message, source) VALUES (?, ?, ?, ?)]
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]: [parameters: ('2025-12-28 03:33:46.182618', 'DEBUG', 'Начинаем парсинг вывода usbip, длина текста: 353', 'usbip')]
+Dec 27 21:33:47 maxx-Lenovo gunicorn[23172]: (Background on this error at: https://sqlalche.me/e/20/e3q8) (Background on this error at: https://sqlalche.me/e/20/7s2a)
+maxx@maxx
