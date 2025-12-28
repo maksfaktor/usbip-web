@@ -1,5 +1,9 @@
 # Orange USBIP
 
+![Version](https://img.shields.io/badge/version-1.0.0-green)
+![Status](https://img.shields.io/badge/status-stable-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
 A comprehensive web-based solution for managing USB/IP on Linux, allowing you to share, connect, and emulate USB devices over the network.
 
 <div align="center">
@@ -8,6 +12,17 @@ A comprehensive web-based solution for managing USB/IP on Linux, allowing you to
 **💻 Works on all Linux: ARM, x86, x86_64, ARM64 📱**
 
 </div>
+
+## Release Notes
+
+### v1.0.0 (December 2025) - Stable Release
+- Full USB/IP device management (bind, publish, unpublish)
+- Virtual FIDO2/U2F security token integration
+- Web-based terminal with custom commands
+- Comprehensive diagnostics (doctor.sh)
+- Automatic installation scripts for Debian/Ubuntu
+- Cross-platform support (x86, x86_64, ARM, ARM64)
+- English-only interface
 
 ## 📌 Quick One-line Installation
 
