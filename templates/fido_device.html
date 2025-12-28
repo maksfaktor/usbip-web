@@ -238,6 +238,35 @@
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- Localhost Attachment Section -->
+                    <hr class="my-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-2">
+                                <i class="bi bi-plug"></i> Localhost USB Attachment
+                            </h5>
+                            <div class="info-row">
+                                <span class="info-label">Attach Status:</span>
+                                <span class="info-value" id="attach-status">
+                                    <span class="badge bg-secondary">Checking...</span>
+                                </span>
+                            </div>
+                            <small class="text-muted">
+                                Attach the virtual FIDO device to this system so it appears as a real USB security key.
+                                After attaching, you can share it over the network using the main USB/IP interface.
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <button class="btn btn-primary fido-action-btn mb-2" onclick="attachToLocalhost()" id="attach-btn">
+                                <i class="bi bi-plug"></i> Attach to Localhost
+                            </button>
+                            <br>
+                            <button class="btn btn-outline-warning fido-action-btn" onclick="detachFromLocalhost()" id="detach-btn">
+                                <i class="bi bi-eject"></i> Detach
+                            </button>
+                        </div>
+                    </div>
 
                     {% if device.last_error %}
                     <div class="alert alert-danger mt-3 mb-0">
@@ -1063,12 +1092,103 @@ function clearOldLogs() {
     });
 }
 
+// Localhost Attach/Detach functions
+function attachToLocalhost() {
+    const btn = document.getElementById('attach-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Attaching...';
+    
+    fetch('/fido/attach-localhost', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Success: ' + data.message);
+            checkLocalhostStatus();
+        } else {
+            alert('Error: ' + (data.error || data.message));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to attach device');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-plug"></i> Attach to Localhost';
+    });
+}
+
+function detachFromLocalhost() {
+    const btn = document.getElementById('detach-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Detaching...';
+    
+    fetch('/fido/detach-localhost', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Success: ' + data.message);
+            checkLocalhostStatus();
+        } else {
+            alert('Error: ' + (data.error || data.message));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to detach device');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-eject"></i> Detach';
+    });
+}
+
+function checkLocalhostStatus() {
+    fetch('/fido/localhost-status')
+        .then(response => response.json())
+        .then(data => {
+            const statusEl = document.getElementById('attach-status');
+            if (data.success) {
+                if (data.is_attached) {
+                    let html = '<span class="badge bg-success">Attached</span>';
+                    if (data.attached_ports && data.attached_ports.length > 0) {
+                        html += ' <small class="text-muted">Port(s): ' + data.attached_ports.join(', ') + '</small>';
+                    }
+                    if (data.visible_in_lsusb) {
+                        html += ' <span class="badge bg-info ms-1">Visible in lsusb</span>';
+                    }
+                    statusEl.innerHTML = html;
+                } else {
+                    statusEl.innerHTML = '<span class="badge bg-secondary">Not Attached</span>';
+                }
+            } else {
+                statusEl.innerHTML = '<span class="badge bg-warning">Unknown</span>';
+            }
+        })
+        .catch(error => {
+            console.error('Error checking localhost status:', error);
+            document.getElementById('attach-status').innerHTML = 
+                '<span class="badge bg-danger">Error</span>';
+        });
+}
+
 // Load passphrase status and vault path on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadPassphraseStatus();
     loadVaultPath();
     loadBackupHistory();
     loadLogs(1); // Load first page of logs
+    checkLocalhostStatus(); // Check localhost attach status
 });
 
 // Auto-refresh status every 30 seconds

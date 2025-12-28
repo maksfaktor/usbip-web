@@ -747,6 +747,8 @@ $REAL_USER ALL=(ALL) NOPASSWD: /bin/systemctl start usbipd
 $REAL_USER ALL=(ALL) NOPASSWD: /bin/systemctl stop usbipd
 $REAL_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl start usbipd
 $REAL_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl stop usbipd
+$REAL_USER ALL=(ALL) NOPASSWD: /sbin/modprobe vhci-hcd
+$REAL_USER ALL=(ALL) NOPASSWD: /usr/sbin/modprobe vhci-hcd
 EOF
     chmod 440 "/etc/sudoers.d/usbip-$REAL_USER"
 fi

@@ -835,6 +835,213 @@ def delete_backup(backup_filename: str) -> Dict:
         }
 
 
+def attach_to_localhost() -> Dict:
+    """
+    Attach virtual FIDO device to localhost via USB/IP.
+    This makes the virtual FIDO device appear as a real USB device on the local system.
+    
+    Returns:
+        Dict with success status and message
+    """
+    try:
+        # First check if virtual-fido is running
+        status = get_fido_status()
+        if not status.get('is_running'):
+            return {
+                'success': False,
+                'error': 'FIDO device is not running. Start it first.'
+            }
+        
+        # Load vhci-hcd kernel module (virtual USB host controller)
+        logger.info("Loading vhci-hcd kernel module...")
+        modprobe_cmd = ['sudo', 'modprobe', 'vhci-hcd']
+        result = subprocess.run(modprobe_cmd, capture_output=True, text=True, timeout=10)
+        
+        if result.returncode != 0:
+            logger.error(f"Failed to load vhci-hcd module: {result.stderr}")
+            return {
+                'success': False,
+                'error': f'Failed to load vhci-hcd kernel module: {result.stderr}'
+            }
+        
+        import time
+        time.sleep(0.5)
+        
+        # Attach to localhost on port 3241
+        logger.info("Attaching virtual FIDO device to localhost...")
+        attach_cmd = ['sudo', 'usbip', 'attach', '-r', '127.0.0.1', '-b', '2-2', '--tcp-port=3241']
+        result = subprocess.run(attach_cmd, capture_output=True, text=True, timeout=10)
+        
+        if result.returncode != 0:
+            # Try alternative usbip paths
+            for usbip_path in ['/usr/sbin/usbip', '/usr/bin/usbip', '/usr/lib/linux-tools/*/usbip']:
+                if '*' in usbip_path:
+                    import glob as glob_module
+                    paths = glob_module.glob(usbip_path)
+                    if paths:
+                        usbip_path = paths[0]
+                    else:
+                        continue
+                
+                attach_cmd = ['sudo', usbip_path, 'attach', '-r', '127.0.0.1', '-b', '2-2', '--tcp-port=3241']
+                result = subprocess.run(attach_cmd, capture_output=True, text=True, timeout=10)
+                if result.returncode == 0:
+                    break
+            
+            if result.returncode != 0:
+                logger.error(f"Failed to attach device: {result.stderr}")
+                return {
+                    'success': False,
+                    'error': f'Failed to attach device: {result.stderr}'
+                }
+        
+        logger.info("Virtual FIDO device attached to localhost successfully")
+        return {
+            'success': True,
+            'message': 'Virtual FIDO device attached to localhost. It should now appear as a USB device.',
+            'port': 3241
+        }
+    
+    except subprocess.TimeoutExpired:
+        return {
+            'success': False,
+            'error': 'Command timed out'
+        }
+    except Exception as e:
+        logger.exception("Error attaching FIDO device to localhost")
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+
+def detach_from_localhost() -> Dict:
+    """
+    Detach virtual FIDO device from localhost.
+    
+    Returns:
+        Dict with success status and message
+    """
+    try:
+        # Find attached USB/IP ports
+        logger.info("Finding attached USB/IP devices...")
+        port_cmd = ['sudo', 'usbip', 'port']
+        result = subprocess.run(port_cmd, capture_output=True, text=True, timeout=10)
+        
+        if result.returncode != 0:
+            # Try alternative paths
+            for usbip_path in ['/usr/sbin/usbip', '/usr/bin/usbip']:
+                port_cmd = ['sudo', usbip_path, 'port']
+                result = subprocess.run(port_cmd, capture_output=True, text=True, timeout=10)
+                if result.returncode == 0:
+                    break
+        
+        # Parse output to find port numbers
+        # Example: "Port 00: <Port in Use> at Full Speed(12Mbps)"
+        ports_to_detach = []
+        for line in result.stdout.split('\n'):
+            if 'Port' in line and 'in Use' in line.lower():
+                # Extract port number
+                match = re.search(r'Port\s+(\d+):', line)
+                if match:
+                    ports_to_detach.append(match.group(1))
+        
+        if not ports_to_detach:
+            logger.warning("No attached USB/IP devices found")
+            return {
+                'success': True,
+                'message': 'No attached USB/IP devices found',
+                'was_attached': False
+            }
+        
+        # Detach all found ports
+        detached = []
+        errors = []
+        for port in ports_to_detach:
+            detach_cmd = ['sudo', 'usbip', 'detach', '-p', port]
+            result = subprocess.run(detach_cmd, capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                detached.append(port)
+                logger.info(f"Detached USB/IP port {port}")
+            else:
+                errors.append(f"Port {port}: {result.stderr}")
+        
+        if detached:
+            return {
+                'success': True,
+                'message': f'Detached {len(detached)} USB/IP port(s): {", ".join(detached)}',
+                'detached_ports': detached,
+                'errors': errors if errors else None
+            }
+        else:
+            return {
+                'success': False,
+                'error': f'Failed to detach: {"; ".join(errors)}'
+            }
+    
+    except subprocess.TimeoutExpired:
+        return {
+            'success': False,
+            'error': 'Command timed out'
+        }
+    except Exception as e:
+        logger.exception("Error detaching FIDO device from localhost")
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+
+def get_localhost_attach_status() -> Dict:
+    """
+    Check if virtual FIDO device is attached to localhost.
+    
+    Returns:
+        Dict with attached status and device info
+    """
+    try:
+        # Check usbip port status
+        port_cmd = ['sudo', 'usbip', 'port']
+        result = subprocess.run(port_cmd, capture_output=True, text=True, timeout=10)
+        
+        if result.returncode != 0:
+            # Try alternative paths
+            for usbip_path in ['/usr/sbin/usbip', '/usr/bin/usbip']:
+                port_cmd = ['sudo', usbip_path, 'port']
+                result = subprocess.run(port_cmd, capture_output=True, text=True, timeout=10)
+                if result.returncode == 0:
+                    break
+        
+        # Parse output
+        attached_ports = []
+        for line in result.stdout.split('\n'):
+            if 'Port' in line and 'in Use' in line.lower():
+                match = re.search(r'Port\s+(\d+):', line)
+                if match:
+                    attached_ports.append(match.group(1))
+        
+        is_attached = len(attached_ports) > 0
+        
+        # Also check lsusb for FIDO device (vendor ID for virtual-fido)
+        lsusb_result = subprocess.run(['lsusb'], capture_output=True, text=True, timeout=5)
+        fido_in_lsusb = 'FIDO' in lsusb_result.stdout.upper() or '0483:a2ca' in lsusb_result.stdout.lower()
+        
+        return {
+            'is_attached': is_attached,
+            'attached_ports': attached_ports,
+            'visible_in_lsusb': fido_in_lsusb,
+            'port_output': result.stdout if result.returncode == 0 else None
+        }
+    
+    except Exception as e:
+        logger.exception("Error checking localhost attach status")
+        return {
+            'is_attached': False,
+            'error': str(e)
+        }
+
+
 # Quick test function
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

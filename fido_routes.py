@@ -25,7 +25,10 @@ from fido_utils import (
     set_fido_passphrase,
     get_vault_path,
     set_vault_path,
-    get_backup_history
+    get_backup_history,
+    attach_to_localhost,
+    detach_from_localhost,
+    get_localhost_attach_status
 )
 
 logger = logging.getLogger(__name__)
@@ -778,6 +781,73 @@ def get_log_stats_route():
     
     except Exception as e:
         logger.error(f"Error fetching log stats: {e}")
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
+@fido_bp.route('/attach-localhost', methods=['POST'])
+@login_required
+def attach_localhost_route():
+    """Attach virtual FIDO device to localhost via USB/IP"""
+    try:
+        result = attach_to_localhost()
+        
+        if result['success']:
+            log_fido_event('localhost_attach', 'success', details=result.get('message'))
+            flash('FIDO device attached to localhost! It should now appear as a USB device.', 'success')
+            return jsonify(result)
+        else:
+            log_fido_event('localhost_attach', 'failed', details=result.get('error'))
+            return jsonify(result), 500
+            
+    except Exception as e:
+        logger.error(f"Error attaching to localhost: {e}")
+        log_fido_event('localhost_attach', 'failed', details=str(e))
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
+@fido_bp.route('/detach-localhost', methods=['POST'])
+@login_required
+def detach_localhost_route():
+    """Detach virtual FIDO device from localhost"""
+    try:
+        result = detach_from_localhost()
+        
+        if result['success']:
+            log_fido_event('localhost_detach', 'success', details=result.get('message'))
+            flash('FIDO device detached from localhost.', 'success')
+            return jsonify(result)
+        else:
+            log_fido_event('localhost_detach', 'failed', details=result.get('error'))
+            return jsonify(result), 500
+            
+    except Exception as e:
+        logger.error(f"Error detaching from localhost: {e}")
+        log_fido_event('localhost_detach', 'failed', details=str(e))
+        return jsonify({
+            'success': False,
+            'message': f"Error: {str(e)}"
+        }), 500
+
+
+@fido_bp.route('/localhost-status', methods=['GET'])
+@login_required
+def localhost_status_route():
+    """Get localhost attach status"""
+    try:
+        result = get_localhost_attach_status()
+        return jsonify({
+            'success': True,
+            **result
+        })
+            
+    except Exception as e:
+        logger.error(f"Error getting localhost status: {e}")
         return jsonify({
             'success': False,
             'message': f"Error: {str(e)}"
