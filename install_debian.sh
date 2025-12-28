@@ -600,19 +600,44 @@ if [ ! -d "$FIDO_BACKUP_DIR" ]; then
     echo_color "green" "  ✓ Created FIDO backups directory"
 fi
 
-# Check if virtual-fido binary exists in project
-FIDO_BINARY_SOURCE="$APP_DIR/virtual-fido/cmd/demo/virtual-fido-demo"
+# Install Go and compile virtual-fido binary
 FIDO_BINARY_DEST="$FIDO_DATA_DIR/virtual-fido"
+FIDO_SOURCE_DIR="$APP_DIR/virtual-fido"
 
-if [ -f "$FIDO_BINARY_SOURCE" ]; then
-    # Copy binary to fido_data directory
-    cp "$FIDO_BINARY_SOURCE" "$FIDO_BINARY_DEST"
-    chmod +x "$FIDO_BINARY_DEST"
-    chown $REAL_USER:$REAL_USER "$FIDO_BINARY_DEST"
-    echo_color "green" "  ✓ FIDO binary installed: $FIDO_BINARY_DEST"
+if [ ! -f "$FIDO_BINARY_DEST" ]; then
+    echo_color "blue" "  → Installing Go compiler..."
+    
+    # Install Go if not present
+    if ! command -v go &> /dev/null; then
+        apt-get install -y golang-go > /dev/null 2>&1 || {
+            echo_color "yellow" "  ⚠ Could not install Go via apt, trying snap..."
+            snap install go --classic > /dev/null 2>&1 || {
+                echo_color "red" "  ✗ Failed to install Go. FIDO binary will not be available."
+            }
+        }
+    fi
+    
+    # Compile virtual-fido if Go is available and source exists
+    if command -v go &> /dev/null && [ -d "$FIDO_SOURCE_DIR" ]; then
+        echo_color "blue" "  → Compiling virtual-fido from source..."
+        cd "$FIDO_SOURCE_DIR/cmd/demo"
+        
+        # Build the binary as root but with proper ownership later
+        go build -o "$FIDO_BINARY_DEST" . 2>/dev/null && {
+            chmod +x "$FIDO_BINARY_DEST"
+            chown $REAL_USER:$REAL_USER "$FIDO_BINARY_DEST"
+            echo_color "green" "  ✓ FIDO binary compiled and installed: $FIDO_BINARY_DEST"
+        } || {
+            echo_color "red" "  ✗ Failed to compile virtual-fido. FIDO functionality may not work."
+        }
+        
+        cd "$APP_DIR"
+    else
+        echo_color "yellow" "  ⚠ Go not available or virtual-fido source not found"
+        echo_color "yellow" "  → FIDO functionality will not be available"
+    fi
 else
-    echo_color "yellow" "  ⚠ FIDO binary not found in project repository"
-    echo_color "yellow" "  → Binary location: $FIDO_BINARY_SOURCE (will be used if exists)"
+    echo_color "blue" "  → FIDO binary already exists: $FIDO_BINARY_DEST"
 fi
 
 # Create .env file with FIDO configuration
