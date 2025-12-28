@@ -231,38 +231,6 @@ def check_fido_binary() -> bool:
     return os.path.isfile(FIDO_BINARY) and os.access(FIDO_BINARY, os.X_OK)
 
 
-def _stop_usbipd() -> bool:
-    """Stop usbipd service to free port 3240"""
-    try:
-        result = subprocess.run(['sudo', 'systemctl', 'stop', 'usbipd'], 
-                                capture_output=True, text=True, timeout=10)
-        if result.returncode == 0:
-            logger.info("Stopped usbipd service to free port 3240")
-            return True
-        else:
-            logger.warning(f"Could not stop usbipd: {result.stderr}")
-            return False
-    except Exception as e:
-        logger.warning(f"Error stopping usbipd: {e}")
-        return False
-
-
-def _start_usbipd() -> bool:
-    """Start usbipd service"""
-    try:
-        result = subprocess.run(['sudo', 'systemctl', 'start', 'usbipd'], 
-                                capture_output=True, text=True, timeout=10)
-        if result.returncode == 0:
-            logger.info("Started usbipd service")
-            return True
-        else:
-            logger.warning(f"Could not start usbipd: {result.stderr}")
-            return False
-    except Exception as e:
-        logger.warning(f"Error starting usbipd: {e}")
-        return False
-
-
 def start_fido_device(passphrase: Optional[str] = None, vault_path: Optional[str] = None, verbose: bool = False) -> Dict:
     """
     Start virtual FIDO2 device
@@ -282,10 +250,7 @@ def start_fido_device(passphrase: Optional[str] = None, vault_path: Optional[str
         }
     
     try:
-        # Stop usbipd first to free port 3240
-        _stop_usbipd()
         import time
-        time.sleep(0.5)
         
         cmd = [FIDO_BINARY, 'start']
         
@@ -325,8 +290,6 @@ def start_fido_device(passphrase: Optional[str] = None, vault_path: Optional[str
                 'vault_path': vault_path or FIDO_VAULT_PATH
             }
         else:
-            # Process died immediately - restart usbipd
-            _start_usbipd()
             stdout, stderr = process.communicate()
             error_msg = stderr.decode('utf-8') if stderr else 'Unknown error'
             logger.error(f"FIDO device failed to start: {error_msg}")
@@ -337,8 +300,6 @@ def start_fido_device(passphrase: Optional[str] = None, vault_path: Optional[str
             }
     
     except Exception as e:
-        # Restart usbipd on error
-        _start_usbipd()
         logger.exception("Error starting FIDO device")
         return {
             'success': False,
@@ -348,28 +309,23 @@ def start_fido_device(passphrase: Optional[str] = None, vault_path: Optional[str
 
 def stop_fido_device() -> Dict:
     """
-    Stop virtual FIDO2 device and restart usbipd
+    Stop virtual FIDO2 device
     
     Returns:
         Dict with success status and message
     """
     try:
-        # Find and kill the process
-        # First try to find by name
         find_cmd = ['pgrep', '-f', 'virtual-fido.*start']
         result = subprocess.run(find_cmd, capture_output=True, text=True)
         
         if result.returncode == 0 and result.stdout.strip():
-            pid = result.stdout.strip().split('\n')[0]  # Get first PID
+            pid = result.stdout.strip().split('\n')[0]
             
-            # Kill the process
             kill_cmd = ['kill', pid]
             kill_result = subprocess.run(kill_cmd, capture_output=True, text=True)
             
             if kill_result.returncode == 0:
                 logger.info(f"FIDO device stopped (PID: {pid})")
-                # Restart usbipd after stopping FIDO device
-                _start_usbipd()
                 return {
                     'success': True,
                     'message': f'FIDO device stopped (PID: {pid})',
@@ -382,8 +338,6 @@ def stop_fido_device() -> Dict:
                 }
         else:
             logger.warning("FIDO device not running")
-            # Make sure usbipd is running anyway
-            _start_usbipd()
             return {
                 'success': True,
                 'message': 'FIDO device was not running',
@@ -392,8 +346,6 @@ def stop_fido_device() -> Dict:
     
     except Exception as e:
         logger.exception("Error stopping FIDO device")
-        # Try to restart usbipd even on error
-        _start_usbipd()
         return {
             'success': False,
             'error': str(e)
