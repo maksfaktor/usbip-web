@@ -89,8 +89,13 @@ def device_page():
         # Get vault info
         vault_info = get_vault_info()
         
-        # Get credentials list
-        credentials = list_fido_credentials()
+        # Get credentials list (handle missing binary gracefully)
+        credentials_result = list_fido_credentials()
+        if credentials_result.get('success'):
+            credentials = credentials_result.get('credentials', [])
+        else:
+            credentials = []
+            logger.warning(f"Could not load credentials: {credentials_result.get('error')}")
         
         # Get recent logs
         recent_logs = FidoLog.query.order_by(FidoLog.timestamp.desc()).limit(10).all()
@@ -262,19 +267,29 @@ def get_status():
 def get_credentials():
     """Get list of FIDO credentials (API endpoint)"""
     try:
-        credentials = list_fido_credentials()
+        result = list_fido_credentials()
         
-        return jsonify({
-            'success': True,
-            'credentials': credentials,
-            'count': len(credentials)
-        })
+        if result.get('success'):
+            return jsonify({
+                'success': True,
+                'credentials': result.get('credentials', []),
+                'count': result.get('count', 0)
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': result.get('error', 'Failed to list credentials'),
+                'credentials': [],
+                'count': 0
+            })
         
     except Exception as e:
         logger.error(f"Error getting FIDO credentials: {e}")
         return jsonify({
             'success': False,
-            'message': f"Error: {str(e)}"
+            'message': f"Error: {str(e)}",
+            'credentials': [],
+            'count': 0
         }), 500
 
 
