@@ -1025,9 +1025,10 @@ def get_localhost_attach_status() -> Dict:
         
         is_attached = len(attached_ports) > 0
         
-        # Also check lsusb for FIDO device (vendor ID for virtual-fido)
+        # Also check lsusb for FIDO device (virtual-fido uses 0000:0000)
         lsusb_result = subprocess.run(['lsusb'], capture_output=True, text=True, timeout=5)
-        fido_in_lsusb = 'FIDO' in lsusb_result.stdout.upper() or '0483:a2ca' in lsusb_result.stdout.lower()
+        # Check for "Virtual FIDO" name or vendor ID 0000:0000 (virtual-fido default)
+        fido_in_lsusb = 'Virtual FIDO' in lsusb_result.stdout or '0000:0000' in lsusb_result.stdout
         
         return {
             'is_attached': is_attached,
