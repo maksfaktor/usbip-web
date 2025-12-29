@@ -868,9 +868,10 @@ def attach_to_localhost() -> Dict:
         time.sleep(0.5)
         
         # Attach to localhost on port 3241
+        # IMPORTANT: --tcp-port must come BEFORE the 'attach' command!
         logger.info("Attaching virtual FIDO device to localhost...")
-        attach_cmd = ['sudo', 'usbip', 'attach', '-r', '127.0.0.1', '-b', '2-2', '--tcp-port=3241']
-        result = subprocess.run(attach_cmd, capture_output=True, text=True, timeout=10)
+        attach_cmd = ['sudo', 'usbip', '--tcp-port', '3241', 'attach', '-r', '127.0.0.1', '-b', '2-2']
+        result = subprocess.run(attach_cmd, capture_output=True, text=True, timeout=30)
         
         if result.returncode != 0:
             # Try alternative usbip paths
@@ -883,8 +884,9 @@ def attach_to_localhost() -> Dict:
                     else:
                         continue
                 
-                attach_cmd = ['sudo', usbip_path, 'attach', '-r', '127.0.0.1', '-b', '2-2', '--tcp-port=3241']
-                result = subprocess.run(attach_cmd, capture_output=True, text=True, timeout=10)
+                # IMPORTANT: --tcp-port must come BEFORE the 'attach' command!
+                attach_cmd = ['sudo', usbip_path, '--tcp-port', '3241', 'attach', '-r', '127.0.0.1', '-b', '2-2']
+                result = subprocess.run(attach_cmd, capture_output=True, text=True, timeout=30)
                 if result.returncode == 0:
                     break
             
