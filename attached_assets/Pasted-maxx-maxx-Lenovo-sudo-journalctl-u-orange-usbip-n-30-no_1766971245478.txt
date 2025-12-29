@@ -1,0 +1,32 @@
+maxx@maxx-Lenovo:~$ sudo journalctl -u orange-usbip -n 30 --no-pager
+[sudo] password for maxx: 
+Dec 28 18:43:06 maxx-Lenovo sudo[222200]: pam_unix(sudo:session): session closed for user root
+Dec 28 18:43:06 maxx-Lenovo gunicorn[207688]: ERROR:fido_utils:Failed to attach device:
+Dec 28 18:43:06 maxx-Lenovo gunicorn[207688]: DEBUG:fido_routes:FIDO event logged: localhost_attach - failed
+Dec 28 18:43:22 maxx-Lenovo gunicorn[207688]: DEBUG:app:Log added: [DEBUG] Terminal page accessed by user: admin (Source: terminal)
+Dec 28 18:43:22 maxx-Lenovo gunicorn[207688]: DEBUG:app:Log added: [DEBUG] Checking TerminalCommand model availability (Source: terminal)
+Dec 28 18:43:22 maxx-Lenovo gunicorn[207688]: DEBUG:app:Log added: [DEBUG] Found 1 terminal commands for user (Source: terminal)
+Dec 28 18:43:22 maxx-Lenovo gunicorn[207688]: DEBUG:app:Log added: [DEBUG] Attempting to render terminal.html template (Source: terminal)
+Dec 28 18:43:22 maxx-Lenovo gunicorn[207688]: DEBUG:app:Log added: [DEBUG] Terminal template rendered successfully (Source: terminal)
+Dec 28 18:43:24 maxx-Lenovo gunicorn[207688]: DEBUG:app:Найденные сетевые интерфейсы: {'WiFi': [{'name': 'wlp2s0', 'ip': '192.168.0.212', 'url': 'http://192.168.0.212:5000'}], 'Ethernet': [{'name': 'virbr0', 'ip': '192.168.122.1', 'url': 'http://192.168.122.1:5000'}]}
+Dec 28 18:43:48 maxx-Lenovo gunicorn[207688]: DEBUG:fido_utils:Listing credentials: /home/maxx/orange-usbip/fido_data/virtual-fido list --passphrase passphrase --vault /home/maxx/orange-usbip/fido_data/vault.json
+Dec 28 18:43:48 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:Found 0 credentials
+Dec 28 18:43:48 maxx-Lenovo sudo[222310]:     maxx : PWD=/home/maxx/orange-usbip ; USER=root ; COMMAND=/usr/bin/usbip port
+Dec 28 18:43:48 maxx-Lenovo sudo[222310]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Dec 28 18:43:48 maxx-Lenovo sudo[222310]: pam_unix(sudo:session): session closed for user root
+Dec 28 18:43:51 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:Loading vhci-hcd kernel module...
+Dec 28 18:43:51 maxx-Lenovo sudo[222327]:     maxx : PWD=/home/maxx/orange-usbip ; USER=root ; COMMAND=/usr/sbin/modprobe vhci-hcd
+Dec 28 18:43:51 maxx-Lenovo sudo[222327]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Dec 28 18:43:51 maxx-Lenovo sudo[222327]: pam_unix(sudo:session): session closed for user root
+Dec 28 18:43:52 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:Attaching virtual FIDO device to localhost...
+Dec 28 18:43:52 maxx-Lenovo sudo[222329]:     maxx : PWD=/home/maxx/orange-usbip ; USER=root ; COMMAND=/usr/bin/usbip attach -r 127.0.0.1 -b 2-2 --tcp-port=3241
+Dec 28 18:43:52 maxx-Lenovo sudo[222329]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Dec 28 18:43:52 maxx-Lenovo sudo[222329]: pam_unix(sudo:session): session closed for user root
+Dec 28 18:43:52 maxx-Lenovo sudo[222334]:     maxx : PWD=/home/maxx/orange-usbip ; USER=root ; COMMAND=/usr/bin/usbip attach -r 127.0.0.1 -b 2-2 --tcp-port=3241
+Dec 28 18:43:52 maxx-Lenovo sudo[222334]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Dec 28 18:43:52 maxx-Lenovo sudo[222334]: pam_unix(sudo:session): session closed for user root
+Dec 28 18:43:52 maxx-Lenovo sudo[222338]:     maxx : PWD=/home/maxx/orange-usbip ; USER=root ; COMMAND=/usr/lib/linux-tools/6.8.0-90-generic/usbip attach -r 127.0.0.1 -b 2-2 --tcp-port=3241
+Dec 28 18:43:52 maxx-Lenovo sudo[222338]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Dec 28 18:43:52 maxx-Lenovo sudo[222338]: pam_unix(sudo:session): session closed for user root
+Dec 28 18:43:52 maxx-Lenovo gunicorn[207688]: ERROR:fido_utils:Failed to attach device:
+Dec 28 18:43:52 maxx-Lenovo gunicorn[207688]: DEBUG:fido_routes:FIDO event logged: localhost_attach - failed

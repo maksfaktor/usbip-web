@@ -1,0 +1,63 @@
+maxx@maxx-Lenovo:~$ sudo journalctl -u orange-usbip -n 50 --no-pager | grep -i fido
+[sudo] password for maxx: 
+Dec 28 19:25:05 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:Loading vhci-hcd kernel module...
+Dec 28 19:25:06 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:Attaching virtual FIDO device to localhost...
+Dec 28 19:25:06 maxx-Lenovo gunicorn[207688]: ERROR:fido_utils:Failed to attach device:
+Dec 28 19:25:06 maxx-Lenovo gunicorn[207688]: DEBUG:fido_routes:FIDO event logged: localhost_attach - failed
+Dec 28 19:41:20 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:FIDO device stopped (PID: 229974)
+Dec 28 19:41:20 maxx-Lenovo gunicorn[207688]: DEBUG:fido_routes:FIDO event logged: device_stop - success
+Dec 28 19:41:20 maxx-Lenovo gunicorn[207688]: DEBUG:fido_utils:Listing credentials: /home/maxx/orange-usbip/fido_data/virtual-fido list --passphrase passphrase --vault /home/maxx/orange-usbip/fido_data/vault.json
+Dec 28 19:41:20 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:Found 0 credentials
+Dec 28 19:41:22 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:Starting FIDO device: /home/maxx/orange-usbip/fido_data/virtual-fido start --passphrase passphrase --vault /home/maxx/orange-usbip/fido_data/vault.json
+Dec 28 19:41:22 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:FIDO device started successfully, PID: 233584
+Dec 28 19:41:23 maxx-Lenovo gunicorn[207688]: DEBUG:fido_routes:FIDO event logged: device_start - success
+Dec 28 19:41:23 maxx-Lenovo gunicorn[207688]: DEBUG:fido_utils:Listing credentials: /home/maxx/orange-usbip/fido_data/virtual-fido list --passphrase passphrase --vault /home/maxx/orange-usbip/fido_data/vault.json
+Dec 28 19:41:23 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:Found 0 credentials
+Dec 28 19:41:30 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:Loading vhci-hcd kernel module...
+Dec 28 19:41:30 maxx-Lenovo gunicorn[207688]: INFO:fido_utils:Attaching virtual FIDO device to localhost...
+Dec 28 19:41:30 maxx-Lenovo gunicorn[207688]: ERROR:fido_utils:Failed to attach device:
+Dec 28 19:41:30 maxx-Lenovo gunicorn[207688]: DEBUG:fido_routes:FIDO event logged: localhost_attach - failed
+maxx@maxx-Lenovo:~$ sudo usbip --tcp-port 3241 --debug attach -r 127.0.0.1 -b 2-2
+usbip: info: using port 3241 ("3241")
+usbip: debug: usbip.c:129:[run_command] running command: `attach'
+libusbip: debug: vhci_driver.c:269:[usbip_vhci_driver_open] available ports: 16
+libusbip: debug: vhci_driver.c:281:[usbip_vhci_driver_open] available controllers: 1
+libusbip: debug: vhci_driver.c:128:[refresh_imported_device_list] controller 0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub hs port 0 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub hs port 1 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub hs port 2 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub hs port 3 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub hs port 4 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub hs port 5 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub hs port 6 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub hs port 7 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub ss port 8 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub ss port 9 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub ss port 10 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub ss port 11 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub ss port 12 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub ss port 13 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub ss port 14 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:67:[parse_status] hub ss port 15 status 4 speed 0 devid 0
+libusbip: debug: vhci_driver.c:69:[parse_status] sockfd 0 lbusid 0-0
+libusbip: debug: vhci_driver.c:104:[parse_status] exit
+usbip: debug: usbip_attach.c:100:[import_device] got free port 0
+libusbip: debug: vhci_driver.c:367:[usbip_vhci_attach_device2] writing: 0 3 131074 2
+libusbip: debug: vhci_driver.c:372:[usbip_vhci_attach_device2] attach attribute path: /sys/devices/platform/vhci_hcd.0/attach
+libusbip: debug: vhci_driver.c:380:[usbip_vhci_attach_device2] attached port: 0
+maxx@maxx-Lenovo:~$ 
