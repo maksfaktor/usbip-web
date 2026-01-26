@@ -40,6 +40,22 @@ The application is designed to be cross-platform compatible within Linux environ
 ## Recent Changes
 
 ### January 26, 2026
+- **Avahi (mDNS) Network Discovery**: Added automatic discovery of other Orange USB/IP instances
+  - New `avahi_utils.py` module for service discovery using mDNS/DNS-SD
+  - API endpoints: `/api/discover-services`, `/api/avahi-status`
+  - Updated `/remote` page with Network Discovery section:
+    - Auto-scan on page load (enabled by default, toggle to disable)
+    - Manual "Scan Network" button for on-demand discovery
+    - Shows all discovered instances with hostname, IP, and all ports (Web, USB/IP, FIDO)
+    - "This Device" badge for local instance
+    - Quick "Connect" button to populate IP and connect
+    - "Open UI" link to access remote instance's web interface
+  - Avahi service definition file (`orangeusbip.service.avahi`) for `_orangeusbip._tcp` service type
+  - Updated `install_debian.sh`: installs avahi-daemon, avahi-utils, and registers service
+  - Updated `uninstall.sh`: removes Avahi service configuration
+  - Updated `doctor.sh`: Avahi diagnostics (daemon status, service registration, network scan)
+  - Scan timeout: 5 seconds (configurable via AVAHI_SCAN_TIMEOUT env var)
+
 - **Comprehensive Technical Documentation**: Created `TECHNICAL_DOCUMENTATION.md` (1000+ lines)
   - Section 1: Project Overview & Goals
   - Section 2: System Architecture (with ASCII diagrams)
