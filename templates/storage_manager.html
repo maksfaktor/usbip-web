@@ -1,6 +1,35 @@
+<!--
+================================================================================
+Virtual Storage File Manager Page
+================================================================================
+
+File: templates/storage_manager.html
+Project: Orange USB/IP Web Interface
+Purpose: Browse and manage files in virtual USB storage devices
+
+Features:
+    - Navigate directory structure
+    - Upload files to storage
+    - Download files from storage
+    - Create new directories
+    - Delete files and folders
+    - View storage usage statistics
+    - Resize storage capacity
+
+Navigation:
+    - Breadcrumb trail for current path
+    - Parent directory navigation
+    - Click directories to enter them
+
+File Operations:
+    - Drag and drop file upload
+    - Multiple file selection
+    - Size and modification date display
+================================================================================
+-->
 {% extends 'base.html' %}
 
-{% block title %}Управление файлами - {{ device.name }} - OrangeUSB{% endblock %}
+{% block title %}File Management - {{ device.name }} - OrangeUSB{% endblock %}
 
 {% block content %}
 <div class="row mb-3">

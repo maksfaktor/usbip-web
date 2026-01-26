@@ -1,6 +1,35 @@
+<!--
+================================================================================
+Remote USB Devices Page
+================================================================================
+
+File: templates/remote.html
+Project: Orange USB/IP Web Interface
+Purpose: Connect to remote USB/IP servers and attach their devices
+
+Features:
+    - Connect to remote USB/IP server by IP address
+    - List available USB devices on remote server
+    - Attach remote USB devices to local system
+    - Detach attached remote USB devices
+    - Manage saved server connections
+
+How It Works:
+    1. Enter IP address of remote USB/IP server (port 3240)
+    2. List available devices on that server
+    3. Attach device - appears as local USB device
+    4. Use device as if it were physically connected
+    5. Detach when done
+
+Commands Used:
+    - usbip list -r <ip> : List remote devices
+    - usbip attach -r <ip> -b <busid> : Attach remote device
+    - usbip detach -p <port> : Detach device
+================================================================================
+-->
 {% extends 'base.html' %}
 
-{% block title %}OrangeUSB - Удаленное подключение{% endblock %}
+{% block title %}OrangeUSB - Remote Connection{% endblock %}
 
 {% block content %}
 <div class="row">

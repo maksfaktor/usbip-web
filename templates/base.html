@@ -1,3 +1,38 @@
+<!--
+================================================================================
+Base Template - Orange USB/IP Web Interface
+================================================================================
+
+File: templates/base.html
+Project: Orange USB/IP Web Interface
+Purpose: Main layout template that all other templates extend
+
+Template Blocks:
+    {% block title %} - Page title in browser tab
+    {% block extra_css %} - Additional CSS styles for specific pages
+    {% block content %} - Main page content
+    {% block extra_js %} - Additional JavaScript for specific pages
+
+Features:
+    - Bootstrap 5.3 dark theme
+    - Responsive navigation bar with network interfaces display
+    - Orange branding with custom icons
+    - Flash message display system
+    - Footer with copyright information
+
+Navigation:
+    - Local Devices: USB devices on this machine
+    - Remote Devices: Attach USB from remote servers
+    - Virtual Devices: Emulated USB devices (FIDO2, Storage)
+    - Logs: System operation logs
+    - Terminal: Web-based command terminal
+    - Admin: User management (admin only)
+
+Authentication:
+    - Navigation shown only when user is authenticated
+    - Login page shown for unauthenticated users
+================================================================================
+-->
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark" style="width: 100%; padding: 0; margin: 0; overflow-x: hidden;">
 <head>

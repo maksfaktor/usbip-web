@@ -1,3 +1,32 @@
+<!--
+================================================================================
+Web Terminal Page
+================================================================================
+
+File: templates/terminal.html
+Project: Orange USB/IP Web Interface
+Purpose: Web-based command terminal for USB/IP operations
+
+Features:
+    - Execute shell commands from web browser
+    - Command output display with formatting
+    - Command history navigation
+    - Quick command buttons for common operations
+    - Clear terminal output
+
+Quick Commands Available:
+    - List local USB devices (usbip list -l)
+    - List published devices (usbip list -p)
+    - List attached devices (usbip port)
+    - Load kernel modules (modprobe)
+    - Run diagnostics (doctor.sh)
+
+Security:
+    - Requires authenticated session
+    - Commands run with configured sudo permissions
+    - Limited to USB/IP related operations
+================================================================================
+-->
 {% extends "base.html" %}
 
 {% block title %}Terminal - OrangeUSB - USB/IP Management System{% endblock %}

@@ -1,3 +1,25 @@
+<!--
+================================================================================
+Admin Panel Page
+================================================================================
+
+File: templates/admin.html
+Project: Orange USB/IP Web Interface
+Purpose: User administration and account management
+
+Features:
+    - Change current user password
+    - View list of all registered users
+    - Create new user accounts (admin only)
+    - Delete user accounts (admin only)
+    - User role management
+
+Access Control:
+    - Regular users can only change their own password
+    - Admin users can manage all user accounts
+    - Admin status indicated by badge
+================================================================================
+-->
 {% extends 'base.html' %}
 
 {% block title %}Admin Panel - OrangeUSB{% endblock %}

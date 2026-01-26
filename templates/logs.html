@@ -1,3 +1,31 @@
+<!--
+================================================================================
+System Logs Page
+================================================================================
+
+File: templates/logs.html
+Project: Orange USB/IP Web Interface
+Purpose: Display and filter system operation logs
+
+Log Levels:
+    - INFO: Normal operations (device bind, attach, etc.)
+    - WARNING: Non-critical issues requiring attention
+    - ERROR: Critical errors that need investigation
+    - DEBUG: Detailed technical information for troubleshooting
+
+Features:
+    - Filter logs by level (All, Info, Warning, Error, Debug)
+    - Paginated log display
+    - Timestamp, level, source, and message columns
+    - Color-coded log levels for quick identification
+
+Log Sources:
+    - system: General application events
+    - usbip: USB/IP operations
+    - fido: FIDO2 device operations
+    - storage: Virtual storage operations
+================================================================================
+-->
 {% extends 'base.html' %}
 
 {% block title %}Logs - OrangeUSB{% endblock %}

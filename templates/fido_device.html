@@ -1,3 +1,37 @@
+<!--
+================================================================================
+FIDO2 Virtual Device Management Page
+================================================================================
+
+File: templates/fido_device.html
+Project: Orange USB/IP Web Interface
+Purpose: Web interface for managing the virtual FIDO2 security key
+
+Features:
+    - Start/Stop virtual FIDO2 device
+    - View device status and running state
+    - Manage registered credentials (list, delete)
+    - Vault backup and restore functionality
+    - Attach/detach device to localhost via USB/IP
+    - Passphrase management for vault encryption
+    - Operation logs with filtering and pagination
+
+Port Configuration:
+    - Virtual FIDO USB/IP: Port 3241 (separate from real usbipd on 3240)
+    - Device appears as 0000:0000 Virtual FIDO in lsusb when attached
+
+How It Works:
+    1. Start Device: Launches virtual-fido binary
+    2. Attach to Localhost: Uses usbip to attach via USB/IP protocol
+    3. Device appears as real USB security key
+    4. Register credentials on websites supporting WebAuthn/FIDO2
+    5. Credentials stored encrypted in vault.json
+
+Test Sites:
+    - demo.yubico.com/webauthn - Yubico WebAuthn demo
+    - webauthn.io - WebAuthn testing site
+================================================================================
+-->
 {% extends "base.html" %}
 
 {% block title %}FIDO2 Virtual Device - OrangeUSB{% endblock %}

@@ -1,3 +1,34 @@
+<!--
+================================================================================
+Local USB Devices Page - Main Dashboard
+================================================================================
+
+File: templates/index.html
+Project: Orange USB/IP Web Interface
+Purpose: Display and manage local USB devices for sharing over USB/IP
+
+Features:
+    - List all local USB devices detected by the system
+    - Publish (bind) devices for USB/IP sharing
+    - Unpublish (unbind) devices from USB/IP
+    - Run diagnostics (doctor.sh) for troubleshooting
+    - Display published devices and their port numbers
+    - Real-time device refresh
+
+Device Actions:
+    - Publish: Makes device available for remote attachment
+    - Unpublish: Removes device from USB/IP sharing
+
+Port Configuration:
+    - USB/IP daemon (usbipd) runs on port 3240 for real USB devices
+    - Virtual FIDO runs on port 3241 (separate instance)
+
+Device Types:
+    - Regular USB devices (keyboards, mice, storage, etc.)
+    - Virtual devices (marked with blue badge)
+    - Error messages (shown in red)
+================================================================================
+-->
 {% extends 'base.html' %}
 
 {% block title %}OrangeUSB - Local USB Devices{% endblock %}

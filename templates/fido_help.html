@@ -1,3 +1,31 @@
+<!--
+================================================================================
+FIDO2 Device Help Page
+================================================================================
+
+File: templates/fido_help.html
+Project: Orange USB/IP Web Interface
+Purpose: Comprehensive guide for using the virtual FIDO2 security key
+
+Documentation Sections:
+    1. What is FIDO2? - Introduction to WebAuthn/FIDO2 technology
+    2. Getting Started - First-time setup instructions
+    3. Using with Websites - How to register and authenticate
+    4. Credential Management - Managing stored credentials
+    5. Troubleshooting - Common issues and solutions
+    6. Security Best Practices - Tips for secure usage
+
+Test Sites Listed:
+    - demo.yubico.com/webauthn - Yubico WebAuthn demo
+    - webauthn.io - WebAuthn testing playground
+    - passkeys.io - Passkey demonstration
+
+Technical Details:
+    - USB/IP port 3241 for virtual FIDO device
+    - Credentials stored in encrypted vault.json
+    - Supports CTAP2 (Client to Authenticator Protocol)
+================================================================================
+-->
 {% extends "base.html" %}
 
 {% block title %}FIDO2 Device Help - OrangeUSB{% endblock %}

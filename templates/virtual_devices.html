@@ -1,3 +1,34 @@
+<!--
+================================================================================
+Virtual USB Devices Page
+================================================================================
+
+File: templates/virtual_devices.html
+Project: Orange USB/IP Web Interface
+Purpose: Manage virtual/emulated USB devices
+
+Device Types:
+    1. FIDO2 Virtual Security Key - Emulates hardware security key
+    2. USB Storage - Emulates USB flash drive
+
+Features:
+    - Create new virtual USB devices
+    - Start/Stop virtual devices
+    - Manage virtual storage (upload, download, browse files)
+    - Connect to system folders as storage
+    - View device status and properties
+
+FIDO2 Device:
+    - Emulates YubiKey-like security key
+    - Supports WebAuthn/FIDO2 authentication
+    - Runs on USB/IP port 3241
+
+Storage Device:
+    - Emulates USB flash drive
+    - Supports file upload/download
+    - Can map existing system folders
+================================================================================
+-->
 {% extends 'base.html' %}
 
 {% block title %}Virtual USB Devices - OrangeUSB{% endblock %}
