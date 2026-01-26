@@ -1,19 +1,78 @@
-import os
-import logging
+"""
+Virtual Storage Management Routes
+=================================
+
+This module defines Flask Blueprint routes for managing virtual USB storage devices.
+It provides a web interface for browsing files, uploading, downloading, and
+managing directories on virtual USB flash drive emulations.
+
+File: storage_routes.py
+Project: Orange USB/IP Web Interface
+Purpose: Flask routes for virtual storage file management
+
+URL Prefix: /storage (via Blueprint)
+    All routes in this blueprint are under /storage/*
+    Example: /storage/<device_id>, /storage/<device_id>/upload
+
+Authentication: All routes require login (@login_required decorator)
+
+Key Endpoints:
+    GET  /storage/<device_id>                    - File browser page
+    GET  /storage/<device_id>/<path>             - Browse specific directory
+    POST /storage/<device_id>/resize             - Resize storage capacity
+    POST /storage/<device_id>/create_directory   - Create new folder
+    POST /storage/<device_id>/upload             - Upload file
+    POST /storage/<device_id>/delete_item        - Delete file or folder
+    GET  /storage/<device_id>/download/<path>    - Download file
+
+Security:
+    - Path traversal prevention via normalize_path()
+    - Secure filename validation
+    - Login required for all operations
+"""
+
+# ============================================================================
+# IMPORTS
+# ============================================================================
+
+import os            # File path operations
+import logging       # Logging framework
+
+# Flask components
 from flask import Blueprint, render_template, redirect, url_for, request, flash, send_file, abort
+
+# Authentication decorator
 from flask_login import login_required, current_user
+
+# Safe filename sanitization
 from werkzeug.utils import secure_filename
+
+# Database models
 from models import db, VirtualUsbDevice, VirtualUsbFile, LogEntry
+
+# Virtual storage utility functions
 from virtual_storage_utils import (
-    create_device_storage, delete_device_storage, resize_device_storage,
-    get_device_storage_usage, list_device_files, create_directory,
-    delete_item, upload_file, get_storage_stats, download_file
+    create_device_storage,    # Create storage for device
+    delete_device_storage,    # Delete storage
+    resize_device_storage,    # Resize storage capacity
+    get_device_storage_usage, # Get current usage in bytes
+    list_device_files,        # List files in directory
+    create_directory,         # Create new folder
+    delete_item,              # Delete file or folder
+    upload_file,              # Upload file to storage
+    get_storage_stats,        # Get storage statistics
+    download_file             # Download file from storage
 )
 
-# Настройка логгирования
+# Create logger for this module
 logger = logging.getLogger(__name__)
 
-# Создаем Blueprint для роутов управления хранилищем
+# ============================================================================
+# BLUEPRINT DEFINITION
+# ============================================================================
+
+# Create Flask Blueprint for storage routes
+# All routes will be registered under the 'storage' namespace
 storage_bp = Blueprint('storage', __name__)
 
 @storage_bp.route('/storage/<int:device_id>', methods=['GET'])

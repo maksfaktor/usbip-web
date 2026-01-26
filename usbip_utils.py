@@ -1,9 +1,50 @@
-import subprocess
-import re
-import logging
-import os
+"""
+USB/IP Device Management Utilities
+===================================
 
+This module provides utility functions for managing USB devices over IP protocol.
+USB/IP allows sharing USB devices over a network, making remote USB devices
+appear as if they were locally connected.
+
+File: usbip_utils.py
+Project: Orange USB/IP Web Interface
+Purpose: USB/IP operations, device parsing, and command execution
+
+Key Features:
+    - Get list of local USB devices (lsusb parsing)
+    - Bind/unbind devices for USB/IP sharing
+    - Attach/detach remote USB devices
+    - Parse usbip command outputs
+    - Normalize bus IDs for consistent comparison
+
+Port Configuration:
+    - Real USB/IP daemon (usbipd): Port 3240 (default)
+    - Virtual FIDO USB/IP: Port 3241 (separate from real devices)
+
+Command Line Tools Used:
+    - usbip: Main USB/IP client tool
+    - usbipd: USB/IP daemon
+    - modprobe: Kernel module loading (vhci-hcd, usbip-host)
+
+Note: Most functions require root/sudo privileges for USB/IP operations.
+"""
+
+# ============================================================================
+# IMPORTS
+# ============================================================================
+
+import subprocess    # Execute shell commands (usbip, sudo, etc.)
+import re            # Regular expressions for parsing usbip output
+import logging       # Logging framework
+import os            # Operating system interfaces
+
+# Create logger for this module
 logger = logging.getLogger(__name__)
+
+
+# ============================================================================
+# BUS ID NORMALIZATION
+# ============================================================================
 
 def normalize_busid(busid):
     """

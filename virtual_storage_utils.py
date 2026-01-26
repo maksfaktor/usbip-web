@@ -1,15 +1,54 @@
-import os
-import shutil
-import json
-import logging
-from typing import List, Dict, Any, Optional, Tuple
-from werkzeug.utils import secure_filename
-from models import VirtualUsbDevice, VirtualUsbFile, db
+"""
+Virtual USB Storage Utilities
+=============================
 
-# Настройка логгера
+This module provides utility functions for managing virtual USB storage devices.
+Virtual storage devices emulate USB flash drives, allowing file upload, download,
+directory creation, and file management through the web interface.
+
+File: virtual_storage_utils.py
+Project: Orange USB/IP Web Interface
+Purpose: Virtual USB storage management, file operations
+
+Key Features:
+    - Create/delete virtual storage for USB devices
+    - Resize storage capacity
+    - List files and directories
+    - Upload/download files
+    - Create/delete directories
+    - Support for both virtual folders and system folder mapping
+
+Storage Types:
+    1. Virtual Storage: Created in VIRTUAL_STORAGE_BASE_DIR folder
+    2. System Storage: Map existing system folders as USB storage
+
+Security:
+    - Path traversal prevention via normalize_path()
+    - Secure filename handling
+    - Size limits enforced
+"""
+
+# ============================================================================
+# IMPORTS
+# ============================================================================
+
+import os            # File system operations
+import shutil        # High-level file operations (copy, remove tree)
+import json          # JSON handling (unused but may be needed)
+import logging       # Logging framework
+from typing import List, Dict, Any, Optional, Tuple  # Type hints
+from werkzeug.utils import secure_filename  # Safe filename sanitization
+from models import VirtualUsbDevice, VirtualUsbFile, db  # Database models
+
+# Create logger for this module
 logger = logging.getLogger(__name__)
 
-# Базовая директория для хранения файлов виртуальных устройств
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
+
+# Base directory for storing virtual device files
+# Each device gets a subfolder: virtual_storage/device_<id>/
 VIRTUAL_STORAGE_BASE_DIR = "virtual_storage"
 
 def ensure_storage_dir_exists() -> None:
