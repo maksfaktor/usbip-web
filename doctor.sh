@@ -1,18 +1,50 @@
 #!/bin/bash
 #####################################################################
-# Orange USBIP Diagnostic Script (doctor.sh)
+# Orange USB/IP Diagnostic Tool (doctor.sh)
 # 
-# This script helps diagnose common issues with USB/IP connections,
-# checking system configuration, services, and network connectivity.
+# This comprehensive diagnostic script helps troubleshoot USB/IP
+# issues by checking system configuration, services, network ports,
+# kernel modules, and USB devices.
 # 
-# Usage: sudo ./doctor.sh
+# File: doctor.sh
+# Project: Orange USB/IP Web Interface
 # 
+# DIAGNOSTIC SECTIONS:
+# 1. Operating System Check - OS version and architecture
+# 2. Required Commands Check - Verifies usbip, python3, gunicorn
+# 3. Services Check - systemd service status (usbipd, orange-usbip)
+# 4. Kernel Modules Check - usbip-core, usbip-host, vhci-hcd
+# 5. Open Ports Check - Ports 3240 (usbipd), 5000 (web)
+# 6. Firewall Check - UFW/iptables rules
+# 7. Local USB Devices - Lists available USB devices for sharing
+# 8. Published Devices - Lists USB devices being shared
+# 9. Attached Devices - Lists remote USB devices attached locally
+#
+# USAGE:
+#   sudo ./doctor.sh              - Run all diagnostics
+#   sudo bash doctor.sh           - Alternative if not executable
+#
+# PORT CONFIGURATION:
+#   - Port 3240: USB/IP daemon (usbipd) for real USB devices
+#   - Port 3241: Virtual FIDO device (virtual-fido)
+#   - Port 5000: Web interface (Flask/Gunicorn)
+#
+# OUTPUT COLORS:
+#   GREEN  - Success, component working correctly
+#   RED    - Error, component not working
+#   YELLOW - Warning, may need attention
+#   BLUE   - Informational headers
+#
+# EXIT CODES:
+#   0 - All checks passed
+#   1 - Some checks failed (see output for details)
+#
 # Author: Orange USBIP Team
 # License: MIT
 # Repository: https://github.com/maksfaktor/usbip-web
 # 
 # Created: May 2025
-# Last Updated: May 24, 2025
+# Last Updated: November 2025
 #####################################################################
 
 # Functions for colored output

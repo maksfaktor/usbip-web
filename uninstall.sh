@@ -1,5 +1,38 @@
 #!/bin/bash
-# Orange USBIP Web Interface - Uninstall Script
+#####################################################################
+# Orange USB/IP Web Interface - Uninstall Script
+# 
+# This script completely removes the Orange USB/IP web interface
+# from the system, including services, configuration, and files.
+# 
+# File: uninstall.sh
+# Project: Orange USB/IP Web Interface
+# 
+# WHAT THIS SCRIPT DOES:
+# 1. Creates backup of database and configuration
+# 2. Stops and disables systemd service (orange-usbip)
+# 3. Removes service configuration file
+# 4. Removes sudoers permissions for usbip commands
+# 5. Removes application files from install directory
+#
+# USAGE:
+#   sudo ./uninstall.sh
+#
+# WHAT IS NOT REMOVED:
+#   - System packages (usbip, python3, etc.)
+#   - USB/IP kernel modules
+#   - User data backups in /var/backups/orangeusb/
+#
+# INSTALL LOCATION:
+#   Application is installed to ~$USER/orange-usbip/
+#   where $USER is the user who ran sudo (not root)
+#
+# BACKUP LOCATION:
+#   Backups are stored in /var/backups/orangeusb/<timestamp>/
+#
+# Author: Orange USBIP Team
+# License: MIT
+#####################################################################
 # This script requires execution permissions (chmod +x uninstall.sh)
 
 # Colors for pretty output

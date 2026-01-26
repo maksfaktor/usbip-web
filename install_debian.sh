@@ -1,9 +1,55 @@
 #!/bin/bash
+#####################################################################
+# Orange USB/IP Web Interface - Installation Script for Debian/Ubuntu
+# 
+# This script automates the complete installation of the Orange USB/IP
+# web interface on Debian-based Linux systems (Debian, Ubuntu, Mint, etc.)
+# 
+# File: install_debian.sh
+# Project: Orange USB/IP Web Interface
+# 
+# WHAT THIS SCRIPT DOES:
+# 1. Checks system requirements (OS, architecture)
+# 2. Installs system dependencies (python3, linux-tools, usbip)
+# 3. Loads USB/IP kernel modules (usbip-core, usbip-host, vhci-hcd)
+# 4. Configures systemd services (usbipd, orange-usbip)
+# 5. Sets up sudoers permissions for usbip commands
+# 6. Clones/updates the application from GitHub
+# 7. Creates Python virtual environment and installs packages
+# 8. Initializes the database and creates admin user
+# 9. Downloads and compiles virtual-fido binary
+#
+# USAGE:
+#   sudo ./install_debian.sh      - Normal installation
+#   sudo ./install_debian.sh -f   - Force update (reinstall)
+#   sudo ./install_debian.sh --uninstall - Remove application
+#
+# PORT CONFIGURATION:
+#   - Web Interface: Port 5000
+#   - USB/IP Daemon: Port 3240 (real USB devices)
+#   - Virtual FIDO: Port 3241 (virtual security key)
+#
+# REQUIREMENTS:
+#   - Debian/Ubuntu-based Linux distribution
+#   - Root/sudo privileges
+#   - Internet connection for package installation
+#   - Kernel with USB/IP support
+#
+# SUPPORTED ARCHITECTURES:
+#   - x86_64 (64-bit Intel/AMD)
+#   - aarch64 (64-bit ARM, e.g., Raspberry Pi 4, Orange Pi)
+#   - i686 (32-bit Intel/AMD)
+#   - armv7 (32-bit ARM, limited support)
+#
+# Author: Orange USBIP Team
+# License: MIT
+#####################################################################
 
-# Orange USBIP - Automatic installation script for Debian/Ubuntu systems
-# Created: $(date +%Y-%m-%d)
-
-# Обработка параметров командной строки
+# ============================================================================
+# COMMAND LINE ARGUMENTS
+# ============================================================================
+# -f : Force update - reinstall even if already installed
+# --uninstall : Uninstall mode - remove the application
 FORCE_UPDATE="false"
 if [ "$1" == "-f" ] || [ "$2" == "-f" ]; then
     FORCE_UPDATE="true"
