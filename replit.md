@@ -40,7 +40,20 @@ The application is designed to be cross-platform compatible within Linux environ
 ## Recent Changes
 
 ### January 26, 2026
-- **Comprehensive English Documentation**: Added detailed documentation headers to all source files
+- **Comprehensive Technical Documentation**: Created `TECHNICAL_DOCUMENTATION.md` (1000+ lines)
+  - Section 1: Project Overview & Goals
+  - Section 2: System Architecture (with ASCII diagrams)
+  - Section 3: Network Ports & Protocols (USB/IP, CTAP HID)
+  - Section 4: Database Schema (11 tables with relationships)
+  - Section 5: Flask Web Application (routes, blueprints, auth)
+  - Section 6: Virtual FIDO Component (Go architecture, CTAP2, U2F)
+  - Section 7: USB/IP Protocol Implementation (wire format, URBs)
+  - Section 8: Security & Encryption (AES-256-GCM, scrypt, COSE)
+  - Section 9: Installation & Deployment (systemd, environment)
+  - Section 10: API Reference (all endpoints documented)
+  - Section 11: Troubleshooting & Diagnostics
+  - Appendices: File reference, Glossary
+- **Inline Documentation Headers**: Added to 40+ source files
   - **Phase 1 (Python - 8 files)**: main.py, models.py, app.py, fido_utils.py, fido_routes.py, usbip_utils.py, virtual_storage_utils.py, storage_routes.py
   - **Phase 2 (Shell - 3 files)**: install_debian.sh, uninstall.sh, doctor.sh
   - **Phase 3 (HTML - 12 files)**: All templates in templates/ directory
