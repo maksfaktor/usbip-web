@@ -1,3 +1,40 @@
+// ================================================================================
+// USB/IP Server Implementation
+// ================================================================================
+//
+// File: usbip/usbip_server.go
+// Project: Orange USB/IP Web Interface - Virtual FIDO Component
+// Purpose: TCP server implementing the USB/IP protocol for virtual USB devices
+//
+// USB/IP Protocol Overview:
+//
+//      USB/IP is a Linux kernel module that allows sharing USB devices over TCP/IP.
+//      This server implements the device (stub) side of the protocol, allowing
+//      clients to attach and use the virtual FIDO device as if it were local.
+//
+// Server Architecture:
+//
+//      USBIPServer
+//      ├── TCP Listener (port 3241)
+//      ├── Connection Handler (per-client goroutine)
+//      └── USB Device Registry (virtual devices to expose)
+//
+// Security Measures:
+//   - Only accepts connections from 127.0.0.1 (localhost)
+//   - Each connection runs in isolated goroutine with panic recovery
+//   - Clean connection termination on errors
+//
+// Protocol Commands Handled:
+//   - OP_REQ_DEVLIST: List available USB devices
+//   - OP_REQ_IMPORT: Attach a device to client
+//   - USBIP_CMD_SUBMIT: USB URB submission
+//   - USBIP_CMD_UNLINK: Cancel pending USB request
+//
+// Port Configuration:
+//   - Listens on port 3241 (hardcoded for virtual FIDO)
+//   - Real USB devices use usbipd on port 3240
+//
+// ================================================================================
 package usbip
 
 import (

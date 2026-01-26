@@ -39,6 +39,15 @@ The application is designed to be cross-platform compatible within Linux environ
 
 ## Recent Changes
 
+### January 26, 2026
+- **Comprehensive English Documentation**: Added detailed documentation headers to all source files
+  - **Phase 1 (Python - 8 files)**: main.py, models.py, app.py, fido_utils.py, fido_routes.py, usbip_utils.py, virtual_storage_utils.py, storage_routes.py
+  - **Phase 2 (Shell - 3 files)**: install_debian.sh, uninstall.sh, doctor.sh
+  - **Phase 3 (HTML - 12 files)**: All templates in templates/ directory
+  - **Phase 4 (Go - 20+ files)**: All key files in virtual-fido/ directory
+  - Documentation includes: file purpose, features, dependencies, port configs, technical workflows
+  - All documentation is English-only (user interface and code comments)
+
 ### November 24, 2025
 - **Uninstall Script Hotfix**: Fixed uninstall.sh to correctly remove project folder
   - Auto-detects installation path (~$USER/orange-usbip instead of hardcoded /opt/orangeusb)
