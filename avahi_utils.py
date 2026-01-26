@@ -281,6 +281,63 @@ def discover_via_zeroconf(timeout: int = DEFAULT_TIMEOUT) -> List[Dict]:
     return services
 
 
+def get_avahi_status() -> Dict:
+    """Get detailed status of Avahi service on this device."""
+    status = {
+        'avahi_available': False,
+        'zeroconf_available': False,
+        'daemon_running': False,
+        'service_registered': False,
+        'method': 'none',
+        'message': 'Checking...'
+    }
+    
+    # Check avahi-browse command
+    try:
+        result = subprocess.run(['which', 'avahi-browse'], capture_output=True, timeout=2)
+        status['avahi_available'] = result.returncode == 0
+    except Exception:
+        pass
+    
+    # Check zeroconf library
+    try:
+        from zeroconf import Zeroconf
+        status['zeroconf_available'] = True
+    except ImportError:
+        pass
+    
+    # Check if avahi-daemon is running
+    try:
+        result = subprocess.run(
+            ['pgrep', '-x', 'avahi-daemon'],
+            capture_output=True,
+            timeout=2
+        )
+        status['daemon_running'] = result.returncode == 0
+    except Exception:
+        pass
+    
+    # Check if our service is registered
+    try:
+        import os
+        status['service_registered'] = os.path.exists('/etc/avahi/services/orangeusbip.service')
+    except Exception:
+        pass
+    
+    # Determine method and message
+    if status['avahi_available'] and status['daemon_running']:
+        status['method'] = 'avahi-browse'
+        status['message'] = 'Avahi daemon running, discovery available'
+    elif status['zeroconf_available']:
+        status['method'] = 'zeroconf'
+        status['message'] = 'Using zeroconf library for discovery'
+    else:
+        status['method'] = 'local-only'
+        status['message'] = 'Only local device visible (install avahi-daemon for network discovery)'
+    
+    return status
+
+
 def discover_services(timeout: int = None) -> Dict:
     """
     Discover Orange USB/IP services on the local network.
@@ -295,6 +352,7 @@ def discover_services(timeout: int = None) -> Dict:
             - scan_time: Time taken to scan
             - method: Discovery method used
             - error: Error message if failed
+            - avahi_status: Detailed Avahi status
     """
     if timeout is None:
         timeout = int(os.environ.get('AVAHI_SCAN_TIMEOUT', DEFAULT_TIMEOUT))
@@ -304,27 +362,45 @@ def discover_services(timeout: int = None) -> Dict:
     method = None
     error = None
     
+    # Get Avahi status for UI indicator
+    avahi_status = get_avahi_status()
+    
     if is_avahi_available():
         method = 'avahi-browse'
         services = discover_via_avahi_browse(timeout)
         logger.info(f"Avahi discovery found {len(services)} services")
     else:
-        method = 'zeroconf'
-        services = discover_via_zeroconf(timeout)
-        if not services:
-            method = 'unavailable'
-            error = "Avahi daemon not running. Install avahi-daemon package and start the service."
-            logger.warning("Neither avahi-browse nor zeroconf available")
+        # Try zeroconf as fallback
+        try:
+            from zeroconf import Zeroconf
+            method = 'zeroconf'
+            services = discover_via_zeroconf(timeout)
+            if services:
+                logger.info(f"Zeroconf discovery found {len(services)} services")
+        except ImportError:
+            method = 'local-only'
+            logger.debug("zeroconf library not available, using local-only mode")
+    
+    # Always add local device if not found in discovered services
+    local_service = get_local_service_info()
+    if local_service:
+        local_ip = local_service.get('ip')
+        local_found = any(s.get('ip') == local_ip or s.get('is_self') for s in services)
+        if not local_found:
+            services.insert(0, local_service)
+            logger.debug(f"Added local device to discovery results: {local_service['name']}")
     
     scan_time = round(time.time() - start_time, 2)
     
-    services.sort(key=lambda x: (x.get('is_self', False), x.get('name', '')))
+    # Sort: self first, then by name
+    services.sort(key=lambda x: (not x.get('is_self', False), x.get('name', '')))
     
     return {
-        'success': error is None,
+        'success': True,  # Always success since we show local device
         'services': services,
         'scan_time': scan_time,
         'method': method,
+        'avahi_status': avahi_status,
         'error': error
     }
 

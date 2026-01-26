@@ -40,7 +40,12 @@ Commands Used:
     <div class="col-12 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><i class="bi bi-broadcast me-2"></i>Network Discovery</h4>
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="mb-0"><i class="bi bi-broadcast me-2"></i>Network Discovery</h4>
+                    <span id="avahi-status-badge" class="badge bg-secondary" title="Checking Avahi status...">
+                        <i class="bi bi-question-circle me-1"></i>Checking...
+                    </span>
+                </div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="auto-scan-toggle" checked>
@@ -165,6 +170,33 @@ document.getElementById('scan-network-btn').addEventListener('click', function()
     scanNetwork();
 });
 
+function updateAvahiStatusBadge(avahiStatus) {
+    const badge = document.getElementById('avahi-status-badge');
+    if (!badge || !avahiStatus) return;
+    
+    let badgeClass = 'bg-secondary';
+    let icon = 'bi-question-circle';
+    let text = 'Unknown';
+    
+    if (avahiStatus.method === 'avahi-browse' || (avahiStatus.daemon_running && avahiStatus.avahi_available)) {
+        badgeClass = 'bg-success';
+        icon = 'bi-check-circle';
+        text = 'Avahi Active';
+    } else if (avahiStatus.method === 'zeroconf' || avahiStatus.zeroconf_available) {
+        badgeClass = 'bg-info';
+        icon = 'bi-wifi';
+        text = 'Zeroconf';
+    } else {
+        badgeClass = 'bg-warning text-dark';
+        icon = 'bi-exclamation-triangle';
+        text = 'Local Only';
+    }
+    
+    badge.className = `badge ${badgeClass}`;
+    badge.innerHTML = `<i class="bi ${icon} me-1"></i>${text}`;
+    badge.title = avahiStatus.message || '';
+}
+
 function scanNetwork() {
     const scanBtn = document.getElementById('scan-network-btn');
     const statusDiv = document.getElementById('discovery-status');
@@ -190,6 +222,10 @@ function scanNetwork() {
         .then(data => {
             statusDiv.style.display = 'none';
             lastScanTime = new Date();
+            
+            if (data.avahi_status) {
+                updateAvahiStatusBadge(data.avahi_status);
+            }
             
             if (data.success) {
                 displayDiscoveredServices(data.services);
