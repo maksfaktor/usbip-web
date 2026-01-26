@@ -364,6 +364,9 @@ from virtual_storage_utils import (
 from storage_routes import storage_bp  # Virtual storage API routes
 from fido_routes import fido_bp        # FIDO2 device routes
 
+# Import Avahi utilities for network service discovery
+from avahi_utils import discover_services, is_avahi_available, get_local_service_info
+
 # Register blueprints with the main application
 # This adds all routes defined in those blueprints
 app.register_blueprint(storage_bp)
@@ -574,6 +577,81 @@ def get_local_devices_api():
         return jsonify({
             'success': False,
             'message': str(e)
+        }), 500
+
+
+@app.route('/api/discover-services')
+@login_required
+def discover_services_api():
+    """
+    API endpoint to discover Orange USB/IP services on the local network.
+    
+    Uses Avahi (mDNS) to find other Orange USB/IP instances.
+    Scan timeout is 5 seconds by default (configurable via AVAHI_SCAN_TIMEOUT env var).
+    
+    Returns:
+        Response: JSON with discovered services
+                  {
+                      'success': True/False,
+                      'services': [...],
+                      'scan_time': float,
+                      'method': str,
+                      'error': str or None
+                  }
+    """
+    try:
+        timeout = request.args.get('timeout', 5, type=int)
+        if timeout < 1:
+            timeout = 1
+        elif timeout > 30:
+            timeout = 30
+        
+        result = discover_services(timeout=timeout)
+        
+        add_log_entry('INFO', 
+            f'Network discovery: found {len(result.get("services", []))} services in {result.get("scan_time", 0)}s',
+            'avahi')
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        add_log_entry('ERROR', f'Network discovery failed: {str(e)}', 'avahi')
+        return jsonify({
+            'success': False,
+            'services': [],
+            'scan_time': 0,
+            'method': 'error',
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/avahi-status')
+@login_required
+def avahi_status_api():
+    """
+    API endpoint to check Avahi availability and local service info.
+    
+    Returns:
+        Response: JSON with Avahi status
+                  {
+                      'available': True/False,
+                      'local_service': {...} or None
+                  }
+    """
+    try:
+        available = is_avahi_available()
+        local_service = get_local_service_info() if available else None
+        
+        return jsonify({
+            'success': True,
+            'available': available,
+            'local_service': local_service
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'available': False,
+            'error': str(e)
         }), 500
 
 
