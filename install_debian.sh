@@ -264,7 +264,7 @@ echo_color "green" "✓ Repositories updated."
 CURRENT_STEP=$((CURRENT_STEP + 1))
 progress_update $CURRENT_STEP $TOTAL_STEPS "Installing required packages..."
 
-apt-get install -y git python3 python3-pip python3-venv linux-tools-generic usbutils curl > /dev/null 2>&1
+apt-get install -y git python3 python3-pip python3-venv linux-tools-generic usbutils curl avahi-daemon avahi-utils > /dev/null 2>&1
 
 # Try to install uv (optional - pip will be used as fallback)
 echo_color "blue" "Checking for fast package manager (uv)..."
@@ -800,6 +800,41 @@ EOF
 fi
 
 echo_color "green" "✓ Access rights configured."
+
+# Configure Avahi service for network discovery
+echo_color "blue" "    → Configuring Avahi service for network discovery..."
+
+# Ensure Avahi daemon is running
+systemctl enable avahi-daemon > /dev/null 2>&1 || true
+systemctl start avahi-daemon > /dev/null 2>&1 || true
+
+# Install Avahi service definition file
+if [ -f "$APP_DIR/orangeusbip.service.avahi" ]; then
+    cp "$APP_DIR/orangeusbip.service.avahi" /etc/avahi/services/orangeusbip.service
+    chmod 644 /etc/avahi/services/orangeusbip.service
+    # Restart Avahi to pick up new service
+    systemctl restart avahi-daemon > /dev/null 2>&1 || true
+    echo_color "green" "  ✓ Avahi network discovery configured"
+else
+    echo_color "yellow" "  → Avahi service file not found, creating default..."
+    cat > /etc/avahi/services/orangeusbip.service << 'AVAHI_EOF'
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">OrangeUSB on %h</name>
+  <service>
+    <type>_orangeusbip._tcp</type>
+    <port>5000</port>
+    <txt-record>version=1.0</txt-record>
+    <txt-record>usbip_port=3240</txt-record>
+    <txt-record>fido_port=3241</txt-record>
+  </service>
+</service-group>
+AVAHI_EOF
+    chmod 644 /etc/avahi/services/orangeusbip.service
+    systemctl restart avahi-daemon > /dev/null 2>&1 || true
+    echo_color "green" "  ✓ Avahi network discovery configured"
+fi
 
 # Check if service started
 if systemctl is-active --quiet orange-usbip; then

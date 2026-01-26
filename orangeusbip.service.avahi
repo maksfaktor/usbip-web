@@ -1,0 +1,41 @@
+<?xml version="1.0" standalone='no'?>
+<!--
+================================================================================
+Avahi Service Definition - Orange USB/IP Web Interface
+================================================================================
+
+File: orangeusbip.service.avahi
+Project: Orange USB/IP Web Interface
+Purpose: Register Orange USB/IP as a discoverable network service
+
+Installation:
+    Copy to /etc/avahi/services/orangeusbip.service
+    sudo cp orangeusbip.service.avahi /etc/avahi/services/orangeusbip.service
+    sudo systemctl restart avahi-daemon
+
+Service Type:
+    _orangeusbip._tcp - Orange USB/IP Web Interface
+
+TXT Records:
+    version - Software version
+    usbip_port - USB/IP daemon port (3240)
+    fido_port - Virtual FIDO2 port (3241)
+
+Discovery:
+    avahi-browse -r _orangeusbip._tcp
+
+Note:
+    %h is replaced with the local hostname by Avahi
+================================================================================
+-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">OrangeUSB on %h</name>
+  <service>
+    <type>_orangeusbip._tcp</type>
+    <port>5000</port>
+    <txt-record>version=1.0</txt-record>
+    <txt-record>usbip_port=3240</txt-record>
+    <txt-record>fido_port=3241</txt-record>
+  </service>
+</service-group>

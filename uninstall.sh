@@ -134,6 +134,18 @@ remove_application() {
     # Reload systemd
     systemctl daemon-reload
     
+    # Remove Avahi service definition
+    print_step "Removing Avahi service configuration..."
+    
+    if [ -f "/etc/avahi/services/orangeusbip.service" ]; then
+        rm "/etc/avahi/services/orangeusbip.service"
+        # Restart Avahi to remove the service announcement
+        systemctl restart avahi-daemon 2>/dev/null || true
+        print_success "Avahi service configuration removed."
+    else
+        print_warning "Avahi service configuration not found, skipping."
+    fi
+    
     # Remove sudoers file
     print_step "Removing sudoers configuration..."
     

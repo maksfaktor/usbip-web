@@ -247,6 +247,39 @@ else
     echo_color "yellow" "  → Recommended: start service: sudo systemctl start orange-usbip"
 fi
 
+# Check if avahi-daemon service is running (for network discovery)
+echo "Checking Avahi daemon service (network discovery):"
+systemctl is-active --quiet avahi-daemon
+if [ $? -eq 0 ]; then
+    echo_color "green" "✓ avahi-daemon service is running"
+    
+    # Check if orangeusbip service is registered
+    if [ -f "/etc/avahi/services/orangeusbip.service" ]; then
+        echo_color "green" "✓ Orange USB/IP Avahi service is registered"
+    else
+        echo_color "yellow" "✗ Orange USB/IP Avahi service is not registered"
+        echo_color "yellow" "  → Network discovery may not work"
+        echo_color "yellow" "  → Reinstall to fix: sudo ./install_debian.sh"
+    fi
+    
+    # Try to discover services
+    echo "Checking for Orange USB/IP instances on network:"
+    if command -v avahi-browse > /dev/null 2>&1; then
+        DISCOVERED=$(avahi-browse -t -p _orangeusbip._tcp 2>/dev/null | grep -c "^=")
+        if [ "$DISCOVERED" -gt 0 ]; then
+            echo_color "green" "✓ Found $DISCOVERED Orange USB/IP instance(s) on network"
+        else
+            echo_color "yellow" "→ No Orange USB/IP instances found on network (this may be normal)"
+        fi
+    else
+        echo_color "yellow" "→ avahi-browse not installed, cannot test discovery"
+    fi
+else
+    echo_color "yellow" "✗ avahi-daemon service is not running"
+    echo_color "yellow" "  → Network discovery will not work"
+    echo_color "yellow" "  → Install and start: sudo apt install avahi-daemon && sudo systemctl enable --now avahi-daemon"
+fi
+
 #####################################################################
 # Section 4: Kernel Modules Check
 # Verifies if required kernel modules are loaded
