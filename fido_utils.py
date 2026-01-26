@@ -1,72 +1,147 @@
 """
 FIDO2 Virtual Device Utilities
-Python wrapper for virtual-fido CLI commands
+==============================
+
+This module provides a Python wrapper for the virtual-fido CLI commands,
+enabling management of virtual FIDO2/U2F security key emulation.
+
+File: fido_utils.py
+Project: Orange USB/IP Web Interface
+Purpose: FIDO2 virtual device management utilities
+
+The virtual-fido emulator creates a software FIDO2 security key that can be
+attached to the system via USB/IP protocol. This allows WebAuthn authentication
+without physical hardware tokens like YubiKey.
+
+Key Features:
+    - Start/stop virtual FIDO device
+    - Manage credentials (list, delete)
+    - Backup/restore credential vault
+    - Attach virtual device to localhost via USB/IP
+    - Passphrase management for vault encryption
+
+Port Configuration:
+    - Virtual FIDO USB/IP: Port 3241 (separate from real usbipd on 3240)
+    - Virtual device appears with vendor ID 0000:0000 in lsusb
+
+Environment Variables:
+    - FIDO_PASSPHRASE: Vault encryption passphrase
+    - FIDO_VAULT_PATH: Path to credential vault file
+    - FIDO_BINARY_PATH: Path to virtual-fido binary
+    - FIDO_DATA_DIR: Directory for FIDO data files
+
+Dependencies:
+    - virtual-fido binary (compiled Go application)
+    - usbip utilities for localhost attachment
+    - vhci-hcd kernel module for virtual USB host controller
 """
 
-import subprocess
-import os
-import json
-import re
-import logging
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+# ============================================================================
+# IMPORTS
+# ============================================================================
 
+import subprocess     # Execute external commands (virtual-fido CLI, usbip)
+import os             # File and path operations
+import json           # JSON parsing for vault data
+import re             # Regular expressions for output parsing
+import logging        # Logging framework
+from datetime import datetime  # Timestamps for backups
+from typing import Dict, List, Optional, Tuple  # Type hints
+
+# Create logger for this module
 logger = logging.getLogger(__name__)
 
-# Configuration - Universal paths supporting any Linux user
-# Automatically detect home directory and project directory
-HOME = os.path.expanduser('~')  # Works on any system: /home/runner, /home/maxx, etc.
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))  # Current project directory
+# ============================================================================
+# PATH CONFIGURATION
+# ============================================================================
 
-# Environment variable names
-PASSPHRASE_ENV_VAR = 'FIDO_PASSPHRASE'
-VAULT_PATH_ENV_VAR = 'FIDO_VAULT_PATH'
-BINARY_PATH_ENV_VAR = 'FIDO_BINARY_PATH'
-DATA_DIR_ENV_VAR = 'FIDO_DATA_DIR'
+# Home directory - works on any Linux system (/home/runner, /home/maxx, etc.)
+HOME = os.path.expanduser('~')
 
-# Default values with environment variable overrides
+# Project directory - the folder containing this script
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# ============================================================================
+# ENVIRONMENT VARIABLE NAMES
+# ============================================================================
+
+# These environment variables allow customization without code changes
+PASSPHRASE_ENV_VAR = 'FIDO_PASSPHRASE'    # Vault encryption passphrase
+VAULT_PATH_ENV_VAR = 'FIDO_VAULT_PATH'    # Path to vault.json file
+BINARY_PATH_ENV_VAR = 'FIDO_BINARY_PATH'  # Path to virtual-fido binary
+DATA_DIR_ENV_VAR = 'FIDO_DATA_DIR'        # Directory for FIDO data files
+
+# ============================================================================
+# DEFAULT VALUES
+# ============================================================================
+
+# Default passphrase - used if FIDO_PASSPHRASE env var is not set
+# WARNING: Change this in production!
 DEFAULT_PASSPHRASE = 'passphrase'
 
-# FIDO data directory: inside project folder for better portability
+# FIDO data directory - stored inside project folder for portability
+# Can be overridden via FIDO_DATA_DIR environment variable
 FIDO_DATA_DIR = os.environ.get(
     DATA_DIR_ENV_VAR,
-    os.path.join(PROJECT_DIR, 'fido_data')
+    os.path.join(PROJECT_DIR, 'fido_data')  # Default: ./fido_data/
 )
 
-# Create fido_data directory if it doesn't exist
+# Create FIDO data directory if it doesn't exist
+# This ensures the application can start even on fresh installations
 if not os.path.exists(FIDO_DATA_DIR):
     try:
         os.makedirs(FIDO_DATA_DIR, exist_ok=True)
     except Exception as e:
         logger.warning(f"Could not create FIDO data directory: {e}")
 
-# FIDO binary path: check env var, then project fido_data, then source dir
+# ============================================================================
+# BINARY PATH RESOLUTION
+# ============================================================================
+
 def get_fido_binary_path():
-    """Find FIDO binary in order: env var -> project/fido_data -> source dir"""
-    # Check environment variable first
+    """
+    Find the virtual-fido binary using a priority-based search.
+    
+    Search Order:
+        1. FIDO_BINARY_PATH environment variable (explicit override)
+        2. project/fido_data/virtual-fido (primary installed location)
+        3. project/virtual-fido/cmd/demo/virtual-fido-demo (development build)
+    
+    Returns:
+        str: Full path to the virtual-fido binary
+             (may not exist if not installed)
+    """
+    # Priority 1: Environment variable (explicit configuration)
     env_path = os.environ.get(BINARY_PATH_ENV_VAR)
     if env_path and os.path.isfile(env_path):
         return env_path
     
-    # Check project/fido_data/virtual-fido (primary location)
+    # Priority 2: Installed location in project/fido_data/
     project_binary = os.path.join(FIDO_DATA_DIR, 'virtual-fido')
     if os.path.isfile(project_binary):
         return project_binary
     
-    # Fallback to source directory (for development)
+    # Priority 3: Development build location (source directory)
     source_binary = os.path.join(PROJECT_DIR, 'virtual-fido', 'cmd', 'demo', 'virtual-fido-demo')
     if os.path.isfile(source_binary):
         return source_binary
     
-    # Return default path (will show error when used)
+    # Return default path even if not found (error will be shown when used)
     return project_binary
 
+
+# Resolve binary path at module load time
 FIDO_BINARY = get_fido_binary_path()
 
-# FIDO vault path: check env var, then fallback to FIDO_DATA_DIR/vault.json
+# ============================================================================
+# VAULT PATH CONFIGURATION
+# ============================================================================
+
+# Path to the encrypted credential vault file
+# Can be overridden via FIDO_VAULT_PATH environment variable
 FIDO_VAULT_PATH = os.environ.get(
     VAULT_PATH_ENV_VAR,
-    os.path.join(FIDO_DATA_DIR, 'vault.json')
+    os.path.join(FIDO_DATA_DIR, 'vault.json')  # Default: ./fido_data/vault.json
 )
 
 

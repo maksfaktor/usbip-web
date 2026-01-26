@@ -1,44 +1,126 @@
 """
 FIDO2 Virtual Device Management Routes
-Blueprint for virtual-fido device control and credential management
+=======================================
+
+This module defines Flask Blueprint routes for managing the virtual FIDO2
+security key device. It provides a web interface and API endpoints for:
+
+- Starting/stopping the virtual FIDO device
+- Viewing and deleting credentials
+- Managing vault backups
+- Attaching/detaching from localhost via USB/IP
+- Passphrase management
+
+File: fido_routes.py
+Project: Orange USB/IP Web Interface
+Purpose: Flask routes for FIDO2 device management
+
+URL Prefix: /fido
+    All routes in this blueprint are prefixed with /fido
+    Example: /fido/device, /fido/start, /fido/credentials
+
+Authentication: All routes require login (@login_required decorator)
+
+Key Endpoints:
+    GET  /fido/device          - Main FIDO device management page
+    POST /fido/start           - Start the virtual FIDO device
+    POST /fido/stop            - Stop the virtual FIDO device
+    GET  /fido/status          - Get device status (API)
+    GET  /fido/credentials     - List all credentials (API)
+    DELETE /fido/credentials/<id> - Delete a credential (API)
+    POST /fido/backup          - Create vault backup
+    POST /fido/restore         - Restore vault from backup
+    POST /fido/attach          - Attach device to localhost via USB/IP
+    POST /fido/detach          - Detach device from localhost
 """
 
+# ============================================================================
+# IMPORTS
+# ============================================================================
+
+# Flask components
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
+
+# Authentication decorator and current user proxy
 from flask_login import login_required, current_user
+
+# Date/time handling
 from datetime import datetime
+
+# Logging framework
 import logging
 
+# Database session from main app
 from app import db
+
+# Database models for FIDO2 functionality
 from models import FidoDevice, FidoCredential, FidoLog
+
+# FIDO2 utility functions from companion module
 from fido_utils import (
-    check_fido_binary,
-    get_fido_status,
-    start_fido_device,
-    stop_fido_device,
-    list_fido_credentials,
-    delete_fido_credential,
-    get_vault_info,
-    backup_vault,
-    restore_vault,
-    delete_backup,
-    get_fido_passphrase,
-    set_fido_passphrase,
-    get_vault_path,
-    set_vault_path,
-    get_backup_history,
-    attach_to_localhost,
-    detach_from_localhost,
-    get_localhost_attach_status
+    check_fido_binary,           # Check if virtual-fido binary exists
+    get_fido_status,             # Get device running status
+    start_fido_device,           # Start the virtual FIDO device
+    stop_fido_device,            # Stop the virtual FIDO device
+    list_fido_credentials,       # List credentials in vault
+    delete_fido_credential,      # Delete a credential from vault
+    get_vault_info,              # Get vault file information
+    backup_vault,                # Create vault backup
+    restore_vault,               # Restore vault from backup
+    delete_backup,               # Delete a backup file
+    get_fido_passphrase,         # Get current passphrase
+    set_fido_passphrase,         # Change passphrase
+    get_vault_path,              # Get vault file path
+    set_vault_path,              # Change vault path
+    get_backup_history,          # List all backups
+    attach_to_localhost,         # Attach via USB/IP to localhost
+    detach_from_localhost,       # Detach from localhost
+    get_localhost_attach_status  # Check if attached to localhost
 )
 
+# Create logger for this module
 logger = logging.getLogger(__name__)
 
-# Create Blueprint
+# ============================================================================
+# BLUEPRINT DEFINITION
+# ============================================================================
+
+# Create Flask Blueprint with URL prefix /fido
+# All routes in this module will be under /fido/*
 fido_bp = Blueprint('fido', __name__, url_prefix='/fido')
 
 
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
 def log_fido_event(event_type, status, rp_id=None, credential_id=None, details=None):
-    """Helper function to log FIDO events to database"""
+    """
+    Log a FIDO2 operation to the database for auditing.
+    
+    Creates a FidoLog entry to track all FIDO operations for security
+    auditing and troubleshooting purposes.
+    
+    Args:
+        event_type (str): Type of operation. Values:
+            - 'device_start': Device was started
+            - 'device_stop': Device was stopped
+            - 'registration': New credential registered
+            - 'authentication': Credential used for auth
+            - 'credential_delete': Credential was deleted
+            - 'backup_create': Vault backup created
+            - 'backup_restore': Vault restored from backup
+            - 'attach': Device attached to localhost
+            - 'detach': Device detached from localhost
+        status (str): Result of operation ('success', 'failed', 'pending')
+        rp_id (str, optional): Relying Party ID (domain) for credential ops
+        credential_id (str, optional): Credential ID if applicable
+        details (str, optional): Additional details or error messages
+    
+    Note:
+        Automatically captures client IP address and user ID from request context.
+        Errors are logged but don't raise exceptions to avoid breaking operations.
+    """
     try:
         log_entry = FidoLog(
             event_type=event_type,
@@ -46,21 +128,36 @@ def log_fido_event(event_type, status, rp_id=None, credential_id=None, details=N
             rp_id=rp_id,
             credential_id=credential_id,
             details=details,
+            # Capture client IP from request context
             ip_address=request.remote_addr if request else None,
+            # Capture user ID if authenticated
             user_id=current_user.id if current_user.is_authenticated else None
         )
         db.session.add(log_entry)
         db.session.commit()
         logger.debug(f"FIDO event logged: {event_type} - {status}")
     except Exception as e:
+        # Log error but don't raise - logging shouldn't break operations
         logger.error(f"Failed to log FIDO event: {e}")
         db.session.rollback()
 
 
 def get_or_create_fido_device():
-    """Get existing FidoDevice or create new one"""
+    """
+    Get the FidoDevice record from database, creating if not exists.
+    
+    The application uses a single FidoDevice record to track the state
+    of the virtual FIDO device. This function ensures one always exists.
+    
+    Returns:
+        FidoDevice: The device record from database
+    
+    Note:
+        This uses a singleton pattern - only one FidoDevice record exists.
+    """
     device = FidoDevice.query.first()
     if not device:
+        # Create new device record with default values
         device = FidoDevice()
         db.session.add(device)
         db.session.commit()
