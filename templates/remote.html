@@ -275,43 +275,43 @@ function displayDiscoveredServices(services) {
     
     let html = '<div class="row g-3">';
     
-    services.forEach(service => {
+    services.forEach((service, index) => {
         const isSelf = service.is_self;
-        const cardClass = isSelf ? 'border-success' : '';
+        const cardClass = isSelf ? 'border-success' : 'border-primary';
         const badgeHtml = isSelf ? '<span class="badge bg-success ms-2">This Device</span>' : '';
         const statusIcon = isSelf ? 'bi-check-circle-fill text-success' : 'bi-circle-fill text-primary';
+        const serviceId = `service-${index}`;
         
         html += `
             <div class="col-12">
-                <div class="card ${cardClass}">
-                    <div class="card-body py-3">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1">
-                                    <i class="bi ${statusIcon} me-2"></i>
-                                    ${escapeHtml(service.name)}${badgeHtml}
-                                </h6>
-                                <div class="text-muted small">
-                                    <span class="me-3"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(service.ip)}</span>
-                                    <span class="me-3"><i class="bi bi-hdd-network me-1"></i>${escapeHtml(service.hostname)}</span>
-                                </div>
-                                <div class="mt-2">
-                                    <span class="badge bg-secondary me-1">Web: ${service.web_port}</span>
-                                    <span class="badge bg-secondary me-1">USB/IP: ${service.usbip_port}</span>
-                                    <span class="badge bg-secondary me-1">FIDO: ${service.fido_port}</span>
-                                    <span class="badge bg-info">v${escapeHtml(service.version)}</span>
-                                </div>
-                            </div>
-                            <div class="ms-3">
-                                ${isSelf ? '' : `
-                                    <button class="btn btn-primary btn-sm me-1" onclick="connectToService('${escapeHtml(service.ip)}')">
-                                        <i class="bi bi-link-45deg me-1"></i>Connect
-                                    </button>
-                                    <a href="http://${escapeHtml(service.ip)}:${service.web_port}" target="_blank" class="btn btn-outline-secondary btn-sm">
-                                        <i class="bi bi-box-arrow-up-right me-1"></i>Open UI
-                                    </a>
-                                `}
-                            </div>
+                <div class="card ${cardClass}" id="${serviceId}-card">
+                    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center flex-grow-1">
+                            <i class="bi ${statusIcon} me-2"></i>
+                            <strong>${escapeHtml(service.name)}</strong>${badgeHtml}
+                            <span class="text-muted ms-3 small">
+                                <i class="bi bi-geo-alt me-1"></i>${escapeHtml(service.ip)}
+                            </span>
+                            <span class="badge bg-secondary ms-2">USB/IP: ${service.usbip_port}</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            <button class="btn btn-sm btn-primary" onclick="toggleServiceDevices('${serviceId}', '${escapeHtml(service.ip)}')" id="${serviceId}-connect-btn">
+                                <i class="bi bi-link-45deg me-1"></i>Connect
+                            </button>
+                            ${!isSelf ? `
+                                <a href="http://${escapeHtml(service.ip)}:${service.web_port}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Open Web UI">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            ` : ''}
+                            <button class="btn btn-sm btn-outline-secondary" onclick="toggleServiceCollapse('${serviceId}')" id="${serviceId}-toggle-btn" title="Expand/Collapse" style="display: none;">
+                                <i class="bi bi-chevron-up" id="${serviceId}-toggle-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body py-0" id="${serviceId}-devices" style="display: none;">
+                        <div class="py-3 text-center text-muted">
+                            <i class="bi bi-usb-symbol fs-3 d-block mb-2"></i>
+                            Click "Connect" to load devices
                         </div>
                     </div>
                 </div>
@@ -321,6 +321,157 @@ function displayDiscoveredServices(services) {
     
     html += '</div>';
     container.innerHTML = html;
+}
+
+function toggleServiceCollapse(serviceId) {
+    const devicesDiv = document.getElementById(`${serviceId}-devices`);
+    const toggleIcon = document.getElementById(`${serviceId}-toggle-icon`);
+    
+    if (devicesDiv.style.display === 'none') {
+        devicesDiv.style.display = 'block';
+        toggleIcon.className = 'bi bi-chevron-up';
+    } else {
+        devicesDiv.style.display = 'none';
+        toggleIcon.className = 'bi bi-chevron-down';
+    }
+}
+
+function toggleServiceDevices(serviceId, ip) {
+    const devicesDiv = document.getElementById(`${serviceId}-devices`);
+    const toggleBtn = document.getElementById(`${serviceId}-toggle-btn`);
+    const connectBtn = document.getElementById(`${serviceId}-connect-btn`);
+    const toggleIcon = document.getElementById(`${serviceId}-toggle-icon`);
+    
+    if (devicesDiv.style.display === 'block') {
+        devicesDiv.style.display = 'none';
+        toggleIcon.className = 'bi bi-chevron-down';
+        connectBtn.innerHTML = '<i class="bi bi-link-45deg me-1"></i>Connect';
+        return;
+    }
+    
+    devicesDiv.style.display = 'block';
+    toggleBtn.style.display = 'inline-block';
+    toggleIcon.className = 'bi bi-chevron-up';
+    connectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Loading...';
+    connectBtn.disabled = true;
+    
+    devicesDiv.innerHTML = `
+        <div class="py-3 text-center">
+            <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+            Loading devices from ${ip}...
+        </div>
+    `;
+    
+    fetch('/get_remote_devices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ 'ip': ip })
+    })
+    .then(response => response.json())
+    .then(data => {
+        connectBtn.innerHTML = '<i class="bi bi-link-45deg me-1"></i>Connect';
+        connectBtn.disabled = false;
+        
+        if (data.success && data.devices && data.devices.length > 0) {
+            let devicesHtml = '<div class="list-group list-group-flush">';
+            data.devices.forEach(device => {
+                const isAttached = device.attached || false;
+                devicesHtml += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <div>
+                            <i class="bi bi-usb-symbol text-primary me-2"></i>
+                            <strong>${escapeHtml(device.busid)}</strong>
+                            <span class="text-muted ms-2">${escapeHtml(device.name || device.device || 'USB Device')}</span>
+                            ${device.vid_pid ? `<span class="badge bg-secondary ms-2">${escapeHtml(device.vid_pid)}</span>` : ''}
+                        </div>
+                        <button class="btn btn-sm ${isAttached ? 'btn-danger' : 'btn-success'}" 
+                                onclick="attachRemoteDevice('${ip}', '${escapeHtml(device.busid)}', this)">
+                            <i class="bi ${isAttached ? 'bi-x-circle' : 'bi-plug-fill'} me-1"></i>
+                            ${isAttached ? 'Detach' : 'Attach'}
+                        </button>
+                    </div>
+                `;
+            });
+            devicesHtml += '</div>';
+            devicesDiv.innerHTML = devicesHtml;
+        } else {
+            devicesDiv.innerHTML = `
+                <div class="py-3 text-center text-muted">
+                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                    ${data.error || 'No devices available on this server'}
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        connectBtn.innerHTML = '<i class="bi bi-link-45deg me-1"></i>Connect';
+        connectBtn.disabled = false;
+        devicesDiv.innerHTML = `
+            <div class="py-3 text-center text-danger">
+                <i class="bi bi-exclamation-triangle fs-3 d-block mb-2"></i>
+                Connection failed: ${error.message}
+            </div>
+        `;
+    });
+}
+
+function attachRemoteDevice(ip, busid, btn) {
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    
+    fetch('/attach_device', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ 'ip': ip, 'busid': busid })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            btn.className = 'btn btn-sm btn-danger';
+            btn.innerHTML = '<i class="bi bi-x-circle me-1"></i>Detach';
+            btn.onclick = function() { detachRemoteDevice(busid, this); };
+            showNotification(`Device ${busid} attached successfully`, 'success');
+        } else {
+            btn.innerHTML = originalHtml;
+            showNotification(data.error || 'Failed to attach device', 'danger');
+        }
+        btn.disabled = false;
+    })
+    .catch(error => {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+        showNotification(`Error: ${error.message}`, 'danger');
+    });
+}
+
+function detachRemoteDevice(busid, btn) {
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    
+    fetch('/detach_device', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ 'busid': busid })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            btn.className = 'btn btn-sm btn-success';
+            btn.innerHTML = '<i class="bi bi-plug-fill me-1"></i>Attach';
+            showNotification(`Device ${busid} detached successfully`, 'success');
+        } else {
+            btn.innerHTML = originalHtml;
+            showNotification(data.error || 'Failed to detach device', 'danger');
+        }
+        btn.disabled = false;
+    })
+    .catch(error => {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+        showNotification(`Error: ${error.message}`, 'danger');
+    });
 }
 
 function connectToService(ip) {
