@@ -39,6 +39,19 @@ The application is designed to be cross-platform compatible within Linux environ
 
 ## Recent Changes
 
+### January 27, 2026
+- **Virtual Device Integration Improvements**: Enhanced remote device display and error handling
+  - Fixed `/get_remote_devices` endpoint to always show published virtual devices from database
+  - Improved local machine detection (hostname, IP address matching)
+  - Graceful error handling when USB/IP tools are unavailable
+  - Virtual devices now displayed on Remote page with "Virtual" badge regardless of usbip command status
+
+- **Documentation Update**: Updated `ahavi_add.md` with comprehensive implementation status
+  - Detailed status of all Avahi and Virtual Device components
+  - Testing checklist for deployment verification
+  - Known issues and limitations documented
+  - Next steps for full deployment outlined
+
 ### January 26, 2026
 - **Avahi (mDNS) Network Discovery**: Added automatic discovery of other Orange USB/IP instances
   - New `avahi_utils.py` module for service discovery using mDNS/DNS-SD
