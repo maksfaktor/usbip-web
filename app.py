@@ -1124,8 +1124,24 @@ def get_remote_devices_route():
         return jsonify({'success': False, 'message': 'IP address not specified'}), 400
     
     all_devices = []
+    usbip_error = None
     
-    devices, error = get_remote_usb_devices(ip)
+    local_ips = ['127.0.0.1', 'localhost', '::1']
+    try:
+        import socket
+        hostname = socket.gethostname()
+        local_ips.append(hostname)
+        try:
+            local_ip = socket.gethostbyname(hostname)
+            local_ips.append(local_ip)
+        except:
+            pass
+    except:
+        pass
+    
+    is_local = ip.lower() in [i.lower() for i in local_ips]
+    
+    devices, usbip_error = get_remote_usb_devices(ip)
     
     if devices:
         for device in devices:
@@ -1150,31 +1166,31 @@ def get_remote_devices_route():
     except Exception as e:
         add_log_entry('DEBUG', f'Virtual device API not available on {ip}: {str(e)}', 'virtual')
     
-    is_local = ip in ('127.0.0.1', 'localhost', '::1')
-    if is_local or not all_devices:
-        try:
-            published_virtual = VirtualUsbDevice.query.filter_by(is_published=True).all()
-            for device in published_virtual:
-                busid_exists = any(d.get('busid') == device.usbip_busid for d in all_devices)
-                if not busid_exists:
-                    all_devices.append({
-                        'busid': device.usbip_busid or f'v-{device.id}',
-                        'name': device.name,
-                        'device': device.name,
-                        'vid_pid': f'{device.vendor_id}:{device.product_id}',
-                        'device_type': device.device_type,
-                        'is_virtual': True,
-                        'device_source': 'database',
-                        'virtual_id': device.id
-                    })
-            if published_virtual:
-                add_log_entry('DEBUG', f'Added {len(published_virtual)} published virtual devices from database', 'virtual')
-        except Exception as e:
-            add_log_entry('DEBUG', f'Error querying local virtual devices: {str(e)}', 'virtual')
+    try:
+        published_virtual = VirtualUsbDevice.query.filter_by(is_published=True).all()
+        for device in published_virtual:
+            busid_exists = any(d.get('busid') == device.usbip_busid for d in all_devices)
+            if not busid_exists:
+                all_devices.append({
+                    'busid': device.usbip_busid or f'v-{device.id}',
+                    'name': device.name,
+                    'device': device.name,
+                    'vid_pid': f'{device.vendor_id}:{device.product_id}',
+                    'device_type': device.device_type,
+                    'is_virtual': True,
+                    'device_source': 'database',
+                    'virtual_id': device.id,
+                    'is_local': True
+                })
+        if published_virtual:
+            add_log_entry('DEBUG', f'Added {len(published_virtual)} published virtual devices from database', 'virtual')
+    except Exception as e:
+        add_log_entry('DEBUG', f'Error querying local virtual devices: {str(e)}', 'virtual')
     
-    if not all_devices and error:
-        add_log_entry('ERROR', f'Error getting device list from {ip}: {error}', 'usbip')
-        return jsonify({'success': False, 'error': error})
+    if all_devices:
+        pass
+    elif usbip_error and 'usbip' in usbip_error.lower():
+        return jsonify({'success': True, 'devices': [], 'warning': 'USB/IP tools not available in this environment. Virtual devices from database shown if published.'})
     
     for device in all_devices:
         if 'busid' in device:
