@@ -1,0 +1,111 @@
+[H[2J[3J
+[0;34m====================================================[0m
+[0;34m  Orange USBIP Diagnostic Tool[0m
+[0;34m====================================================[0m
+
+
+[0;34m====================================================[0m
+[0;34m  1. Operating System Check[0m
+[0;34m====================================================[0m
+
+OS Name: Linux
+OS Version: 6.14.11
+Architecture: x86_64
+
+[0;34m====================================================[0m
+[0;34m  2. Required Commands Check[0m
+[0;34m====================================================[0m
+
+[0;31m✗ Command usbip is not available[0m
+[0;33m  → Please install package containing usbip command[0m
+[0;32m✓ Command gunicorn is available[0m
+[0;32m✓ Command python3 is available[0m
+[0;31m✗ Command systemctl is not available[0m
+[0;33m  → Please install package containing systemctl command[0m
+[0;31m✗ Command nc is not available[0m
+[0;33m  → Please install package containing nc command[0m
+
+[0;34m====================================================[0m
+[0;34m  3. Services Check[0m
+[0;34m====================================================[0m
+
+Checking usbipd service:
+[0;31m✗ usbipd service is not running[0m
+[0;33m  → Searching for usbipd executable...[0m
+[0;31m  → usbipd executable not found[0m
+Checking Orange USBIP service:
+[0;31m✗ orange-usbip service is not running[0m
+[0;33m  → Recommended: start service: sudo systemctl start orange-usbip[0m
+Checking Avahi daemon service (network discovery):
+[0;33m✗ avahi-daemon service is not running[0m
+[0;33m  → Network discovery will not work[0m
+[0;33m  → Install and start: sudo apt install avahi-daemon && sudo systemctl enable --now avahi-daemon[0m
+
+[0;34m====================================================[0m
+[0;34m  4. Kernel Modules Check[0m
+[0;34m====================================================[0m
+
+Checking usbip-core module:
+[0;31m✗ usbip-core module is loaded[0m
+[0;33m  → Load module: sudo modprobe usbip-core[0m
+Checking usbip-host module:
+[0;31m✗ usbip-host module is loaded[0m
+[0;33m  → Load module: sudo modprobe usbip-host[0m
+Checking vhci-hcd module:
+[0;31m✗ vhci-hcd module is loaded[0m
+[0;33m  → Load module: sudo modprobe vhci-hcd[0m
+
+[0;34m====================================================[0m
+[0;34m  5. Open Ports Check[0m
+[0;34m====================================================[0m
+
+Checking port 3240 (usbipd):
+[0;31m✗ Port 3240 is not listening[0m
+[0;33m  → usbipd service is not running or not listening on port[0m
+[0;33m  → Recommended: restart usbipd service: sudo systemctl restart usbipd[0m
+Checking port 5000 (Orange USBIP Web):
+[0;31m✗ Port 5000 is not listening[0m
+[0;33m  → Orange USBIP Web interface is not running[0m
+[0;33m  → Recommended: restart orange-usbip service[0m
+
+[0;34m====================================================[0m
+[0;34m  6. Firewall Check[0m
+[0;34m====================================================[0m
+
+[0;33mUFW is not installed, checking iptables:[0m
+[0;33mPort 3240 might be blocked in iptables[0m
+[0;33m  → Recommended: allow port: sudo iptables -I INPUT -p tcp --dport 3240 -j ACCEPT[0m
+
+[0;34m====================================================[0m
+[0;34m  7. Published Devices Check[0m
+[0;34m====================================================[0m
+
+[0;31m✗ Failed to get USB devices list[0m
+[0;33m  → usbip command might not be available or doesn't have proper permissions[0m
+
+[0;34m====================================================[0m
+[0;34m  8. Network Interfaces Check[0m
+[0;34m====================================================[0m
+
+[0;33mip command not found, using ifconfig[0m
+
+[0;34m====================================================[0m
+[0;34m  Diagnostics Complete[0m
+[0;34m====================================================[0m
+
+If you encountered any issues, please refer to documentation or support forum.
+For more information: https://github.com/maksfaktor/usbip-web
+
+
+
+Errors:
+/home/runner/workspace/doctor.sh: line 167: systemctl: command not found
+/home/runner/workspace/doctor.sh: line 242: systemctl: command not found
+/home/runner/workspace/doctor.sh: line 252: systemctl: command not found
+/home/runner/workspace/doctor.sh: line 291: lsmod: command not found
+/home/runner/workspace/doctor.sh: line 296: lsmod: command not found
+/home/runner/workspace/doctor.sh: line 301: lsmod: command not found
+/home/runner/workspace/doctor.sh: line 312: netstat: command not found
+/home/runner/workspace/doctor.sh: line 323: netstat: command not found
+/nix/store/gmcxladhxrdk9wh012bjisa2w4ny34lm-replit-runtime-path/bin/sudo: line 41: exec: iptables: not found
+/home/runner/workspace/doctor.sh: line 467: ifconfig: command not found
