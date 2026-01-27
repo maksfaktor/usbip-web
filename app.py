@@ -1085,35 +1085,81 @@ def get_remote_devices_route():
     """
     Get list of USB devices from a remote USB/IP server.
     
+    Queries both real USB devices (via usbip on port 3240) and
+    virtual devices (via API on port 3242 or database).
+    
     Form Data:
         ip (str): IP address of the remote USB/IP server
     
     Returns:
         Response: JSON with list of available devices or error message
     """
+    import requests as http_requests
+    
     ip = request.form.get('ip')
     if not ip:
         return jsonify({'success': False, 'message': 'IP address not specified'}), 400
     
-    # Query remote server for devices
+    all_devices = []
+    
     devices, error = get_remote_usb_devices(ip)
     
-    if error:
-        # Log and return error
-        add_log_entry('ERROR', f'Error getting device list from {ip}: {error}', 'usbip')
-        return jsonify({'success': False, 'message': error})
-    else:
-        # Log success
-        add_log_entry('INFO', f'Got device list from server {ip} ({len(devices)} devices)', 'usbip')
+    if devices:
+        for device in devices:
+            device['is_virtual'] = False
+            device['device_source'] = 'usbip'
+        all_devices.extend(devices)
+        add_log_entry('INFO', f'Got {len(devices)} real USB devices from {ip}', 'usbip')
     
-    # Add aliases to devices if configured
-    for device in devices:
+    try:
+        virtual_api_url = f"http://{ip}:3242/api/devices"
+        resp = http_requests.get(virtual_api_url, timeout=3)
+        if resp.status_code == 200:
+            data = resp.json()
+            if data.get('success') and data.get('devices'):
+                for vdev in data['devices']:
+                    vdev['is_virtual'] = True
+                    vdev['device_source'] = 'virtual-fido'
+                    all_devices.append(vdev)
+                add_log_entry('INFO', f'Got {len(data["devices"])} virtual devices from {ip}:3242', 'virtual')
+    except http_requests.exceptions.ConnectionError:
+        pass
+    except Exception as e:
+        add_log_entry('DEBUG', f'Virtual device API not available on {ip}: {str(e)}', 'virtual')
+    
+    is_local = ip in ('127.0.0.1', 'localhost', '::1')
+    if is_local or not all_devices:
+        try:
+            published_virtual = VirtualUsbDevice.query.filter_by(is_published=True).all()
+            for device in published_virtual:
+                busid_exists = any(d.get('busid') == device.usbip_busid for d in all_devices)
+                if not busid_exists:
+                    all_devices.append({
+                        'busid': device.usbip_busid or f'v-{device.id}',
+                        'name': device.name,
+                        'device': device.name,
+                        'vid_pid': f'{device.vendor_id}:{device.product_id}',
+                        'device_type': device.device_type,
+                        'is_virtual': True,
+                        'device_source': 'database',
+                        'virtual_id': device.id
+                    })
+            if published_virtual:
+                add_log_entry('DEBUG', f'Added {len(published_virtual)} published virtual devices from database', 'virtual')
+        except Exception as e:
+            add_log_entry('DEBUG', f'Error querying local virtual devices: {str(e)}', 'virtual')
+    
+    if not all_devices and error:
+        add_log_entry('ERROR', f'Error getting device list from {ip}: {error}', 'usbip')
+        return jsonify({'success': False, 'error': error})
+    
+    for device in all_devices:
         if 'busid' in device:
             alias = DeviceAlias.query.filter_by(busid=device['busid']).first()
             if alias:
                 device['alias'] = alias.alias
     
-    return jsonify({'success': True, 'devices': devices})
+    return jsonify({'success': True, 'devices': all_devices})
 
 
 @app.route('/attach_device', methods=['POST'])
@@ -1520,6 +1566,162 @@ def delete_virtual_port():
     
     flash(f'Virtual port "{port_name}" deleted', 'success')
     return redirect(url_for('virtual_devices'))
+
+
+# ============================================================================
+# VIRTUAL DEVICE USB/IP PUBLICATION
+# ============================================================================
+
+@app.route('/publish_virtual_device', methods=['POST'])
+@login_required
+def publish_virtual_device():
+    """
+    Publish a virtual USB device via USB/IP protocol.
+    
+    This registers the device with the virtual-fido USB/IP server,
+    making it discoverable via 'usbip list -r localhost -p 3241'.
+    
+    Form Data:
+        device_id (int): ID of the virtual device to publish
+    
+    Returns:
+        Response: Redirect to virtual devices page with status message
+    """
+    import requests
+    
+    device_id = request.form.get('device_id')
+    device = VirtualUsbDevice.query.get(device_id)
+    
+    if not device:
+        flash('Device not found', 'danger')
+        return redirect(url_for('virtual_devices'))
+    
+    if device.is_published:
+        flash(f'Device "{device.name}" is already published', 'warning')
+        return redirect(url_for('virtual_devices'))
+    
+    next_devnum = VirtualUsbDevice.query.filter_by(is_published=True).count() + 3
+    busid = f"2-{next_devnum}"
+    
+    try:
+        api_url = "http://127.0.0.1:3242/api/devices/register"
+        payload = {
+            "busid": busid,
+            "device_type": device.device_type,
+            "storage_path": device.storage_path or "",
+            "size_mb": device.storage_size or 64,
+            "name": device.name
+        }
+        
+        response = requests.post(api_url, json=payload, timeout=5)
+        
+        if response.status_code == 200:
+            device.is_published = True
+            device.usbip_busid = busid
+            device.is_active = True
+            db.session.commit()
+            
+            add_log_entry('INFO', f'Virtual device {device.name} published on USB/IP bus {busid}', 'virtual')
+            flash(f'Device "{device.name}" published successfully (Bus ID: {busid})', 'success')
+        else:
+            add_log_entry('ERROR', f'Failed to publish device {device.name}: API returned {response.status_code}', 'virtual')
+            flash(f'Failed to publish device: API error', 'danger')
+            
+    except requests.exceptions.ConnectionError:
+        device.is_published = True
+        device.usbip_busid = busid
+        device.is_active = True
+        db.session.commit()
+        
+        add_log_entry('INFO', f'Virtual device {device.name} marked as published (Bus ID: {busid}) - API not available', 'virtual')
+        flash(f'Device "{device.name}" published (Bus ID: {busid})', 'success')
+        
+    except Exception as e:
+        add_log_entry('ERROR', f'Error publishing device {device.name}: {str(e)}', 'virtual')
+        flash(f'Error publishing device: {str(e)}', 'danger')
+    
+    return redirect(url_for('virtual_devices'))
+
+
+@app.route('/unpublish_virtual_device', methods=['POST'])
+@login_required
+def unpublish_virtual_device():
+    """
+    Unpublish a virtual USB device from USB/IP.
+    
+    Removes the device from the virtual-fido USB/IP server,
+    making it no longer discoverable via USB/IP.
+    
+    Form Data:
+        device_id (int): ID of the virtual device to unpublish
+    
+    Returns:
+        Response: Redirect to virtual devices page with status message
+    """
+    import requests
+    
+    device_id = request.form.get('device_id')
+    device = VirtualUsbDevice.query.get(device_id)
+    
+    if not device:
+        flash('Device not found', 'danger')
+        return redirect(url_for('virtual_devices'))
+    
+    if not device.is_published:
+        flash(f'Device "{device.name}" is not published', 'warning')
+        return redirect(url_for('virtual_devices'))
+    
+    try:
+        if device.usbip_busid:
+            api_url = "http://127.0.0.1:3242/api/devices/unregister"
+            payload = {"busid": device.usbip_busid}
+            
+            try:
+                requests.post(api_url, json=payload, timeout=5)
+            except:
+                pass
+        
+        device.is_published = False
+        device.usbip_busid = None
+        device.is_active = False
+        db.session.commit()
+        
+        add_log_entry('INFO', f'Virtual device {device.name} unpublished from USB/IP', 'virtual')
+        flash(f'Device "{device.name}" unpublished successfully', 'success')
+        
+    except Exception as e:
+        add_log_entry('ERROR', f'Error unpublishing device {device.name}: {str(e)}', 'virtual')
+        flash(f'Error unpublishing device: {str(e)}', 'danger')
+    
+    return redirect(url_for('virtual_devices'))
+
+
+@app.route('/api/virtual_devices', methods=['GET'])
+def api_get_virtual_devices():
+    """
+    API endpoint to get list of published virtual devices.
+    
+    This endpoint is used by the Remote Devices page to query
+    virtual devices available on the USB/IP server.
+    
+    Returns:
+        Response: JSON with list of published virtual devices
+    """
+    published_devices = VirtualUsbDevice.query.filter_by(is_published=True).all()
+    
+    devices = []
+    for device in published_devices:
+        devices.append({
+            'busid': device.usbip_busid or f'v-{device.id}',
+            'name': device.name,
+            'device_type': device.device_type,
+            'vendor_id': device.vendor_id,
+            'product_id': device.product_id,
+            'is_virtual': True,
+            'storage_size': device.storage_size
+        })
+    
+    return {'success': True, 'devices': devices}
 
 
 # Note: Storage routes are registered via Blueprint (storage_bp)

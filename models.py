@@ -294,6 +294,10 @@ class VirtualUsbDevice(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # USB/IP publication state
+    is_published = db.Column(db.Boolean, default=False)  # True when device is published via USB/IP
+    usbip_busid = db.Column(db.String(16))  # Bus ID for USB/IP (e.g., "2-3")
+    
     def __repr__(self):
         """String representation showing name and USB IDs."""
         return f'<VirtualUsbDevice {self.name} ({self.vendor_id}:{self.product_id})>'
