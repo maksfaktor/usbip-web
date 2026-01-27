@@ -262,6 +262,29 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 # Initialize the database with the Flask app
 db.init_app(app)
 
+# Migrate database to add new columns if they don't exist
+def migrate_virtual_usb_devices():
+    """Add is_published and usbip_busid columns to virtual_usb_devices if missing."""
+    import sqlite3
+    try:
+        conn = sqlite3.connect(database_path)
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(virtual_usb_devices)")
+        columns = [col[1] for col in cursor.fetchall()]
+        if 'is_published' not in columns:
+            cursor.execute("ALTER TABLE virtual_usb_devices ADD COLUMN is_published BOOLEAN DEFAULT 0")
+            logging.info("Added is_published column to virtual_usb_devices")
+        if 'usbip_busid' not in columns:
+            cursor.execute("ALTER TABLE virtual_usb_devices ADD COLUMN usbip_busid VARCHAR(16)")
+            logging.info("Added usbip_busid column to virtual_usb_devices")
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logging.warning(f"Database migration note: {e}")
+
+if os.path.exists(database_path):
+    migrate_virtual_usb_devices()
+
 # ============================================================================
 # AUTHENTICATION SETUP (Flask-Login)
 # ============================================================================

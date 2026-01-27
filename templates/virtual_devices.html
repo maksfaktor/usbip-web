@@ -110,6 +110,7 @@ Storage Device:
                                 <th>Type</th>
                                 <th>VID:PID</th>
                                 <th>Status</th>
+                                <th>USB/IP</th>
                                 <th>Info</th>
                                 <th>Actions</th>
                             </tr>
@@ -151,6 +152,14 @@ Storage Device:
                                     {% endif %}
                                 </td>
                                 <td>
+                                    {% if device.is_published %}
+                                        <span class="badge bg-success">Published</span>
+                                        <small class="text-muted d-block">Bus: {{ device.usbip_busid or 'N/A' }}</small>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Not Published</span>
+                                    {% endif %}
+                                </td>
+                                <td>
                                     {% if device.device_type == 'storage' %}
                                         <small>
                                         {% if device.is_system_path and device.storage_path %}
@@ -165,6 +174,21 @@ Storage Device:
                                 </td>
                                 <td>
                                     <div class="d-flex flex-wrap gap-1">
+                                        {% if device.is_published %}
+                                            <form action="{{ url_for('unpublish_virtual_device') }}" method="POST" class="d-inline">
+                                                <input type="hidden" name="device_id" value="{{ device.id }}">
+                                                <button type="submit" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-cloud-download-alt me-1"></i>Unpublish
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <form action="{{ url_for('publish_virtual_device') }}" method="POST" class="d-inline">
+                                                <input type="hidden" name="device_id" value="{{ device.id }}">
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-cloud-upload-alt me-1"></i>Publish
+                                                </button>
+                                            </form>
+                                        {% endif %}
                                         <button class="btn btn-sm btn-outline-primary" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#connectDeviceModal"

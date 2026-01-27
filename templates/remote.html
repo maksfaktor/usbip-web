@@ -376,13 +376,25 @@ function toggleServiceDevices(serviceId, ip) {
             let devicesHtml = '<div class="list-group list-group-flush">';
             data.devices.forEach(device => {
                 const isAttached = device.attached || false;
+                const isVirtual = device.is_virtual || false;
+                const deviceType = device.device_type || '';
+                const iconClass = isVirtual ? 
+                    (deviceType === 'storage' ? 'bi-hdd text-warning' : 
+                     deviceType === 'fido' ? 'bi-key text-info' : 'bi-cpu text-warning') : 
+                    'bi-usb-symbol text-primary';
+                const virtualBadge = isVirtual ? 
+                    `<span class="badge bg-warning text-dark ms-2">Virtual</span>` : '';
+                const typeBadge = deviceType ? 
+                    `<span class="badge bg-info ms-1">${escapeHtml(deviceType)}</span>` : '';
+                
                 devicesHtml += `
                     <div class="list-group-item d-flex justify-content-between align-items-center py-2">
                         <div>
-                            <i class="bi bi-usb-symbol text-primary me-2"></i>
+                            <i class="bi ${iconClass} me-2"></i>
                             <strong>${escapeHtml(device.busid)}</strong>
                             <span class="text-muted ms-2">${escapeHtml(device.name || device.device || 'USB Device')}</span>
                             ${device.vid_pid ? `<span class="badge bg-secondary ms-2">${escapeHtml(device.vid_pid)}</span>` : ''}
+                            ${virtualBadge}${typeBadge}
                         </div>
                         <button class="btn btn-sm ${isAttached ? 'btn-danger' : 'btn-success'}" 
                                 onclick="attachRemoteDevice('${ip}', '${escapeHtml(device.busid)}', this)">
